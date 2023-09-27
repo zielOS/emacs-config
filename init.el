@@ -27,7 +27,6 @@
 (eval-when-compile (require 'use-package))
 
 (use-package auto-package-update
-  :straight t
   :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
@@ -35,13 +34,6 @@
   :config
   (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
-
-;; NOTE: If you want to move everything out of the ~/.emacs.d folder
-;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
-
-(use-package no-littering
-  :straight t)
 
 ;; no-littering doesn't set this by default so we must place
 ;; auto save files in the same path as it uses for sessions
@@ -87,10 +79,8 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general
-  :straight t
   :after evil
   :config
-  ;; set up 'SPC' as the global leader key
   (general-create-definer efs/leader-keys
     :states '(normal insert visual emacs)
     :keymaps 'override
@@ -98,7 +88,6 @@
     :global-prefix "M-SPC")) ;; access leader in insert mode)
 
 (use-package evil
-  :straight t 
   :init
   (setq evil-want-integration t)
 
@@ -121,7 +110,6 @@
   (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
-  :straight t
   :after evil
   :config
   (evil-collection-init))
@@ -135,11 +123,9 @@
   "/" '(comment-line :wk "comment lines"))
 
 (use-package yasnippet-snippets
-  :disabled
-  :straight t)
+  :disabled)
 
 (use-package yasnippet
-  :straight t
   :config
   (setq yas-snippet-dirs
 	`(,(concat (expand-file-name user-emacs-directory) "snippets")
@@ -158,19 +144,16 @@
 (general-define-key "M-TAB" 'company-yasnippet)
 
 (use-package evil-surround
-  :straight t
   :after evil
   :config
   (global-evil-surround-mode 1))
 
 (use-package evil-commentary
-  :straight t
   :after evil
   :config
   (evil-commentary-mode))
 
 (use-package evil-quickscope
-  :straight t
   :after evil
   :config
   :hook ((prog-mode . turn-on-evil-quickscope-mode)
@@ -178,7 +161,6 @@
 	 (org-mode . turn-on-evil-quickscope-mode)))
 
 (use-package evil-lion
-  :straight t
   :config
   (setq evil-lion-left-align-key (kbd "g a"))
   (setq evil-lion-right-align-key (kbd "g A"))
@@ -191,68 +173,62 @@
     buf))
 
 (use-package deadgrep
-  :straight t
   :commands (deadgrep)
   :config
   (advice-add #'deadgrep--buffer :around #'my/deadgrep-fix-buffer-advice))
 
 (use-package ivy
-  :straight t
   :config
   (setq ivy-use-virtual-buffers t)
   (ivy-mode))
 
 (use-package counsel
-  :straight t
   :after ivy
   :config
   (counsel-mode))
 
 (use-package swiper
-  :defer t
-  :straight t)
+  :defer t)
 
 (use-package ivy-rich
-  :straight t
   :after ivy
   :config
   (ivy-rich-mode 1)
   (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 
 (use-package ivy-prescient
-  :straight t
   :after counsel
   :config
   (ivy-prescient-mode 1)
   (setq ivy-prescient-retain-classic-highlighting t)
   (prescient-persist-mode 1)
   (setq ivy-prescient-sort-commands
-	'(:not swiper
-	       swiper-isearch
-	       ivy-switch-buffer
-	       ;; ivy-resume
-	       ;; ivy--restore-session
-	       lsp-ivy-workspace-symbol
-	       dap-switch-stack-frame
-	       dap-switch-session
-	       dap-switch-thread
-	       counsel-grep
-	       ;; counsel-find-file
-	       counsel-git-grep
-	       counsel-rg
-	       counsel-ag
-	       counsel-ack
-	       counsel-fzf
-	       counsel-pt
-	       counsel-imenu
-	       counsel-yank-pop
-	       counsel-recentf
-	       counsel-buffer-or-recentf
-	       proced-filter-interactive
-	       proced-sort-interactive
-	       perspective-exwm-switch-perspective
-	       lsp-execute-code-action
-	       dired-recent-open))
+        '(:not swiper
+               swiper-isearch
+               ivy-switch-buffer
+               ;; ivy-resume
+               ;; ivy--restore-session
+               lsp-ivy-workspace-symbol
+               dap-switch-stack-frame
+               dap-switch-session
+               dap-switch-thread
+               counsel-grep
+               ;; counsel-find-file
+               counsel-git-grep
+               counsel-rg
+               counsel-ag
+               counsel-ack
+               counsel-fzf
+               counsel-pt
+               counsel-imenu
+               counsel-yank-pop
+               counsel-recentf
+               counsel-buffer-or-recentf
+               proced-filter-interactive
+               proced-sort-interactive
+               perspective-exwm-switch-perspective
+               lsp-execute-code-action
+               dired-recent-open))
   ;; Do not use prescient in find-file
   (ivy--alist-set 'ivy-sort-functions-alist #'read-file-name-internal #'ivy-sort-file-function-default))
 
@@ -284,7 +260,6 @@
  [escape] '(minibuffer-keyboard-quit))
 
 (use-package company
-  :straight t
   :config
   (global-company-mode t)
   (setq company-idle-delay 0.0)
@@ -292,13 +267,11 @@
   (setq company-show-numbers t))
 
 (use-package company-box
-  :straight t
   :if (display-graphic-p)
   :after (company)
   :hook (company-mode . company-box-mode))
 
 (use-package projectile
-  :straight t
   :diminish projectile-mode
   :config (projectile-mode)
   :custom ((projectile-completion-system 'ivy))
@@ -311,16 +284,13 @@
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
-  :straight t
   :after projectile
   :config (counsel-projectile-mode))
 
 (use-package command-log-mode
-  :straight t
   :commands command-log-mode)
 
 (use-package doom-themes
-  :straight t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -332,16 +302,11 @@
   ;; or for treemacs users
   (doom-themes-org-config))
 
-(use-package all-the-icons
-  :straight t)
-
 (use-package doom-modeline
-  :straight t
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 25)))
 
 (use-package which-key
-  :straight t
   :init
     (which-key-mode 1)
   :diminish
@@ -363,7 +328,6 @@
   "SPC" '(counsel-M-x :which-key "Counsel M-x"))
 
 (use-package helpful
-  :straight t
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -375,7 +339,6 @@
   ([remap describe-key] . helpful-key))
 
 (use-package hydra
-  :straight t
   :defer t)
 
 (defhydra hydra-text-scale (:timeout 4)
@@ -391,12 +354,10 @@
 (show-paren-mode 1)    ; turn on paren match highlighting
 
 (use-package rainbow-mode
-  :straight t
   :diminish
   :hook org-mode prog-mode)
 
 (use-package dashboard
-  :straight t 
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -409,27 +370,20 @@
   (setq dashboard-startup-banner "~/.emacs.d/art/ascii.txt")  ;; use custom image as banner
   (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
-			  (agenda . 5 )
-			  (bookmarks . 3)
-			  (projects . 3)
-			  (registers . 3)))
+                          (agenda . 5 )
+                          (bookmarks . 3)
+                          (projects . 3)
+                          (registers . 3)))
   :custom 
   (dashboard-modify-heading-icons '((recents . "file-text")
-				    (bookmarks . "book")))
+                                    (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
 
 (use-package expand-region
-  :straight t
   :bind
   ("C-=" . er/expand-region)
   ("C--" . er/contract-region))
-
-(use-package centaur-tabs
-  :straight t)
-
-(use-package adaptive-wrap
-  :straight t)
 
 (global-prettify-symbols-mode t)
 
@@ -443,7 +397,6 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (use-package editorconfig
-  :straight t
   :config
   (add-to-list 'editorconfig-indentation-alist
 	       '(emmet-mode emmet-indentation)))
@@ -462,15 +415,12 @@
     "l" 'dired-single-buffer))
 
 (use-package dired-single
-  :straight t
   :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
-  :straight t
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package dired-open
-  :straight t
   :commands (dired dired-jump)
   :config
   ;; Doesn't work as expected!
@@ -479,7 +429,6 @@
                                 ("mkv" . "mpv"))))
 
 (use-package neotree
-  :straight t
   :config
   (setq neo-smart-open t
 	neo-show-hidden-files t
@@ -712,23 +661,21 @@
 
 (use-package org-bullets
   :after org
-  :straight t
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun efs/org-mode-visual-fill ()
   (setq visual-fill-column-width 180
-	visual-fill-column-center-text t)
+        visual-fill-column-center-text t)
   (visual-fill-column-mode 1))
 
 (use-package visual-fill-column
-  :straight t
   :hook (org-mode . efs/org-mode-visual-fill))
 
 (add-hook 'org-mode-hook (lambda ()
-			   (display-line-numbers-mode -1)
-			   (variable-pitch-mode)))
+                           (display-line-numbers-mode -1)
+                           (variable-pitch-mode)))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -744,6 +691,7 @@
 
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("li" . "src lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
@@ -757,18 +705,16 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
 (use-package evil-org
-  :straight t
   :hook (org-mode . evil-org-mode)
   :config
   (add-hook 'evil-org-mode-hook
-	    (lambda ()
-	      (evil-org-set-key-theme '(navigation insert textobjects additional calendar todo))))
+            (lambda ()
+              (evil-org-set-key-theme '(navigation insert textobjects additional calendar todo))))
   (add-to-list 'evil-emacs-state-modes 'org-agenda-mode)
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
 
 (use-package org-alert
-  :straight t
   :custom (alert-default-style 'messages)
   :config
   (setq org-alert-interval 300
@@ -776,13 +722,11 @@
   (org-alert-enable))
 
 (use-package org-noter
-  :straight t
   :after (:any org pdf-tools)
   :config
   (setq org-noter-notes-search-path '("~/Documents/roam")))
 
 (use-package org-roam
-  :straight t
   :init
   (setq org-roam-v2-ack t)
   :custom
@@ -799,7 +743,6 @@
   "n i" '(org-roam-node-insert :which-key "org-roam-node-insert"))
 
 (use-package tex
-  :straight auctex
   :defer t
   :config
   (setq-default TeX-auto-save t)
@@ -827,7 +770,7 @@
 	      (outline-minor-mode)))
 
   (add-to-list 'TeX-view-program-selection
-	       '(output-pdf "PDF Tools"))
+	       '(output-pdf "Zathura"))
 
   ;; Do not run lsp within templated TeX files
   (add-hook 'LaTeX-mode-hook
@@ -1051,7 +994,6 @@
  my/latex-section-snippets)
 
 (use-package lsp-latex
-  :straight (:host github :repo "ROCKTAKEY/lsp-latex")
   :config
   (with-eval-after-load "tex-mode"
     (add-hook 'tex-mode-hook 'lsp)
@@ -1062,25 +1004,20 @@
     (add-hook 'bibtex-mode-hook 'lsp)))
 
 (use-package company-auctex
-  :straight t
   :after auctex
   :config
   (company-auctex-init))
 
-(use-package company-math
-  :straight t)
-
 ;; local configuration for TeX modes
-(defun my-latex-mode-setup ()
-  (setq-local company-backends
-	      (append '((company-math-symbols-latex company-latex-commands))
-		      company-backends)))
+ (defun my-latex-mode-setup ()
+   (setq-local company-backends
+	       (append '((company-math-symbols-latex company-latex-commands))
+		       company-backends)))
 
-(add-hook 'TeX-mode-hook 'my-latex-mode-setup)
+ (add-hook 'TeX-mode-hook 'my-latex-mode-setup)
 
 (use-package company-reftex
-  :after company
-  :straight t)
+  :after company)
 
 (add-hook 'Latex-mode-hook 'turn-on-reftex)
 (add-hook 'latex-mode-hook 'turn-on-reftex)
@@ -1096,39 +1033,29 @@
   'company-reftex-citations))
 
 (use-package cdlatex
-  :straight t
   :diminish 'org-cdlatex-mode
   :hook ((LaTeX-mode . turn-on-cdlatex)
 	 (org-mode . turn-on-org-cdlatex)))
 
-(use-package auctex-latexmk
-  :straight t)
-
 (auctex-latexmk-setup)
 (setq auctex-latexmk-inherit-TeX-PDF-mode t)
 
-(use-package evil-tex
-  :straight t)
-
 (add-hook 'LaTeX-mode-hook #'evil-tex-mode)
 
-(use-package latex-preview-pane
-  :straight t)
 (latex-preview-pane-enable)
 
 (use-package org-ref
-  :straight (:files (:defaults "citeproc" (:exclude "*helm*")))
   :init
   (setq bibtex-dialect 'biblatex)
   ;(setq bibtex-completion-bibliography '("~/30-39 Life/32 org-mode/library.bib"))
   ;(setq bibtex-completion-library-path '("~/30-39 Life/33 Library"))
   ;(setq bibtex-completion-notes-path "~/Documents/org-mode/literature-notes")
   (setq bibtex-completion-display-formats
-	'((t . "${author:36} ${title:*} ${note:10} ${year:4} ${=has-pdf=:1}${=type=:7}")))
+        '((t . "${author:36} ${title:*} ${note:10} ${year:4} ${=has-pdf=:1}${=type=:7}")))
   (setq bibtex-completion-pdf-open-function
-	(lambda (file)
-	  (start-process "dired-open" nil
-			 "xdg-open" (file-truename file))))
+        (lambda (file)
+          (start-process "dired-open" nil
+                         "xdg-open" (file-truename file))))
   :after (org)
   :config
   (with-eval-after-load 'ivy-bibtex
@@ -1142,31 +1069,12 @@
 
 (use-package ivy-bibtex
   :after (org-ref)
-  :straight t
   :init
   (efs/leader-keys "fB" 'ivy-bibtex))
 
 (add-hook 'bibtex-mode 'smartparens-mode)
 
-(use-package pdf-tools
-  :straight t
-  :if (not (eq system-type 'windows-nt))
-  :config
-  (pdf-loader-install)
-  ;; open pdfs scaled to fit page
-  (setq-default pdf-view-display-size 'fit-width)
-  ;; more fine-grained zooming
-  (setq pdf-view-resize-factor 1.1)
-  ;; use normal isearch
-  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-  (define-key pdf-view-mode-map (kbd "C-r") 'isearch-backward)
-  ;; keyboard shortcuts
-  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
-  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
-  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete))
-
 (use-package treemacs
-  :straight t
   :defer t
   :config
   (setq treemacs-space-between-root-nodes nil))
@@ -1181,20 +1089,19 @@
   :straight t)
 
 (use-package lsp-mode
-  :straight t
   :hook (
-	 (typescript-mode . lsp)
-	 (js-mode . lsp)
-	 (vue-mode . lsp)
-	 (go-mode . lsp)
-	 (svelte-mode . lsp)
-	 (python-mode . lsp)
-	 (json-mode . lsp)
-	 (haskell-mode . lsp)
-	 (haskell-literate-mode . lsp)
-	 (java-mode . lsp)
-	 ;; (csharp-mode . lsp)
-	 )
+         (typescript-mode . lsp)
+         (js-mode . lsp)
+         (vue-mode . lsp)
+         (go-mode . lsp)
+         (svelte-mode . lsp)
+         (python-mode . lsp)
+         (json-mode . lsp)
+         (haskell-mode . lsp)
+         (haskell-literate-mode . lsp)
+         (java-mode . lsp)
+         ;; (csharp-mode . lsp)
+         )
   :commands lsp
   :init
   (setq lsp-keymap-prefix nil)
@@ -1203,7 +1110,6 @@
   (lsp-enable-which-key-integration t))
 
 (use-package lsp-ui
-  :straight t
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq lsp-ui-doc-delay 2)
@@ -1212,7 +1118,6 @@
 
 (use-package lsp-treemacs
   :after lsp
-  :straight t
   :commands lsp-treemacs-errors-list)
 
 (efs/leader-keys
@@ -1253,7 +1158,6 @@
   (advice-add 'lsp--progress-status :override #'my/lsp--progress-status))
 
 (use-package flycheck
-  :straight t
   :config
   (global-flycheck-mode)
   (setq flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
@@ -1271,52 +1175,7 @@
 		 (reusable-frames . visible)
 		 (window-height   . 0.33))))
 
-(defun my/set-smartparens-indent (mode)
-  (sp-local-pair mode "{" nil :post-handlers '(("|| " "SPC") ("||\n[i]" "RET")))
-  (sp-local-pair mode "[" nil :post-handlers '(("|| " "SPC") ("||\n[i]" "RET")))
-  (sp-local-pair mode "(" nil :post-handlers '(("|| " "SPC") ("||\n[i]" "RET"))))
-
-(defun my/set-flycheck-eslint()
-  "Override flycheck checker with eslint."
-  (setq-local lsp-diagnostic-package :none)
-  (setq-local flycheck-checker 'javascript-eslint))
-
-(use-package treesit
-  :straight (:type built-in)
-  :if (featurep 'treesit)
-  :config
-  (setq treesit-language-source-alist
-	'((bash "https://github.com/tree-sitter/tree-sitter-bash")
-	  (cmake "https://github.com/uyha/tree-sitter-cmake")
-	  (css "https://github.com/tree-sitter/tree-sitter-css")
-	  (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-	  (go "https://github.com/tree-sitter/tree-sitter-go")
-	  (html "https://github.com/tree-sitter/tree-sitter-html")
-	  (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-	  (json "https://github.com/tree-sitter/tree-sitter-json")
-	  (make "https://github.com/alemuller/tree-sitter-make")
-	  (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-	  (python "https://github.com/tree-sitter/tree-sitter-python")
-	  (toml "https://github.com/tree-sitter/tree-sitter-toml")
-	  (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	  (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-	  (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-  (setq treesit-font-lock-level 4)
-  (setq major-mode-remap-alist
-	'((typescript-mode . typescript-ts-mode)
-	  (js-mode . javascript-ts-mode)
-	  (python-mode . python-ts-mode)
-	  (json-mode . json-ts-mode)))
-  (cl-loop for (old-mode . new-mode) in major-mode-remap-alist
-	   do (my/set-smartparens-indent new-mode)
-	   do (set (intern (concat (symbol-name new-mode) "-hook"))
-		   (list
-		    (eval `(lambda ()
-			     (run-hooks
-			      ',(intern (concat (symbol-name old-mode) "-hook")))))))))
-
 (use-package dap-mode
-  :straight t
   :commands (dap-debug)
   :init
   (setq lsp-enable-dap-auto-configure nil)
@@ -1338,11 +1197,7 @@
   (dap-tooltip-mode 1)
   (tooltip-mode 1))
 
-(use-package reformatter
-  :straight t)
-
 (use-package highlight-indent-guides
-  :straight t
   :config
   (setq highlight-indent-guides-method 'character
   highlight-indent-guides-responsive 'top)
@@ -1360,7 +1215,6 @@
   :after magit)
 
 (use-package eshell-toggle
-  :straight t
   :custom
   (eshell-toggle-size-fraction 3)
   (eshell-toggle-use-projectile-root t)
@@ -1368,7 +1222,6 @@
   (eshell-toggle-init-function #'eshell-toggle-init-ansi-term))
 
   (use-package eshell-syntax-highlighting
-    :straight t
     :after esh-mode
     :config
     (eshell-syntax-highlighting-global-mode +1))
@@ -1390,7 +1243,7 @@
   :straight t
   :config
   (setq shell-file-name "/bin/zsh"
-	vterm-max-scrollback 5000))
+        vterm-max-scrollback 5000))
 
 (use-package vterm-toggle
   :straight t
@@ -1402,23 +1255,48 @@
   (setq vterm-toggle-fullscreen-p nil)
   (setq vterm-toggle-scope 'project)
   (add-to-list 'display-buffer-alist
-	       '((lambda (buffer-or-name _)
-		     (let ((buffer (get-buffer buffer-or-name)))
-		       (with-current-buffer buffer
-			 (or (equal major-mode 'vterm-mode)
-			     (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-		  (display-buffer-reuse-window display-buffer-at-bottom)
-		  ;;(display-buffer-reuse-window display-buffer-in-direction)
-		  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-		  ;;(direction . bottom)
-		  ;;(dedicated . t) ;dedicated is supported in emacs27
-		  (reusable-frames . visible)
-		  (window-height . 0.4))))
+               '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                  (display-buffer-reuse-window display-buffer-at-bottom)
+                  ;;(display-buffer-reuse-window display-buffer-in-direction)
+                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                  ;;(direction . bottom)
+                  ;;(dedicated . t) ;dedicated is supported in emacs27
+                  (reusable-frames . visible)
+                  (window-height . 0.4))))
 
 (efs/leader-keys
   "t t" '(vterm-toggle :which-key "toggle vterm"))
 
 (setq frame-resize-pixelwise t)
 
+(straight-use-package '(app-launcher :host github
+                                     :repo "SebastienWae/app-launcher"
+                                     :branch "main"))
+
+;; create a global keyboard shortcut with the following code
+;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+
+(defun emacs-run-launcher ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame 
+      (make-frame '((name . "emacs-run-launcher")
+                    (minibuffer . only)
+                    (fullscreen . 0) ; no fullscreen
+                    (undecorated . t) ; remove title bar
+                    ;;(auto-raise . t) ; focus on this frame
+                    ;;(tool-bar-lines . 0)
+                    ;;(menu-bar-lines . 0)
+                    (internal-border-width . 10)
+                    (width . 80)
+                    (height . 11)))
+    (unwind-protect
+        (app-launcher-run-app)
+      (delete-frame))))
+
 ;; Make gc pauses faster by decreasing the threshold.
-(setq gc-cons-threshold (* 2 1000 1000))
+(setq gc-cons-threshold (*  5000 1000))
