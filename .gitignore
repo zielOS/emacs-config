@@ -1,0 +1,7 @@
+eln-cache/
+elpa/
+etc/
+straight/
+var/
+Emacs.org~
+.last-package-update-day
