@@ -1,5 +1,5 @@
 ;; The default is 800 kilobytes.  Measured in bytes.
-(setq gc-cons-threshold (* 50 1000 1000))
+(setq gc-cons-threshold (* 100 1000 1000))
 
 (defun efs/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
@@ -1273,12 +1273,8 @@
 
 (setq frame-resize-pixelwise t)
 
-(straight-use-package '(app-launcher :host github
-                                     :repo "SebastienWae/app-launcher"
-                                     :branch "main"))
-
-;; create a global keyboard shortcut with the following code
-;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+(use-package app-launcher
+  :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
 
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
@@ -1298,5 +1294,35 @@
         (app-launcher-run-app)
       (delete-frame))))
 
+;; start ednc-mode
+(ednc-mode 1)
+
+;; open notications
+(defun show-notification-in-buffer (old new)
+  (let ((name (format "Notification %d" (ednc-notification-id (or old new)))))
+    (with-current-buffer (get-buffer-create name)
+      (if new (let ((inhibit-read-only t))
+                (if old (erase-buffer) (ednc-view-mode))
+                (insert (ednc-format-notification new t))
+                (pop-to-buffer (current-buffer)))
+        (kill-buffer)))))
+
+
+;; notifications hook
+(add-hook 'ednc-notification-presentation-functions
+          #'show-notification-in-buffer)
+
+
+;; ednc evil - normal mode
+(defun noevil ()
+  (evil-define-key 'normal ednc-view-mode-map "d" 'ednc-dismiss-notification)
+  (evil-define-key 'normal ednc-view-mode-map (kbd "RET") 'ednc-invoke-action)
+)
+
+(add-hook 'ednc-view-mode-hook 'noevil)
+
+(notifications-notify :title "1st test" :body "hello, world" :app-name "EDNC"
+                      :actions '("default" "default"))
+
 ;; Make gc pauses faster by decreasing the threshold.
-(setq gc-cons-threshold (*  5000 1000))
+(setq gc-cons-threshold (* 5000 1000))
