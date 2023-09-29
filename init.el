@@ -59,13 +59,13 @@
 
 (defun efs/set-font-faces ()
   (message "Setting faces!")
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 180)
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 120)
 
   ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 180)
+  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 120)
 
   ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 180 :weight 'regular))
+  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 120 :weight 'regular))
 
 (if (daemonp)
   (add-hook 'after-make-frame-functions
@@ -1271,27 +1271,41 @@
 (efs/leader-keys
   "t t" '(vterm-toggle :which-key "toggle vterm"))
 
+(defmacro i3-msg (&rest args)
+  `(start-process "emacs-i3-windmove" nil "i3-msg" ,@args))
+
+
+
 (setq frame-resize-pixelwise t)
 
 (use-package app-launcher
   :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
 
+;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+
+(defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
+  "Define a launcher command.
+
+Bookmark-selector is a package revolving around using emacs
+outside of emacs to browse your bookmarks. Most of the commands
+defined, consist of opening an emacs frame with only a
+minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
+calling FUNCTION and deleting the frame after the function
+completes or is canceled."
+  `(with-selected-frame (make-frame '((name . ,NAME)
+                                      (minibuffer . only)
+                                      (width . ,WIDTH)
+                                      (height . ,HEIGHT)))
+     (unwind-protect
+         (funcall ,FUNCTION)
+       (delete-frame))))
+
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
   (interactive)
-  (with-selected-frame 
-      (make-frame '((name . "emacs-run-launcher")
-                    (minibuffer . only)
-                    (fullscreen . 0) ; no fullscreen
-                    (undecorated . t) ; remove title bar
-                    ;;(auto-raise . t) ; focus on this frame
-                    ;;(tool-bar-lines . 0)
-                    ;;(menu-bar-lines . 0)
-                    (internal-border-width . 10)
-                    (width . 80)
-                    (height . 11)))
+  (bookmark-selector-launcher "emacs-run-launcher" 120 11 'app-launcher-run-app)
     (unwind-protect
-        (app-launcher-run-app)
+        (funcall ,FUNCTION)
       (delete-frame))))
 
 ;; start ednc-mode
@@ -1320,9 +1334,6 @@
 )
 
 (add-hook 'ednc-view-mode-hook 'noevil)
-
-(notifications-notify :title "1st test" :body "hello, world" :app-name "EDNC"
-                      :actions '("default" "default"))
 
 ;; Make gc pauses faster by decreasing the threshold.
 (setq gc-cons-threshold (* 5000 1000))
