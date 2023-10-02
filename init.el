@@ -546,11 +546,6 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
 
-  (setq org-agenda-files
-	'("~/Projects/OrgFiles/Tasks.org"
-	  "~/Projects/OrgFiles/Habits.org"))
-
-
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
@@ -579,83 +574,6 @@
        ("batch" . ?b)
        ("note" . ?n)
        ("idea" . ?i)))
-
-  ;; Configure custom agenda views
-  (setq org-agenda-custom-commands
-   '(("d" "Dashboard"
-     ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
-	((org-agenda-overriding-header "Next Tasks")))
-      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-
-    ("n" "Next Tasks"
-     ((todo "NEXT"
-	((org-agenda-overriding-header "Next Tasks")))))
-
-    ("W" "Work Tasks" tags-todo "+work-email")
-
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-     ((org-agenda-overriding-header "Low Effort Tasks")
-      (org-agenda-max-todos 20)
-      (org-agenda-files org-agenda-files)))
-
-    ("w" "Workflow Status"
-     ((todo "WAIT"
-	    ((org-agenda-overriding-header "Waiting on External")
-	     (org-agenda-files org-agenda-files)))
-      (todo "REVIEW"
-	    ((org-agenda-overriding-header "In Review")
-	     (org-agenda-files org-agenda-files)))
-      (todo "PLAN"
-	    ((org-agenda-overriding-header "In Planning")
-	     (org-agenda-todo-list-sublevels nil)
-	     (org-agenda-files org-agenda-files)))
-      (todo "BACKLOG"
-	    ((org-agenda-overriding-header "Project Backlog")
-	     (org-agenda-todo-list-sublevels nil)
-	     (org-agenda-files org-agenda-files)))
-      (todo "READY"
-	    ((org-agenda-overriding-header "Ready for Work")
-	     (org-agenda-files org-agenda-files)))
-      (todo "ACTIVE"
-	    ((org-agenda-overriding-header "Active Projects")
-	     (org-agenda-files org-agenda-files)))
-      (todo "COMPLETED"
-	    ((org-agenda-overriding-header "Completed Projects")
-	     (org-agenda-files org-agenda-files)))
-      (todo "CANC"
-	    ((org-agenda-overriding-header "Cancelled Projects")
-	     (org-agenda-files org-agenda-files)))))))
-
-  (setq org-capture-templates
-    `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp "~/Projects/OrgFiles/Tasks.org" "Inbox")
-	   "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-
-      ("j" "Journal Entries")
-      ("jj" "Journal" entry
-	   (file+olp+datetree "~/Projects/OrgFiles/Journal.org")
-	   "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-	   ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-	   :clock-in :clock-resume
-	   :empty-lines 1)
-      ("jm" "Meeting" entry
-	   (file+olp+datetree "~/Projects/OrgFiles/Journal.org")
-	   "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-	   :clock-in :clock-resume
-	   :empty-lines 1)
-
-      ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree "~/Projects/OrgFiles/Journal.org")
-	   "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
-
-      ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline "~/Projects/OrgFiles/Metrics.org" "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
-
-  (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj")))
 
   (efs/org-font-setup))
 
@@ -715,7 +633,7 @@
   (evil-org-agenda-set-keys))
 
 (use-package org-alert
-  :custom (alert-default-style 'messages)
+  :custom (alert-default-style 'notifications)
   :config
   (setq org-alert-interval 300
         org-alert-notification-title "Org Alert Reminder!")
@@ -725,6 +643,49 @@
   :after (:any org pdf-tools)
   :config
   (setq org-noter-notes-search-path '("~/Documents/roam")))
+
+(let ((org-super-agenda-groups
+       '(;; Each group has an implicit boolean OR operator between its selectors.
+         (:name "Today"  ; Optionally specify section name
+                :time-grid t  ; Items that appear on the time grid
+                :todo "TODAY")  ; Items that have this TODO keyword
+         (:name "Important"
+                ;; Single arguments given alone
+                :tag "bills"
+                :priority "A")
+         ;; Set order of multiple groups at once
+         (:order-multi (2 (:name "Shopping in town"
+                                 ;; Boolean AND group matches items that match all subgroups
+                                 :and (:tag "shopping" :tag "@town"))
+                          (:name "Food-related"
+                                 ;; Multiple args given in list with implicit OR
+                                 :tag ("food" "dinner"))
+                          (:name "Personal"
+                                 :habit t
+                                 :tag "personal")
+                          (:name "Space-related (non-moon-or-planet-related)"
+                                 ;; Regexps match case-insensitively on the entire entry
+                                 :and (:regexp ("space" "NASA")
+                                               ;; Boolean NOT also has implicit OR between selectors
+                                               :not (:regexp "moon" :tag "planet")))))
+         ;; Groups supply their own section names when none are given
+         (:todo "WAITING" :order 8)  ; Set order of this section
+         (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+                ;; Show this group at the end of the agenda (since it has the
+                ;; highest number). If you specified this group last, items
+                ;; with these todo keywords that e.g. have priority A would be
+                ;; displayed in that group instead, because items are grouped
+                ;; out in the order the groups are listed.
+                :order 9)
+         (:priority<= "B"
+                      ;; Show this section after "Today" and "Important", because
+                      ;; their order is unspecified, defaulting to 0. Sections
+                      ;; are displayed lowest-number-first.
+                      :order 1)
+         ;; After the last group, the agenda will display items that didn't
+         ;; match any of these groups, with the default order position of 99
+         )))
+  (org-agenda nil "a"))
 
 (use-package org-roam
   :init
@@ -1271,11 +1232,6 @@
 (efs/leader-keys
   "t t" '(vterm-toggle :which-key "toggle vterm"))
 
-(defmacro i3-msg (&rest args)
-  `(start-process "emacs-i3-windmove" nil "i3-msg" ,@args))
-
-
-
 (setq frame-resize-pixelwise t)
 
 (use-package app-launcher
@@ -1303,13 +1259,13 @@ completes or is canceled."
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
   (interactive)
-  (bookmark-selector-launcher "emacs-run-launcher" 120 11 'app-launcher-run-app)
+  (bookmark-selector-launcher "emacs-run-launcher" 59 11 'app-launcher-run-app)
     (unwind-protect
         (funcall ,FUNCTION)
       (delete-frame))))
 
 ;; start ednc-mode
-(ednc-mode 1)
+(ednc-mode t)
 
 ;; open notications
 (defun show-notification-in-buffer (old new)
