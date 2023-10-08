@@ -1047,8 +1047,7 @@
     "q" '(treemacs-quit :which-key "close treemacs"))
 
 (use-package treemacs-evil
-  :after (treemacs evil)
-  :straight t)
+  :after (treemacs evil))
 
 (use-package lsp-mode
   :hook (
