@@ -16,7 +16,9 @@
      ("nongnu" . 80)
      ("stable" . 70)
      ("melpa" . 0)))
- '(package-selected-packages '(company-reftex company)))
+ '(package-selected-packages '(company-reftex company))
+ '(scheme-program-name "guile" t)
+ '(warning-suppress-log-types '((comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

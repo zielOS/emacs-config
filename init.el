@@ -102,7 +102,6 @@
 
   (setq evil-want-keybinding nil)
   (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
   (setq evil-undo-system 'undo-redo)
@@ -118,18 +117,43 @@
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
 
+(defun crafted-evil-vim-muscle-memory ()
+  "Make a more familiar Vim experience.
+
+    Take some of the default keybindings for evil mode."
+  (customize-set-variable 'evil-want-C-i-jump t)
+  (customize-set-variable 'evil-want-Y-yank-to-eol t)
+  (customize-set-variable 'evil-want-fine-undo t))
+
+;; Make evil search more like vim
+(evil-select-search-module 'evil-search-module 'evil-search)
+
+;; Turn on Evil Nerd Commenter
+(evilnc-default-hotkeys)
+
+
+
 (use-package evil-collection
   :after evil
   :config
-  (evil-collection-init))
+ ;;; Evil Collection or some sparse defaults
+  (if (locate-library "evil-collection")
+      ;; If the user has `evil-collection' installed, initialize it.
+      (evil-collection-init)
+    ;; otherwise set up some defaults
+    (with-eval-after-load 'crafted-completion-config
+      (when (featurep 'vertico) ; only if `vertico' is actually loaded.
+        (keymap-set vertico-map "C-j" #'vertico-next)
+        (keymap-set vertico-map "C-k" #'vertico-previous)
+        (keymap-set vertico-map "M-h" #'vertico-directory-up)))))
 
 (efs/leader-keys
   "f f" '(find-file :wk "find file")
   "f p" '((lambda () (interactive)
             (dired "~/.emacs.d/")) 
-          :wk "Open user-emacs-directory in dired")
-  "f r" '(counsel-recentf :wk "Find recent files")
-  "/" '(comment-line :wk "comment lines"))
+              :wk "Open user-emacs-directory in dired")
+      "f r" '(counsel-recentf :wk "Find recent files")
+      "/" '(comment-line :wk "comment lines"))
 
 (use-package yasnippet-snippets
   :disabled)
@@ -1176,6 +1200,9 @@
   highlight-indent-guides-responsive 'top)
   :hook (prog-mode . highlight-indent-guides-mode))
 
+;; Load crafted-completion configuration
+(require 'crafted-lisp-config)
+
 (use-package magit
   :commands magit-status
   :custom
@@ -1212,37 +1239,37 @@
 	eshell-destroy-buffer-when-process-dies t
 	eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
 
-(use-package vterm
-  :straight t
-  :config
-  (setq shell-file-name "/bin/zsh"
-        vterm-max-scrollback 5000))
+;; (use-package vterm
+;;   :straight t
+;;   :config
+;;   (setq shell-file-name "/bin/zsh"
+;;         vterm-max-scrollback 5000))
 
-(use-package vterm-toggle
-  :straight t
-  :after vterm
-  :config
-  ;; When running programs in Vterm and in 'normal' mode, make sure that ESC
-  ;; kills the program as it would in most standard terminal programs.
-  (evil-define-key 'normal vterm-mode-map (kbd "<escape>") 'vterm--self-insert)
-  (setq vterm-toggle-fullscreen-p nil)
-  (setq vterm-toggle-scope 'project)
-  (add-to-list 'display-buffer-alist
-               '((lambda (buffer-or-name _)
-                     (let ((buffer (get-buffer buffer-or-name)))
-                       (with-current-buffer buffer
-                         (or (equal major-mode 'vterm-mode)
-                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                  (display-buffer-reuse-window display-buffer-at-bottom)
-                  ;;(display-buffer-reuse-window display-buffer-in-direction)
-                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-                  ;;(direction . bottom)
-                  ;;(dedicated . t) ;dedicated is supported in emacs27
-                  (reusable-frames . visible)
-                  (window-height . 0.4))))
+;; (use-package vterm-toggle
+;;   :straight t
+;;   :after vterm
+;;   :config
+;;   ;; When running programs in Vterm and in 'normal' mode, make sure that ESC
+;;   ;; kills the program as it would in most standard terminal programs.
+;;   (evil-define-key 'normal vterm-mode-map (kbd "<escape>") 'vterm--self-insert)
+;;   (setq vterm-toggle-fullscreen-p nil)
+;;   (setq vterm-toggle-scope 'project)
+;;   (add-to-list 'display-buffer-alist
+;;                '((lambda (buffer-or-name _)
+;;                      (let ((buffer (get-buffer buffer-or-name)))
+;;                        (with-current-buffer buffer
+;;                          (or (equal major-mode 'vterm-mode)
+;;                              (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+;;                   (display-buffer-reuse-window display-buffer-at-bottom)
+;;                   ;;(display-buffer-reuse-window display-buffer-in-direction)
+;;                   ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+;;                   ;;(direction . bottom)
+;;                   ;;(dedicated . t) ;dedicated is supported in emacs27
+;;                   (reusable-frames . visible)
+;;                   (window-height . 0.4))))
 
-(efs/leader-keys
-  "t t" '(vterm-toggle :which-key "toggle vterm"))
+;; (efs/leader-keys
+;;   "t t" '(vterm-toggle :which-key "toggle vterm"))
 
 (setq frame-resize-pixelwise t)
 
