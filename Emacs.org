@@ -42,6 +42,8 @@
 
 #+begin_src emacs-lisp
   (straight-use-package 'use-package)
+  (eval-when-compile (require 'use-package))
+
 #+end_src
 
 ** Automatic Package Updates

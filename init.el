@@ -24,6 +24,7 @@
       (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
+(eval-when-compile (require 'use-package))
 
 (use-package auto-package-update
   :custom
