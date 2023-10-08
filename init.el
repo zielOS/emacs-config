@@ -40,6 +40,13 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (and custom-file
+           (file-exists-p custom-file))
+  (load custom-file nil :nomessage))
+
+(load "~/crafted-emacs/modules/crafted-init-config")
+
 (setq inhibit-startup-message t)
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -56,6 +63,8 @@
 (dolist (mode '(prog-mode-hook
                 conf-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode t))))
+
+(require 'crafted-completion-config)
 
 (defun efs/set-font-faces ()
   (message "Setting faces!")
@@ -270,6 +279,9 @@
   :if (display-graphic-p)
   :after (company)
   :hook (company-mode . company-box-mode))
+
+;; Load crafted-completion configuration
+(require 'crafted-completion-config)
 
 (use-package projectile
   :diminish projectile-mode

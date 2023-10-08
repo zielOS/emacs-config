@@ -71,6 +71,20 @@
 #+end_src
 
 
+* Crafted Emacs
+
+#+begin_src emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (when (and custom-file
+             (file-exists-p custom-file))
+    (load custom-file nil :nomessage))
+#+end_src
+
+#+begin_src emacs-lisp
+  (load "~/crafted-emacs/modules/crafted-init-config")
+#+end_src
+
+
 * Sane Defaults
 
 #+begin_src emacs-lisp
@@ -83,7 +97,7 @@
   (set-fringe-mode 20)        ; Give some breathing room
 
   (menu-bar-mode -1)            ; Disable the menu bar
-
+  
   (column-number-mode t)
   (global-display-line-numbers-mode -1)
 
@@ -92,6 +106,10 @@
                   conf-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode t))))
 
+#+end_src
+
+#+begin_src emacs-lisp
+  (require 'crafted-completion-config)
 #+end_src
 
 
@@ -279,11 +297,11 @@
 ** ivy-rich
 
 #+begin_src emacs-lisp
-  (use-package ivy-rich
-    :after ivy
-    :config
-    (ivy-rich-mode 1)
-    (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
+ (use-package ivy-rich
+   :after ivy
+   :config
+   (ivy-rich-mode 1)
+   (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 #+end_src
 
 ** ivy-prescient
@@ -333,7 +351,7 @@
   (defun my/swiper-isearch ()
     (interactive)
     (if current-prefix-arg
-	(swiper-all)
+        (swiper-all)
       (swiper-isearch)))
 
   (efs/leader-keys
@@ -374,6 +392,13 @@
     :if (display-graphic-p)
     :after (company)
     :hook (company-mode . company-box-mode))
+#+end_src
+
+** Crafted Emacs
+
+#+begin_src emacs-lisp
+  ;; Load crafted-completion configuration
+  (require 'crafted-completion-config)
 #+end_src
 
 
