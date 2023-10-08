@@ -418,15 +418,15 @@
   :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 
 (use-package dired-open
-  :commands (dired dired-jump)
-  :config
-  ;; Doesn't work as expected!
-  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
+   :commands (dired dired-jump)
+   :config
+   ;; Doesn't work as expected!
+   ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+   (setq dired-open-extensions '(("png" . "feh")
+                                 ("mkv" . "mpv"))))
 
 (use-package neotree
   :config
@@ -460,6 +460,8 @@
 (efs/leader-keys
   "t n" '(neotree-toggle :which-key "toggle neotree")
   "e n" '(neotree-enter :which-key "open file/unfold directory"))
+
+(dirvish-override-dired-mode)
 
 (efs/leader-keys
  "b b" '(switch-to-buffer :wk "Switch to buffer")
@@ -536,7 +538,6 @@
   (visual-line-mode 1))
 
 (use-package org
-  :straight (:type built-in)
   :commands (org-capture org-agenda)
   :hook (org-mode . efs/org-mode-setup)
   :config
@@ -1259,37 +1260,10 @@ completes or is canceled."
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
   (interactive)
-  (bookmark-selector-launcher "emacs-run-launcher" 59 11 'app-launcher-run-app)
+  (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
     (unwind-protect
         (funcall ,FUNCTION)
-      (delete-frame))))
-
-;; start ednc-mode
-(ednc-mode t)
-
-;; open notications
-(defun show-notification-in-buffer (old new)
-  (let ((name (format "Notification %d" (ednc-notification-id (or old new)))))
-    (with-current-buffer (get-buffer-create name)
-      (if new (let ((inhibit-read-only t))
-                (if old (erase-buffer) (ednc-view-mode))
-                (insert (ednc-format-notification new t))
-                (pop-to-buffer (current-buffer)))
-        (kill-buffer)))))
-
-
-;; notifications hook
-(add-hook 'ednc-notification-presentation-functions
-          #'show-notification-in-buffer)
-
-
-;; ednc evil - normal mode
-(defun noevil ()
-  (evil-define-key 'normal ednc-view-mode-map "d" 'ednc-dismiss-notification)
-  (evil-define-key 'normal ednc-view-mode-map (kbd "RET") 'ednc-invoke-action)
-)
-
-(add-hook 'ednc-view-mode-hook 'noevil)
+      (delete-frame)))
 
 ;; Make gc pauses faster by decreasing the threshold.
 (setq gc-cons-threshold (* 5000 1000))
