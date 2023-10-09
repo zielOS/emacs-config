@@ -19,7 +19,7 @@
 #+end_src
 
 
-* Package System Setup
+* PACKAGE System Setup
 
 ** straight.el
 
@@ -176,7 +176,7 @@
   (evil-select-search-module 'evil-search-module 'evil-search)
 
   ;; Turn on Evil Nerd Commenter
-  (use-package evil-nerd-commenter
+  (use-packages evil-nerd-commenter
     :straight t)
   (evilnc-default-hotkeys)
 

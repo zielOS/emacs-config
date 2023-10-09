@@ -27,6 +27,7 @@
 (eval-when-compile (require 'use-package))
 
 (use-package auto-package-update
+  :straight t
   :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
@@ -35,6 +36,8 @@
   (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
 
+(use-package no-littering
+  :straight t)
 ;; no-littering doesn't set this by default so we must place
 ;; auto save files in the same path as it uses for sessions
 (setq auto-save-file-name-transforms
@@ -82,6 +85,7 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general
+  :straight t
   :after evil
   :config
   (general-create-definer efs/leader-keys
@@ -91,6 +95,7 @@
     :global-prefix "M-SPC")) ;; access leader in insert mode)
 
 (use-package evil
+  :straight t
   :init
   (setq evil-want-integration t)
 
@@ -123,11 +128,14 @@
 (evil-select-search-module 'evil-search-module 'evil-search)
 
 ;; Turn on Evil Nerd Commenter
+(use-package evil-nerd-commenter
+  :straight t)
 (evilnc-default-hotkeys)
 
 
 
 (use-package evil-collection
+  :straight t
   :after evil
   :config
  ;;; Evil Collection or some sparse defaults
@@ -150,9 +158,11 @@
       "/" '(comment-line :wk "comment lines"))
 
 (use-package yasnippet-snippets
+  :straight t
   :disabled)
 
 (use-package yasnippet
+  :straight t
   :config
   (setq yas-snippet-dirs
 	`(,(concat (expand-file-name user-emacs-directory) "snippets")
@@ -171,16 +181,19 @@
 (general-define-key "M-TAB" 'company-yasnippet)
 
 (use-package evil-surround
+  :straight t 
   :after evil
   :config
   (global-evil-surround-mode 1))
 
 (use-package evil-commentary
+  :straight t
   :after evil
   :config
   (evil-commentary-mode))
 
 (use-package evil-quickscope
+  :straight t
   :after evil
   :config
   :hook ((prog-mode . turn-on-evil-quickscope-mode)
@@ -188,6 +201,7 @@
 	 (org-mode . turn-on-evil-quickscope-mode)))
 
 (use-package evil-lion
+  :straight t
   :config
   (setq evil-lion-left-align-key (kbd "g a"))
   (setq evil-lion-right-align-key (kbd "g A"))
@@ -200,30 +214,36 @@
     buf))
 
 (use-package deadgrep
+  :straight t
   :commands (deadgrep)
   :config
   (advice-add #'deadgrep--buffer :around #'my/deadgrep-fix-buffer-advice))
 
 (use-package ivy
+  :straight t
   :config
   (setq ivy-use-virtual-buffers t)
   (ivy-mode))
 
 (use-package counsel
+  :straight t
   :after ivy
   :config
   (counsel-mode))
 
 (use-package swiper
+  :straight t
   :defer t)
 
 (use-package ivy-rich
+ :straight t
   :after ivy
   :config
   (ivy-rich-mode 1)
   (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 
 (use-package ivy-prescient
+  :straight t 
   :after counsel
   :config
   (ivy-prescient-mode 1)
@@ -287,6 +307,7 @@
  [escape] '(minibuffer-keyboard-quit))
 
 (use-package company
+  :straight t
   :config
   (global-company-mode t)
   (setq company-idle-delay 0.0)
@@ -294,9 +315,13 @@
   (setq company-show-numbers t))
 
 (use-package company-box
+  :straight t
   :if (display-graphic-p)
   :after (company)
   :hook (company-mode . company-box-mode))
+
+(use-package vertico
+  :straight t)
 
 (when (require 'vertico nil :noerror)
   (require 'vertico-directory)
@@ -306,6 +331,9 @@
   ;; Start Vertico
   (vertico-mode 1))
 
+(use-package marginalia
+  :straight t)
+
 (when (require 'marginalia nil :noerror)
   ;; Configure Marginalia
   (customize-set-variable 'marginalia-annotators
@@ -314,6 +342,9 @@
                             nil))
   (marginalia-mode 1))
 
+(use-package consult
+  :straight t)
+
 (when (locate-library "consult")
   ;; Set some consult bindings
   (keymap-global-set "C-s" 'consult-line)
@@ -321,11 +352,17 @@
 
   (setq completion-in-region-function #'consult-completion-in-region))
 
+(use-package orderless
+  :straight t)
+
 (when (require 'orderless nil :noerror)
   ;; Set up Orderless for better fuzzy matching
   (customize-set-variable 'completion-styles '(orderless basic))
   (customize-set-variable 'completion-category-overrides
                           '((file (styles . (partial-completion))))))
+
+(use-package embark
+  :straight t)
 
 (when (require 'embark nil :noerror)
 
@@ -338,6 +375,9 @@
   (when (require 'embark-consult nil :noerror)
     (with-eval-after-load 'embark-consult
       (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
+
+(use-package corfu
+  :straight t)
 
 (when (require 'corfu nil :noerror)
 
@@ -358,6 +398,9 @@
     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+
+(use-package cape
+  :straight t)
 
 (when (require 'cape nil :noerror)
   ;; Setup Cape for better completion-at-point support and more
@@ -384,6 +427,7 @@
   (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 
 (use-package projectile
+  :straight t
   :diminish projectile-mode
   :config (projectile-mode)
   :custom ((projectile-completion-system 'ivy))
@@ -396,13 +440,16 @@
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
+  :straight t
   :after projectile
   :config (counsel-projectile-mode))
 
 (use-package command-log-mode
+  :straight t
   :commands command-log-mode)
 
 (use-package doom-themes
+  :straight t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -415,10 +462,12 @@
   (doom-themes-org-config))
 
 (use-package doom-modeline
+  :straight t
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 25)))
 
 (use-package which-key
+  :straight t
   :init
     (which-key-mode 1)
   :diminish
@@ -440,6 +489,7 @@
   "SPC" '(counsel-M-x :which-key "Counsel M-x"))
 
 (use-package helpful
+  :straight t
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -451,6 +501,7 @@
   ([remap describe-key] . helpful-key))
 
 (use-package hydra
+  :straight t
   :defer t)
 
 (defhydra hydra-text-scale (:timeout 4)
@@ -466,10 +517,12 @@
 (show-paren-mode 1)    ; turn on paren match highlighting
 
 (use-package rainbow-mode
+  :straight t
   :diminish
   :hook org-mode prog-mode)
 
 (use-package dashboard
+  :straight t
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -493,6 +546,7 @@
   (dashboard-setup-startup-hook))
 
 (use-package expand-region
+  :straight t
   :bind
   ("C-=" . er/expand-region)
   ("C--" . er/contract-region))
@@ -509,6 +563,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (use-package editorconfig
+  :straight t
   :config
   (add-to-list 'editorconfig-indentation-alist
 	       '(emmet-mode emmet-indentation)))
@@ -517,6 +572,7 @@
 (save-place-mode nil)
 
 (use-package dired
+  :straight t
   :ensure nil
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
@@ -527,12 +583,15 @@
     "l" 'dired-single-buffer))
 
 (use-package dired-single
+  :straight t
   :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
+  :straight t
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 
 (use-package dired-open
+    :straight t
    :commands (dired dired-jump)
    :config
    ;; Doesn't work as expected!
@@ -541,6 +600,7 @@
                                  ("mkv" . "mpv"))))
 
 (use-package neotree
+  :straight t
   :config
   (setq neo-smart-open t
 	neo-show-hidden-files t
@@ -574,6 +634,7 @@
   "e n" '(neotree-enter :which-key "open file/unfold directory"))
 
 (use-package dirvish
+  :straight t
   :init
   (dirvish-override-dired-mode)
   :custom
@@ -688,6 +749,7 @@
   (visual-line-mode 1))
 
 (use-package org
+  :straight (:type built-in)
   :commands (org-capture org-agenda)
   :hook (org-mode . efs/org-mode-setup)
   :config
@@ -756,6 +818,7 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
 (use-package evil-org
+  :straight t
   :hook (org-mode . evil-org-mode)
   :config
   (add-hook 'evil-org-mode-hook
@@ -766,6 +829,7 @@
   (evil-org-agenda-set-keys))
 
 (use-package org-alert
+  :straight t
   :custom (alert-default-style 'notifications)
   :config
   (setq org-alert-interval 300
@@ -773,9 +837,13 @@
   (org-alert-enable))
 
 (use-package org-noter
+  :straight t
   :after (:any org pdf-tools)
   :config
   (setq org-noter-notes-search-path '("~/Documents/roam")))
+
+(use-package org-super-agenda
+  :straight t)
 
 (let ((org-super-agenda-groups
        '(;; Each group has an implicit boolean OR operator between its selectors.
@@ -820,7 +888,10 @@
          )))
   (org-agenda nil "a"))
 
-;; Choose some fonts
+(use-package org-modern
+  :straight t)
+
+  ;; Choose some fonts
   ;; (set-face-attribute 'default nil :family "Iosevka")
   ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
 (set-face-attribute 'org-modern-symbol nil :family "JetBrainsMono Nerd Font")
@@ -860,6 +931,7 @@
    "⭠ now ─────────────────────────────────────────────────")
 
 (use-package org-roam
+  :straight t
   :init
   (setq org-roam-v2-ack t)
   :custom
@@ -876,6 +948,7 @@
   "n i" '(org-roam-node-insert :which-key "org-roam-node-insert"))
 
 (use-package tex
+  :straight auctex
   :defer t
   :config
   (setq-default TeX-auto-save t)
@@ -1127,6 +1200,7 @@
  my/latex-section-snippets)
 
 (use-package lsp-latex
+  :straight t
   :config
   (with-eval-after-load "tex-mode"
     (add-hook 'tex-mode-hook 'lsp)
@@ -1137,6 +1211,7 @@
     (add-hook 'bibtex-mode-hook 'lsp)))
 
 (use-package company-auctex
+  :straight t
   :after auctex
   :config
   (company-auctex-init))
@@ -1150,6 +1225,7 @@
  (add-hook 'TeX-mode-hook 'my-latex-mode-setup)
 
 (use-package company-reftex
+  :straight t
   :after company)
 
 (add-hook 'Latex-mode-hook 'turn-on-reftex)
@@ -1166,18 +1242,28 @@
   'company-reftex-citations))
 
 (use-package cdlatex
+  :straight t
   :diminish 'org-cdlatex-mode
   :hook ((LaTeX-mode . turn-on-cdlatex)
 	 (org-mode . turn-on-org-cdlatex)))
 
+(use-package auctex-latexmk
+  :straight t)
+
 (auctex-latexmk-setup)
 (setq auctex-latexmk-inherit-TeX-PDF-mode t)
 
+(use-package evil-tex
+  :straight t)
+
 (add-hook 'LaTeX-mode-hook #'evil-tex-mode)
 
+(use-package latex-preview-pane  
+  :straight t)
 (latex-preview-pane-enable)
 
 (use-package org-ref
+  :straight t
   :init
   (setq bibtex-dialect 'biblatex)
   ;(setq bibtex-completion-bibliography '("~/30-39 Life/32 org-mode/library.bib"))
@@ -1201,6 +1287,7 @@
    "M-RET" 'org-ref-bibtex-hydra/body))
 
 (use-package ivy-bibtex
+  :straight t
   :after (org-ref)
   :init
   (efs/leader-keys "fB" 'ivy-bibtex))
@@ -1208,6 +1295,7 @@
 (add-hook 'bibtex-mode 'smartparens-mode)
 
 (use-package treemacs
+  :straight t
   :defer t
   :config
   (setq treemacs-space-between-root-nodes nil))
@@ -1218,9 +1306,11 @@
     "q" '(treemacs-quit :which-key "close treemacs"))
 
 (use-package treemacs-evil
+  :straight t
   :after (treemacs evil))
 
 (use-package lsp-mode
+  :straight t
   :hook (
          (typescript-mode . lsp)
          (js-mode . lsp)
@@ -1242,6 +1332,7 @@
   (lsp-enable-which-key-integration t))
 
 (use-package lsp-ui
+  :straight t
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq lsp-ui-doc-delay 2)
@@ -1249,6 +1340,7 @@
   (setq lsp-ui-sideline-show-hover nil))
 
 (use-package lsp-treemacs
+  :straight t
   :after lsp
   :commands lsp-treemacs-errors-list)
 
@@ -1290,6 +1382,7 @@
   (advice-add 'lsp--progress-status :override #'my/lsp--progress-status))
 
 (use-package flycheck
+  :straight t
   :config
   (global-flycheck-mode)
   (setq flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
@@ -1308,6 +1401,7 @@
 		 (window-height   . 0.33))))
 
 (use-package dap-mode
+  :straight t
   :commands (dap-debug)
   :init
   (setq lsp-enable-dap-auto-configure nil)
@@ -1330,12 +1424,14 @@
   (tooltip-mode 1))
 
 (use-package highlight-indent-guides
+  :straight t
   :config
   (setq highlight-indent-guides-method 'character
   highlight-indent-guides-responsive 'top)
   :hook (prog-mode . highlight-indent-guides-mode))
 
 (use-package magit
+  :straight t
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
@@ -1344,9 +1440,11 @@
 ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
 ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
 (use-package forge
+  :straight t
   :after magit)
 
 (use-package eshell-toggle
+  :straight t
   :custom
   (eshell-toggle-size-fraction 3)
   (eshell-toggle-use-projectile-root t)
@@ -1354,6 +1452,7 @@
   (eshell-toggle-init-function #'eshell-toggle-init-ansi-term))
 
   (use-package eshell-syntax-highlighting
+    :straight t
     :after esh-mode
     :config
     (eshell-syntax-highlighting-global-mode +1))
