@@ -490,9 +490,6 @@
     (use-package embark
       :straight t)
 
-    (use-package embark-consult
-      :straight t)
-
     (when (require 'embark nil :noerror)
 
       (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
@@ -1276,7 +1273,7 @@
      ;; Org styling, hide markup etc.
      org-hide-emphasis-markers t
      org-pretty-entities t
-     setq org-ellipsis " "
+     org-ellipsis " "
 
 
      ;; Agenda styling
