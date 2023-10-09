@@ -71,19 +71,6 @@
 #+end_src
 
 
-* Crafted Emacs
-
-#+begin_src emacs-lisp
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  (when (and custom-file
-             (file-exists-p custom-file))
-    (load custom-file nil :nomessage))
-#+end_src
-
-#+begin_src emacs-lisp
-  (load "~/crafted-emacs/modules/crafted-init-config")
-#+end_src
-
 
 * Sane Defaults
 
@@ -107,11 +94,6 @@
     (add-hook mode (lambda () (display-line-numbers-mode t))))
 
 #+end_src
-
-#+begin_src emacs-lisp
-  (require 'crafted-completion-config)
-#+end_src
-
 
 * Font
 
@@ -416,13 +398,6 @@
     :if (display-graphic-p)
     :after (company)
     :hook (company-mode . company-box-mode))
-#+end_src
-
-** Crafted Emacs
-
-#+begin_src emacs-lisp
-  ;; Load crafted-completion configuration
-  (require 'crafted-completion-config)
 #+end_src
 
 
