@@ -40,31 +40,25 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(when (and custom-file
-           (file-exists-p custom-file))
-  (load custom-file nil :nomessage))
-
-(load "~/crafted-emacs/modules/crafted-init-config")
-
 (setq inhibit-startup-message t)
 
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 20)        ; Give some breathing room
+  (scroll-bar-mode -1)        ; Disable visible scrollbar
+  (tool-bar-mode -1)          ; Disable the toolbar
+  (tooltip-mode -1)           ; Disable tooltips
+  (set-fringe-mode 20)        ; Give some breathing room
 
-(menu-bar-mode -1)            ; Disable the menu bar
+  (menu-bar-mode -1)            ; Disable the menu bar
 
-(column-number-mode t)
-(global-display-line-numbers-mode -1)
+  (column-number-mode t)
+  (global-display-line-numbers-mode -1)
 
-;; Disable line numbers for some modes
-(dolist (mode '(prog-mode-hook
-                conf-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode t))))
+(with-eval-after-load 'org (global-org-modern-mode t))
 
-(require 'crafted-completion-config)
+
+  ;; Disable line numbers for some modes
+  (dolist (mode '(prog-mode-hook
+                  conf-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode t))))
 
 (defun efs/set-font-faces ()
   (message "Setting faces!")
@@ -304,8 +298,90 @@
   :after (company)
   :hook (company-mode . company-box-mode))
 
-;; Load crafted-completion configuration
-(require 'crafted-completion-config)
+(when (require 'vertico nil :noerror)
+  (require 'vertico-directory)
+  ;; Cycle back to top/bottom result when the edge is reached
+  (customize-set-variable 'vertico-cycle t)
+
+  ;; Start Vertico
+  (vertico-mode 1))
+
+(when (require 'marginalia nil :noerror)
+  ;; Configure Marginalia
+  (customize-set-variable 'marginalia-annotators
+                          '(marginalia-annotators-heavy
+                            marginalia-annotators-light
+                            nil))
+  (marginalia-mode 1))
+
+(when (locate-library "consult")
+  ;; Set some consult bindings
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+
+  (setq completion-in-region-function #'consult-completion-in-region))
+
+(when (require 'orderless nil :noerror)
+  ;; Set up Orderless for better fuzzy matching
+  (customize-set-variable 'completion-styles '(orderless basic))
+  (customize-set-variable 'completion-category-overrides
+                          '((file (styles . (partial-completion))))))
+
+(when (require 'embark nil :noerror)
+
+  (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
+  (keymap-global-set "C-." 'embark-act)
+
+  ;; Use Embark to show bindings in a key prefix with `C-h`
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  (when (require 'embark-consult nil :noerror)
+    (with-eval-after-load 'embark-consult
+      (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
+
+(when (require 'corfu nil :noerror)
+
+  (unless (display-graphic-p)
+    (when (require 'corfu-terminal nil :noerror)
+      (corfu-terminal-mode +1)))
+
+  ;; Setup corfu for popup like completion
+  (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+  (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+  (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+
+  (global-corfu-mode 1)
+  (when (require 'corfu-popupinfo nil :noerror)
+
+    (corfu-popupinfo-mode 1)
+    (eldoc-add-command #'corfu-insert)
+    (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+    (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+    (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+
+(when (require 'cape nil :noerror)
+  ;; Setup Cape for better completion-at-point support and more
+
+  ;; Add useful defaults completion sources from cape
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+  ;; Silence the pcomplete capf, no errors or messages!
+  ;; Important for corfu
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+  ;; Ensure that pcomplete does not write to the buffer
+  ;; and behaves as a pure `completion-at-point-function'.
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+
+  ;; No auto-completion or completion-on-quit in eshell
+  (defun crafted-completion-corfu-eshell ()
+    "Special settings for when using corfu with eshell."
+    (setq-local corfu-quit-at-boundary t
+                corfu-quit-no-match t
+                corfu-auto nil)
+    (corfu-mode))
+  (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 
 (use-package projectile
   :diminish projectile-mode
@@ -403,7 +479,7 @@
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
   ;;(setq dashboard-startup-banner 'logo)
-  (setq dashboard-startup-banner "~/.emacs.d/art/ascii.txt")  ;; use custom image as banner
+  (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
   (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
                           (agenda . 5 )
@@ -424,7 +500,7 @@
 (global-prettify-symbols-mode t)
 
 ;; Make frame transparency overridable
-(defvar efs/frame-transparency '(100 . 100))
+(defvar efs/frame-transparency '(95 . 95))
 
   ;; Set frame transparency
 (set-frame-parameter (selected-frame) 'alpha efs/frame-transparency)
@@ -497,7 +573,45 @@
   "t n" '(neotree-toggle :which-key "toggle neotree")
   "e n" '(neotree-enter :which-key "open file/unfold directory"))
 
-(dirvish-override-dired-mode)
+(use-package dirvish
+  :init
+  (dirvish-override-dired-mode)
+  :custom
+  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+   '(("h" "~/"                          "Home")
+     ("d" "~/Downloads/"                "Downloads")
+     ("m" "/mnt/"                       "Drives")
+     ("t" "~/.local/share/Trash/files/" "TrashCan")))
+  :config
+  ;; (dirvish-peek-mode) ; Preview files in minibuffer
+  ;; (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
+  (setq dirvish-mode-line-format
+        '(:left (sort symlink) :right (omit yank index)))
+  (setq dirvish-attributes
+        '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
+  (setq delete-by-moving-to-trash t)
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --group-directories-first --no-group")
+  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish-fd)
+   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+   ("a"   . dirvish-quick-access)
+   ("f"   . dirvish-file-info-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("^"   . dirvish-history-last)
+   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-l" . dirvish-ls-switches-menu)
+   ("M-m" . dirvish-mark-menu)
+   ("M-t" . dirvish-layout-toggle)
+   ("M-s" . dirvish-setup-menu)
+   ("M-e" . dirvish-emerge-menu)
+   ("M-j" . dirvish-fd-jump)))
 
 (efs/leader-keys
  "b b" '(switch-to-buffer :wk "Switch to buffer")
@@ -614,24 +728,6 @@
 
   (efs/org-font-setup))
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-
-(defun efs/org-mode-visual-fill ()
-  (setq visual-fill-column-width 180
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-
-(use-package visual-fill-column
-  :hook (org-mode . efs/org-mode-visual-fill))
-
-(add-hook 'org-mode-hook (lambda ()
-                           (display-line-numbers-mode -1)
-                           (variable-pitch-mode)))
-
 (with-eval-after-load 'org
   (org-babel-do-load-languages
       'org-babel-load-languages
@@ -723,6 +819,45 @@
          ;; match any of these groups, with the default order position of 99
          )))
   (org-agenda nil "a"))
+
+;; Choose some fonts
+  ;; (set-face-attribute 'default nil :family "Iosevka")
+  ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
+(set-face-attribute 'org-modern-symbol nil :family "JetBrainsMono Nerd Font")
+
+  ;; Add frame borders and window dividers
+  (modify-all-frames-parameters
+   '((right-divider-width . 10)
+     (internal-border-width . 10)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-ellipsis "…"
+
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────")
 
 (use-package org-roam
   :init
@@ -1200,9 +1335,6 @@
   highlight-indent-guides-responsive 'top)
   :hook (prog-mode . highlight-indent-guides-mode))
 
-;; Load crafted-completion configuration
-(require 'crafted-lisp-config)
-
 (use-package magit
   :commands magit-status
   :custom
@@ -1238,38 +1370,6 @@
 	eshell-scroll-to-bottom-on-input t
 	eshell-destroy-buffer-when-process-dies t
 	eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
-
-;; (use-package vterm
-;;   :straight t
-;;   :config
-;;   (setq shell-file-name "/bin/zsh"
-;;         vterm-max-scrollback 5000))
-
-;; (use-package vterm-toggle
-;;   :straight t
-;;   :after vterm
-;;   :config
-;;   ;; When running programs in Vterm and in 'normal' mode, make sure that ESC
-;;   ;; kills the program as it would in most standard terminal programs.
-;;   (evil-define-key 'normal vterm-mode-map (kbd "<escape>") 'vterm--self-insert)
-;;   (setq vterm-toggle-fullscreen-p nil)
-;;   (setq vterm-toggle-scope 'project)
-;;   (add-to-list 'display-buffer-alist
-;;                '((lambda (buffer-or-name _)
-;;                      (let ((buffer (get-buffer buffer-or-name)))
-;;                        (with-current-buffer buffer
-;;                          (or (equal major-mode 'vterm-mode)
-;;                              (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-;;                   (display-buffer-reuse-window display-buffer-at-bottom)
-;;                   ;;(display-buffer-reuse-window display-buffer-in-direction)
-;;                   ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-;;                   ;;(direction . bottom)
-;;                   ;;(dedicated . t) ;dedicated is supported in emacs27
-;;                   (reusable-frames . visible)
-;;                   (window-height . 0.4))))
-
-;; (efs/leader-keys
-;;   "t t" '(vterm-toggle :which-key "toggle vterm"))
 
 (setq frame-resize-pixelwise t)
 
