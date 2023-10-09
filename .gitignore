@@ -5,3 +5,4 @@ straight/
 var/
 Emacs.org~
 .last-package-update-day
+init.el
