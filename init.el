@@ -65,13 +65,13 @@
 
 (defun efs/set-font-faces ()
   (message "Setting faces!")
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 120)
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 180)
 
   ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 120)
+  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 180)
 
   ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 120 :weight 'regular))
+  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 180 :weight 'regular))
 
 (if (daemonp)
   (add-hook 'after-make-frame-functions
@@ -364,6 +364,9 @@
 (use-package embark
   :straight t)
 
+(use-package embark-consult
+  :straight t)
+
 (when (require 'embark nil :noerror)
 
   (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
@@ -377,27 +380,30 @@
       (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
 
 (use-package corfu
-  :straight t)
+    :straight t)
 
-(when (require 'corfu nil :noerror)
+(use-package corfu-terminal
+    :straight t)
 
-  (unless (display-graphic-p)
-    (when (require 'corfu-terminal nil :noerror)
-      (corfu-terminal-mode +1)))
+  (when (require 'corfu nil :noerror)
 
-  ;; Setup corfu for popup like completion
-  (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
-  (customize-set-variable 'corfu-auto t)         ; Enable auto completion
-  (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+    (unless (display-graphic-p)
+      (when (require 'corfu-terminal nil :noerror)
+        (corfu-terminal-mode +1)))
 
-  (global-corfu-mode 1)
-  (when (require 'corfu-popupinfo nil :noerror)
+    ;; Setup corfu for popup like completion
+    (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+    (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+    (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
 
-    (corfu-popupinfo-mode 1)
-    (eldoc-add-command #'corfu-insert)
-    (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
-    (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-    (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
+    (global-corfu-mode 1)
+    (when (require 'corfu-popupinfo nil :noerror)
+
+      (corfu-popupinfo-mode 1)
+      (eldoc-add-command #'corfu-insert)
+      (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+      (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+      (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
 
 (use-package cape
   :straight t)
@@ -554,7 +560,7 @@
 (global-prettify-symbols-mode t)
 
 ;; Make frame transparency overridable
-(defvar efs/frame-transparency '(95 . 95))
+(defvar efs/frame-transparency '(90 . 90))
 
   ;; Set frame transparency
 (set-frame-parameter (selected-frame) 'alpha efs/frame-transparency)
@@ -572,7 +578,6 @@
 (save-place-mode nil)
 
 (use-package dired
-  :straight t
   :ensure nil
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
@@ -753,7 +758,6 @@
   :commands (org-capture org-agenda)
   :hook (org-mode . efs/org-mode-setup)
   :config
-  (setq org-ellipsis " ")
 
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
@@ -918,7 +922,8 @@
    ;; Org styling, hide markup etc.
    org-hide-emphasis-markers t
    org-pretty-entities t
-   org-ellipsis "…"
+   setq org-ellipsis " "
+
 
    ;; Agenda styling
    org-agenda-tags-column 0
