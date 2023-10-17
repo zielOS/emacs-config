@@ -516,7 +516,7 @@ folder, otherwise delete a word"
 * TODO Lisp Setup
 
 * TODO Org Setup
-** Org Mode Packages
+** Packages
 *** Org Super Agenda
 
 #+begin_src emacs-lisp
@@ -807,5 +807,38 @@ folder, otherwise delete a word"
 * TODO Application
 ** Calendar
 ** App Launcher
+
+#+begin_src emacs-lisp
+  (use-package app-launcher
+    :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
+
+  ;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+
+  (defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
+    "Define a launcher command.
+
+  Bookmark-selector is a package revolving around using emacs
+  outside of emacs to browse your bookmarks. Most of the commands
+  defined, consist of opening an emacs frame with only a
+  minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
+  calling FUNCTION and deleting the frame after the function
+  completes or is canceled."
+    `(with-selected-frame (make-frame '((name . ,NAME)
+                                        (minibuffer . only)
+                                        (width . ,WIDTH)
+                                        (height . ,HEIGHT)))
+       (unwind-protect
+           (funcall ,FUNCTION)
+         (delete-frame))))
+
+  (defun emacs-run-launcher ()
+    "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+    (interactive)
+    (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
+      (unwind-protect
+          (funcall ,FUNCTION)
+        (delete-frame)))
+#+end_src
+
 ** Calculator
 ** Mail
