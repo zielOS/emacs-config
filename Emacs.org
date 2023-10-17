@@ -30,6 +30,8 @@
 
 (setq inhibit-startup-message t)
 
+(byte-compile-disable-warning t)
+
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
@@ -387,6 +389,8 @@ CLOSED: [2023-10-15 Sun 02:14]
   (setq evil-collection-mode-list
         (remove 'lispy evil-collection-mode-list))
   (evil-collection-init))
+
+
 #+end_src
 
 
@@ -409,6 +413,18 @@ CLOSED: [2023-10-15 Sun 02:14]
 
 #+end_src
 
+
+* Basic Keybindings
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+ "f f" '(find-file :wk "find file")
+ "f p" '((lambda () (interactive)
+           (dired "~/.emacs.d/"))
+         :wk "Open user-emacs-directory in dired")
+ "f r" '(counsel-recentf :wk "Find recent files")
+ "/" '(comment-line :wk "comment lines"))
+#+end_src
 
 * UI Configuration
 ** Font
@@ -2386,7 +2402,6 @@ folder, otherwise delete a word"
   :straight t
   :custom
   (eshell-toggle-size-fraction 3)
-  (eshell-toggle-use-projectile-root t)
   (eshell-toggle-run-command nil)
   (eshell-toggle-init-function #'eshell-toggle-init-ansi-term)
   :bind
