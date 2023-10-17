@@ -70,39 +70,39 @@ CLOSED: [2023-10-15 Sun 01:23]
 ** straight.el
 
 #+begin_src emacs-lisp
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-        (load bootstrap-file nil 'nomessage))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage))
 #+end_src
 
 ** use-package
 
 #+begin_src emacs-lisp
-  (straight-use-package 'use-package)
-  (eval-when-compile (require 'use-package))
+(straight-use-package 'use-package)
+(eval-when-compile (require 'use-package))
 #+end_src
 
 ** Automatic Package Updates
 
 #+begin_src emacs-lisp
-  (use-package auto-package-update
-    :straight t
-    :custom
-    (auto-package-update-interval 7)
-    (auto-package-update-prompt-before-update t)
-    (auto-package-update-hide-results t)
-    :config
-    (auto-package-update-maybe)
-    (auto-package-update-at-time "09:00"))
+(use-package auto-package-update
+  :straight t
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
 #+end_src
 
 #+RESULTS:
@@ -155,7 +155,7 @@ CLOSED: [2023-10-15 Sun 01:23]
 #+end_src
 
 
-* TODO Sane Defaults
+* Sane Defaults
 ** DONE Buffers
 CLOSED: [2023-10-15 Sun 01:34]
 
@@ -415,6 +415,28 @@ CLOSED: [2023-10-15 Sun 02:14]
 
 
 * UI Configuration
+** Font
+
+#+begin_src emacs-lisp
+(defun efs/set-font-faces ()
+  (message "Setting faces!")
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 125)
+
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 125)
+
+  ;; Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 125 :weight 'regular))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                (setq doom-modeline-icon t)
+                (with-selected-frame frame
+                  (efs/set-font-faces))))
+  (efs/set-font-faces))
+#+end_src
+
 ** Help Buffers
 
 #+begin_src emacs-lisp
@@ -479,38 +501,38 @@ CLOSED: [2023-10-15 Sun 02:14]
 ** Dashboard
 
 #+begin_src emacs-lisp
-  (use-package dashboard
-    :straight t
-    :init
-    (setq initial-buffer-choice 'dashboard-open)
-    (setq dashboard-set-heading-icons t)
-    (setq dashboard-set-file-icons t)
-    (setq dashboard-display-icons-p t)
-    (setq dashboard-set-navigator t)
-    (setq dashboard-icon-type 'nerd-icons)
-    (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-    ;;(setq dashboard-startup-banner 'logo)
-    (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
-    (setq dashboard-center-content t) ;; set to 't' for centered content
-    (setq dashboard-items '((recents . 5)
-                            (agenda . 5 )
-                            (bookmarks . 5)
-                            (projects . 3)
-                            (registers . 3)))
-    :custom
-    (dashboard-modify-heading-icons '((recents . "file-text")
-                                      (bookmarks . "book")))
-    :config
-    (dashboard-setup-startup-hook))
+(use-package dashboard
+  :straight t
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-set-navigator t)
+  (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+  ;;(setq dashboard-startup-banner 'logo)
+  (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
+  (setq dashboard-center-content t) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 5)
+                          (agenda . 5 )
+                          (bookmarks . 5)
+                          (projects . 3)
+                          (registers . 3)))
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
 #+end_src
 
 ** rainbow-mode
 
 #+begin_src emacs-lisp
-  (use-package rainbow-mode
-    :straight t
-    :diminish
-    :hook org-mode prog-mode)
+(use-package rainbow-mode
+  :straight t
+  :diminish
+  :hook org-mode prog-mode)
 #+end_src
 
 ** which-key
@@ -553,6 +575,24 @@ CLOSED: [2023-10-15 Sun 02:14]
                doom-modeline-time t
                doom-modeline-env-enable-python t))
 #+end_src
+
+** Doom Theme
+
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :straight t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-tokyo-night t)
+
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (doom-themes-org-config))
+#+end_src
+
 
 
 * File Management
@@ -719,6 +759,9 @@ folder, otherwise delete a word"
 ** Consult Commands
 
 #+begin_src emacs-lisp
+(use-package projectile
+  :straight t)
+
 (defun dw/get-project-root ()
   (when (fboundp 'projectile-project-root)
     (projectile-project-root)))
@@ -779,9 +822,113 @@ folder, otherwise delete a word"
 
 
 
-* TODO IDE Setup
+* DONE Lisp Setup
 
-* TODO Lisp Setup
+** Global Defaults
+
+#+begin_src emacs-lisp
+(use-package eldoc
+  :straight t)
+(require 'eldoc)
+#+end_src
+
+** Aggressive Indent
+
+#+begin_src emacs-lisp
+(use-package aggressive-indent
+  :straigh t)
+
+(when (locate-library "aggressive-indent")
+  (add-hook 'lisp-mode-hook #'aggressive-indent-mode)
+  (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
+  (add-hook 'scheme-mode-hook #'aggressive-indent-mode))
+#+end_src
+
+** Common lisp
+
+#+begin_src emacs-lisp
+(use-package sly
+  :straight t)
+
+(use-package sly-asdf
+  :straight t)
+
+(use-package sly-quicklisp
+  :straight t)
+
+(use-package sly-repl-ansi-color
+  :straight t)
+
+(with-eval-after-load 'sly
+  ;; Uncomment and update if you need to set the path to an
+  ;; implementation of common lisp. This would be needed only if you
+  ;; have multiple instances of common lisp installed, for example,
+  ;; both CLISP and SBCL. In this case, we are assuming SBCL.
+  ;; (setq inferior-lisp-program "/usr/bin/sbcl")
+  (require 'sly-quicklisp "sly-quicklisp" :no-error)
+  (require 'sly-repl-ansi-color "sly-repl-ansi-color" :no-error)
+  (require 'sly-asdf "sly-asdf" :no-error))
+
+(when (locate-library "sly")
+  (add-hook 'lisp-mode-hook #'sly-editing-mode))
+
+#+end_src
+
+** Clojure
+
+#+begin_src emacs-lisp
+(use-package cider
+  :straight t)
+
+(use-package clj-refactor
+  :straight t)
+
+(use-package clojure-mode
+  :straight t)
+
+(use-package flycheck-clojure
+  :straight t)
+
+(with-eval-after-load "clojure-mode"
+  (require 'cider "cider" :no-error)
+  (require 'clj-refactor "clj-refactor" :no-error)
+
+  (defun crafted-lisp-load-clojure-refactor ()
+    "Load `clj-refactor' toooling and fix keybinding conflicts with cider."
+    (when (locate-library "clj-refactor")
+      (clj-refactor-mode 1)
+      ;; keybindings mentioned on clj-refactor github page
+      ;; conflict with cider, use this by default as it does
+      ;; not conflict and is a better mnemonic
+      (cljr-add-keybindings-with-prefix "C-c r")))
+  (add-hook 'clojure-mode-hook #'crafted-lisp-load-clojure-refactor)
+
+  (with-eval-after-load "flycheck"
+    (flycheck-clojure-setup)))
+
+#+end_src
+
+** Scheme & Racker
+
+#+begin_src emacs-lisp
+(use-package geiser
+  :straight t)
+
+(use-package geiser-guile
+  :straight t)
+
+(use-package geiser-racket
+  :straight t)
+
+;; the default is "scheme" which is used by cmuscheme, xscheme and
+;; chez (at least). we are configuring guile, so use the apporpriate
+;; command for that implementation.
+(customize-set-variable 'scheme-program-name "guile")
+
+
+(provide 'crafted-lisp-config)
+
+#+end_src
 
 
 * TODO Org Setup
@@ -1588,10 +1735,665 @@ folder, otherwise delete a word"
 #+end_src
 
 
-* TODO Latex Setup
+* IDE Setup
+** General setup
+*** Treemacs
+
+#+begin_src emacs-lisp
+(use-package treemacs
+  :straight t
+  :defer t
+  :config
+  (setq treemacs-space-between-root-nodes nil))
+
+(efs/leader-keys
+ :keymaps 'treemacs-mode-map
+ :states '(normal emacs)
+ "q" '(treemacs-quit :which-key "close treemacs"))
+
+(use-package treemacs-evil
+  :straight t
+  :after (treemacs evil))
+
+#+end_src
+
+*** LSP
+**** Setup
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :straight t
+  :hook (
+         (typescript-mode . lsp)
+         (js-mode . lsp)
+         (vue-mode . lsp)
+         (go-mode . lsp)
+         (svelte-mode . lsp)
+         (python-mode . lsp)
+         (json-mode . lsp)
+         (haskell-mode . lsp)
+         (haskell-literate-mode . lsp)
+         (java-mode . lsp)
+         ;; (csharp-mode . lsp)
+         )
+  :commands lsp
+  :init
+  (setq lsp-keymap-prefix nil)
+  :config
+  (setq lsp-idle-delay 1)
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :straight t
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-doc-delay 2)
+  (lsp-ui-doc-position 'bottom)
+  (setq lsp-ui-sideline-show-hover nil))
+#+end_src
+
+**** Integrations
+
+#+begin_src emacs-lisp
+(use-package lsp-treemacs
+  :straight t
+  :after lsp
+  :commands lsp-treemacs-errors-list)
+#+end_src
+
+**** Keybindings
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+  :infix "l"
+  "d" '(lsp-ui-peek-find-definitions)
+  "r" '(lsp-rename)
+  "u" '(lsp-ui-peek-find-references)
+  "s" '(lsp-ui-find-workspace-symbol)
+  "l" '(lsp-execute-code-action)
+  "e" '(list-flycheck-errors))
+#+end_src
+
+**** UI
+
+#+begin_src emacs-lisp
+(defun my/lsp--progress-status ()
+  "Returns the status of the progress for the current workspaces."
+  (-let ((progress-status
+	  (s-join
+	   "|"
+	   (-keep
+	    (lambda (workspace)
+	      (let ((tokens (lsp--workspace-work-done-tokens workspace)))
+		(unless (ht-empty? tokens)
+		  (mapconcat
+		   (-lambda ((&WorkDoneProgressBegin :message? :title :percentage?))
+		     (concat (if percentage?
+				 (if (numberp percentage?)
+				     (format "%.0f%%%% " percentage?)
+				   (format "%s%%%% " percentage?))
+			       "")
+			     (let ((msg (url-unhex-string (or message\? title))))
+			       (if (string-match-p "\\`file:///" msg)
+				   (file-name-nondirectory msg)))))
+		   (ht-values tokens)
+		   "|"))))
+	    (lsp-workspaces)))))
+    (unless (s-blank? progress-status)
+      (concat lsp-progress-prefix progress-status))))
+
+(with-eval-after-load 'lsp-mode
+  (advice-add 'lsp--progress-status :override #'my/lsp--progress-status))
+#+end_src
+
+*** Flycheck
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :straight t
+  :config
+  (global-flycheck-mode)
+  (setq flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
+  ;; (add-hook 'evil-insert-state-exit-hook
+  ;;           (lambda ()
+  ;;             (if flycheck-checker
+  ;;                 (flycheck-buffer))
+  ;;             ))
+  (advice-add 'flycheck-eslint-config-exists-p :override (lambda() t))
+  (add-to-list 'display-buffer-alist
+	       `(,(rx bos "*Flycheck errors*" eos)
+		 (display-buffer-reuse-window
+		  display-buffer-in-side-window)
+		 (side            . bottom)
+		 (reusable-frames . visible)
+		 (window-height   . 0.33))))
+#+end_src
+
+*** DAP
+
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :straight t
+  :commands (dap-debug)
+  :init
+  (setq lsp-enable-dap-auto-configure nil)
+  :config
+
+  (setq dap-ui-variable-length 100)
+  (setq dap-auto-show-output nil)
+  (require 'dap-node)
+  (dap-node-setup)
+
+  (require 'dap-chrome)
+  (dap-chrome-setup)
+
+  (require 'dap-python)
+  (require 'dap-php)
+
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1))
+#+end_src
+
+*** highlight-indent-guides
+
+#+begin_src emacs-lisp
+(use-package highlight-indent-guides
+  :straight t
+  :config
+  (setq highlight-indent-guides-method 'character
+  highlight-indent-guides-responsive 'top)
+  :hook (prog-mode . highlight-indent-guides-mode))
+#+end_src
+
+** Lisp
+** Python
+** Documents
+
+** Format-on-save
+
+#+begin_src emacs-lisp
+(use-package format-all-region-or-buffer
+  :straight t
+  :init (format-all-mode 1))
+#+end_src
 
 
-* TODO eshell
+
+
+* Latex
+** auctex
+
+#+begin_src emacs-lisp
+(use-package tex
+  :straight auctex
+  :defer t
+  :config
+  (setq-default TeX-auto-save t)
+  (setq-default TeX-parse-self t)
+  (TeX-PDF-mode)
+  ;; Use XeLaTeX & stuff
+  (setq-default TeX-engine 'xetex)
+  (setq-default TeX-command-extra-options "-shell-escape")
+  (setq-default TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-mode)
+  (setq-default TeX-source-correlate-start-server t)
+  (setq-default LaTeX-math-menu-unicode t)
+
+  (setq-default font-latex-fontify-sectioning 1.3)
+
+  ;; Scale preview for my DPI
+  (setq-default preview-scale-function 1.4)
+  (when (boundp 'tex--prettify-symbols-alist)
+    (assoc-delete-all "--" tex--prettify-symbols-alist)
+    (assoc-delete-all "---" tex--prettify-symbols-alist))
+
+  (add-hook 'LaTeX-mode-hook
+	    (lambda ()
+	      (TeX-fold-mode 1)
+	      (outline-minor-mode)))
+
+  (add-to-list 'TeX-view-program-selection
+	       '(output-pdf "PDF Tools"))
+
+  ;; Do not run lsp within templated TeX files
+  (add-hook 'LaTeX-mode-hook
+	    (lambda ()
+	      (unless (string-match "\.hogan\.tex$" (buffer-name))
+		(lsp))
+	      (setq-local lsp-diagnostic-package :none)
+	      (setq-local flycheck-checker 'tex-chktex)))
+
+  (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'LaTeX-mode-hook #'smartparens-mode)
+  (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+
+  (efs/leader-keys
+   :keymaps '(LaTeX-mode-map latex-mode-map)
+   "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
+   "c t" 'orgtbl-mode))
+#+end_src
+
+** Import *.sty
+
+#+begin_src emacs-lisp
+(defun my/list-sty ()
+  (reverse
+   (sort
+    (seq-filter
+     (lambda (file) (if (string-match ".*\.sty$" file) 1 nil))
+     (directory-files
+      (seq-some
+       (lambda (dir)
+	 (if (and
+	      (f-directory-p dir)
+	      (seq-some
+	       (lambda (file) (string-match ".*\.sty$" file))
+	       (directory-files dir))
+	      ) dir nil))
+       (list "./styles" "../styles/" "." "..")) :full))
+    (lambda (f1 f2)
+      (let ((f1b (file-name-base f1))
+	    (f1b (file-name-base f2)))
+	(cond
+	 ((string-match-p ".*BibTex" f1) t)
+	 ((and (string-match-p ".*Locale" f1) (not (string-match-p ".*BibTex" f2))) t)
+	 ((string-match-p ".*Preamble" f2) t)
+	 (t (string-lessp f1 f2))))))))
+
+(defun my/import-sty ()
+  (interactive)
+  (insert
+   (apply #'concat
+	  (cl-mapcar
+	   (lambda (file) (concat "\\usepackage{" (file-name-sans-extension (file-relative-name file default-directory)) "}\n"))
+	   (my/list-sty)))))
+
+(defun my/import-sty-org ()
+  (interactive)
+  (insert
+   (apply #'concat
+	  (cl-mapcar
+	   (lambda (file) (concat "#+LATEX_HEADER: \\usepackage{" (file-name-sans-extension (file-relative-name file default-directory)) "}\n"))
+	   (my/list-sty)))))
+#+end_src
+
+** Snippets
+*** Greek letters
+
+#+begin_src emacs-lisp
+(setq my/greek-alphabet
+      '(("a" . "\\alpha")
+	("b" . "\\beta" )
+	("g" . "\\gamma")
+	("d" . "\\delta")
+	("e" . "\\epsilon")
+	("z" . "\\zeta")
+	("h" . "\\eta")
+	("o" . "\\theta")
+	("i" . "\\iota")
+	("k" . "\\kappa")
+	("l" . "\\lambda")
+	("m" . "\\mu")
+	("n" . "\\nu")
+	("x" . "\\xi")
+	("p" . "\\pi")
+	("r" . "\\rho")
+	("s" . "\\sigma")
+	("t" . "\\tau")
+	("u" . "\\upsilon")
+	("f" . "\\phi")
+	("c" . "\\chi")
+	("v" . "\\psi")
+	("g" . "\\omega")))
+
+(setq my/latex-greek-prefix "'")
+
+;; The same for capitalized letters
+(dolist (elem my/greek-alphabet)
+  (let ((key (car elem))
+	(value (cdr elem)))
+    (when (string-equal key (downcase key))
+      (add-to-list 'my/greek-alphabet
+		   (cons
+		    (capitalize (car elem))
+		    (concat
+		     (substring value 0 1)
+		     (capitalize (substring value 1 2))
+		     (substring value 2)))))))
+
+(yas-define-snippets
+ 'latex-mode
+ (mapcar
+  (lambda (elem)
+    (list (concat my/latex-greek-prefix (car elem)) (cdr elem) (concat "Greek letter " (car elem))))
+  my/greek-alphabet))
+#+end_src
+
+*** English letters
+
+#+begin_src emacs-lisp
+(setq my/greek-alphabet
+      '(("a" . "\\alpha")
+	("b" . "\\beta" )
+	("g" . "\\gamma")
+	("d" . "\\delta")
+	("e" . "\\epsilon")
+	("z" . "\\zeta")
+	("h" . "\\eta")
+	("o" . "\\theta")
+	("i" . "\\iota")
+	("k" . "\\kappa")
+	("l" . "\\lambda")
+	("m" . "\\mu")
+	("n" . "\\nu")
+	("x" . "\\xi")
+	("p" . "\\pi")
+	("r" . "\\rho")
+	("s" . "\\sigma")
+	("t" . "\\tau")
+	("u" . "\\upsilon")
+	("f" . "\\phi")
+	("c" . "\\chi")
+	("v" . "\\psi")
+	("g" . "\\omega")))
+
+(setq my/latex-greek-prefix "'")
+
+;; The same for capitalized letters
+(dolist (elem my/greek-alphabet)
+  (let ((key (car elem))
+	(value (cdr elem)))
+    (when (string-equal key (downcase key))
+      (add-to-list 'my/greek-alphabet
+		   (cons
+		    (capitalize (car elem))
+		    (concat
+		     (substring value 0 1)
+		     (capitalize (substring value 1 2))
+		     (substring value 2)))))))
+
+(yas-define-snippets
+ 'latex-mode
+ (mapcar
+  (lambda (elem)
+    (list (concat my/latex-greek-prefix (car elem)) (cdr elem) (concat "Greek letter " (car elem))))
+  my/greek-alphabet))
+#+end_src
+
+*** Math symbols
+
+#+begin_src emacs-lisp
+(setq my/latex-math-symbols
+      '(("x" . "\\times")
+	("." . "\\cdot")
+	("v" . "\\forall")
+	("s" . "\\sum_{$1}^{$2}$0")
+	("p" . "\\prod_{$1}^{$2}$0")
+	("d" . "\\partial")
+	("e" . "\\exists")
+	("i" . "\\int_{$1}^{$2}$0")
+	("c" . "\\cap")
+	("u" . "\\cup")
+	("0" . "\\emptyset")
+	("^" . "\\widehat{$1}$0")
+	("_" . "\\overline{$1}$0")
+	("~" . "\\sim")
+	("|" . "\\mid")
+	("_|" . "\\perp")))
+
+(setq my/latex-math-prefix ";")
+
+(yas-define-snippets
+ 'latex-mode
+ (mapcar
+  (lambda (elem)
+    (let ((key (car elem))
+	  (value (cdr elem)))
+      (list (concat my/latex-math-prefix key) value (concat "Math symbol " value))))
+  my/latex-math-symbols))
+#+end_src
+
+*** Section snippets
+
+#+begin_src emacs-lisp
+(setq my/latex-section-snippets
+      '(("ch" . "\\chapter{$1}")
+	("sec" . "\\section{$1}")
+	("ssec" . "\\subsection{$1}")
+	("sssec" . "\\subsubsection{$1}")
+	("par" . "\\paragraph{$1}}")))
+
+(setq my/latex-section-snippets
+      (mapcar
+       (lambda (elem)
+	 `(,(car elem)
+	   ,(cdr elem)
+	   ,(progn
+	      (string-match "[a-z]+" (cdr elem))
+	      (match-string 0 (cdr elem)))))
+       my/latex-section-snippets))
+
+(dolist (elem my/latex-section-snippets)
+  (let* ((key (nth 0 elem))
+	 (value (nth 1 elem))
+	 (desc (nth 2 elem))
+	 (star-index (string-match "\{\$1\}" value)))
+    (add-to-list 'my/latex-section-snippets
+		 `(,(concat key "*")
+		   ,(concat
+		     (substring value 0 star-index)
+		     "*"
+		     (substring value star-index))
+		   ,(concat desc " with *")))
+    (add-to-list 'my/latex-section-snippets
+		 `(,(concat key "l")
+		   ,(concat value "%\n\\label{sec:$2}")
+		   ,(concat desc " with label")))))
+
+(dolist (elem my/latex-section-snippets)
+  (setf (nth 1 elem) (concat (nth 1 elem) "\n$0")))
+
+(yas-define-snippets
+ 'latex-mode
+ my/latex-section-snippets)
+#+end_src
+
+** lsp-latex
+
+#+begin_src emacs-lisp
+(use-package lsp-latex
+  :straight t
+  :config
+  (with-eval-after-load "tex-mode"
+    (add-hook 'tex-mode-hook 'lsp)
+    (add-hook 'latex-mode-hook 'lsp))
+
+  ;; For bibtex
+  (with-eval-after-load "bibtex"
+    (add-hook 'bibtex-mode-hook 'lsp)))
+
+#+end_src
+
+** company-auctex
+
+#+begin_src emacs-lisp
+(use-package company-auctex
+  :straight t
+  :after auctex
+  :config
+  (company-auctex-init))
+#+end_src
+
+** company-math
+
+#+begin_src emacs-lisp
+(use-package company-math
+  :straight t)
+
+ ;; local configuration for TeX modes
+(defun my-latex-mode-setup ()
+  (setq-local company-backends
+              (append '((company-math-symbols-latex company-latex-commands))
+                      company-backends)))
+
+(add-hook 'TeX-mode-hook 'my-latex-mode-setup)
+#+end_src
+
+** company-reftex
+
+#+begin_src emacs-lisp
+(use-package company-reftex
+  :straight t)
+
+(add-hook 'Latex-mode-hook 'turn-on-reftex)
+(add-hook 'latex-mode-hook 'turn-on-reftex)
+
+(custom-set-variables
+ '(package-selected-packages (quote (company-reftex company))))
+(custom-set-faces)
+
+(eval-after-load "company"
+  '(add-to-list
+    'company-backends
+    'company-reftex-labels
+    'company-reftex-citations))
+#+end_src
+
+** cdlatex
+
+#+begin_src emacs-lisp
+(use-package cdlatex
+  :straight t
+  :diminish 'org-cdlatex-mode
+  :hook ((LaTeX-mode . turn-on-cdlatex)
+	 (org-mode . turn-on-org-cdlatex)))
+
+#+end_src
+
+** auctex-latexmk
+
+#+begin_src emacs-lisp
+(use-package auctex-latexmk
+  :straight t)
+
+(auctex-latexmk-setup)
+(setq auctex-latexmk-inherit-TeX-PDF-mode t)
+#+end_src
+
+** evil-tex
+
+#+begin_src emacs-lisp
+(use-package evil-tex
+  :straight t)
+
+(add-hook 'LaTeX-mode-hook #'evil-tex-mode)
+#+end_src
+
+** latex-preview-pane
+
+#+begin_src emacs-lisp
+(use-package latex-preview-pane
+  :straight t)
+(latex-preview-pane-enable)
+#+end_src
+
+** org-ref
+
+#+begin_src emacs-lisp
+(use-package org-ref
+  :straight t
+  :init
+  (setq bibtex-dialect 'biblatex)
+    ;(setq bibtex-completion-bibliography '("~/30-39 Life/32 org-mode/library.bib"))
+    ;(setq bibtex-completion-library-path '("~/30-39 Life/33 Library"))
+    ;(setq bibtex-completion-notes-path "~/Documents/org-mode/literature-notes")
+  (setq bibtex-completion-display-formats
+        '((t . "${author:36} ${title:*} ${note:10} ${year:4} ${=has-pdf=:1}${=type=:7}")))
+  (setq bibtex-completion-pdf-open-function
+        (lambda (file)
+          (start-process "dired-open" nil
+                         "xdg-open" (file-truename file))))
+  :after (org)
+  :config
+  (with-eval-after-load 'ivy-bibtex
+    (require 'org-ref-ivy))
+  (general-define-key
+   :keymaps 'org-mode-map
+   "C-c l" #'org-ref-insert-link-hydra/body)
+  (general-define-key
+   :keymaps 'bibtex-mode-map
+   "M-RET" 'org-ref-bibtex-hydra/body))
+
+#+end_src
+
+** ivy-bibtex
+
+#+begin_src emacs-lisp
+(use-package ivy-bibtex
+  :straight t
+  :after (org-ref)
+  :init
+  (efs/leader-keys "fB" 'ivy-bibtex))
+
+(add-hook 'bibtex-mode 'smartparens-mode)
+#+end_src
+
+
+
+* Buffer Management
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+ "b b" '(switch-to-buffer :wk "Switch to buffer")
+ "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
+ "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
+ "b d" '(bookmark-delete :wk "Delete bookmark")
+ "b i" '(ibuffer :wk "Ibuffer")
+ "b k" '(kill-current-buffer :wk "Kill current buffer")
+ "b K" '(kill-some-buffers :wk "Kill multiple buffers")
+ "b l" '(list-bookmarks :wk "List bookmarks")
+ "b m" '(bookmark-set :wk "Set bookmark")
+ "b n" '(next-buffer :wk "Next buffer")
+ "b p" '(previous-buffer :wk "Previous buffer")
+ "b r" '(revert-buffer :wk "Reload buffer")
+ "b R" '(rename-buffer :wk "Rename buffer")
+ "b s" '(basic-save-buffer :wk "Save buffer")
+ "b S" '(save-some-buffers :wk "Save multiple buffers")
+ "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
+
+#+end_src
+
+
+* Window Management
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+  ;; Window splits
+  "w q" '(evil-window-delete :wk "Close window")
+  "w n" '(evil-window-new :wk "New window")
+  "w s" '(evil-window-split :wk "Horizontal split window")
+  "w v" '(evil-window-vsplit :wk "Vertical split window")
+
+  "w w" '(evil-window-next :wk "Goto next window")
+  ;; Move Windows
+  "w H" '(buf-move-left :wk "Buffer move left")
+  "w J" '(buf-move-down :wk "Buffer move down")
+  "w K" '(buf-move-up :wk "Buffer move up")
+  "w L" '(buf-move-right :wk "Buffer move right"))
+
+(general-define-key
+ ;; Window motions
+ "<C-M-left>" '(evil-window-left :wk "Window left")
+ "<C-M-down>" '(evil-window-down :wk "Window down")
+ "<C-M-up>" '(evil-window-up :wk "Window up")
+ "<C-M-right>" '(evil-window-right :wk "Window right"))
+#+end_src
+
+
+
+
+* eshell
 
 #+begin_src emacs-lisp
 (use-package eshell-toggle
@@ -1681,35 +2483,35 @@ folder, otherwise delete a word"
 ** App Launcher
 
 #+begin_src emacs-lisp
-  (use-package app-launcher
-    :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
+(use-package app-launcher
+  :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
 
-  ;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
 
-  (defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
-    "Define a launcher command.
+(defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
+  "Define a launcher command.
 
-  Bookmark-selector is a package revolving around using emacs
-  outside of emacs to browse your bookmarks. Most of the commands
-  defined, consist of opening an emacs frame with only a
-  minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
-  calling FUNCTION and deleting the frame after the function
-  completes or is canceled."
-    `(with-selected-frame (make-frame '((name . ,NAME)
-                                        (minibuffer . only)
-                                        (width . ,WIDTH)
-                                        (height . ,HEIGHT)))
-       (unwind-protect
-           (funcall ,FUNCTION)
-         (delete-frame))))
+Bookmark-selector is a package revolving around using emacs
+outside of emacs to browse your bookmarks. Most of the commands
+defined, consist of opening an emacs frame with only a
+minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
+calling FUNCTION and deleting the frame after the function
+completes or is canceled."
+  `(with-selected-frame (make-frame '((name . ,NAME)
+                                      (minibuffer . only)
+                                      (width . ,WIDTH)
+                                      (height . ,HEIGHT)))
+     (unwind-protect
+         (funcall ,FUNCTION)
+       (delete-frame))))
 
-  (defun emacs-run-launcher ()
-    "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
-    (interactive)
-    (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
-      (unwind-protect
-          (funcall ,FUNCTION)
-        (delete-frame)))
+(defun emacs-run-launcher ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
+    (unwind-protect
+        (funcall ,FUNCTION)
+      (delete-frame)))
 #+end_src
 
 ** Calculator
@@ -1748,4 +2550,15 @@ folder, otherwise delete a word"
                       "g" 'revert-buffer
 
                       "C-s" 'isearch-forward))
+#+end_src
+
+
+* Runtime Performance
+
+Dial the GC threshold back down so that garbage collection happens more frequently but in less time.
+
+#+begin_src emacs-lisp
+
+  ;; Make gc pauses faster by decreasing the threshold.
+  (setq gc-cons-threshold (* 5000 1000))
 #+end_src
