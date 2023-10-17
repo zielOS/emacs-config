@@ -1,8 +1,10 @@
 eln-cache/
 elpa/
 etc/
+.local/
 straight/
 var/
 Emacs.org~
 .last-package-update-day
 init.el
+early-init.el

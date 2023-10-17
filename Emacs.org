@@ -175,13 +175,13 @@ CLOSED: [2023-10-15 Sun 01:34]
 (customize-set-variable 'dired-auto-revert-buffer t)
 (customize-set-variable 'eshell-scroll-to-bottom-on-input 'this)
 (customize-set-variable 'switch-to-buffer-in-dedicated-window 'pop)
-&customize-set-variable 'switch-to-buffer-obey-display-actions t)
+(customize-set-variable 'switch-to-buffer-obey-display-actions t)
 
 
 (keymap-global-set "<remap> <list-buffers>" #'ibuffer-list-buffers)
 
-(customize-set-variable 'ibuffer-movement-cycle nil
-                        'ibuffer-old-time 24)
+(customize-set-variable 'ibuffer-movement-cycle nil)
+(customize-set-variable 'ibuffer-old-time 24)
 #+end_src
 
 ** DONE Completion Settings
@@ -333,21 +333,83 @@ CLOSED: [2023-10-15 Sun 02:14]
 #+end_src
 
 
+* Evil
+
+#+begin_src emacs-lisp
+(defun efs/evil-hook ()
+  (dolist (mode '(custom-mode
+                  eshell-mode
+                  git-rebase-mode
+                  erc-mode
+                  circe-server-mode
+                  circe-chat-mode
+                  circe-query-mode
+                  sauron-mode
+                  term-mode))
+  (add-to-list 'evil-emacs-state-modes mode)))
+
+(use-package undo-tree
+  :straight t
+  :init
+  (global-undo-tree-mode 1))
+
+(use-package evil
+  :straight t
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  (setq evil-respect-visual-line-mode t)
+  (setq evil-undo-system 'undo-tree)
+  :config
+  (add-hook 'evil-mode-hook 'efs/evil-hook)
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+
+(use-package evil-collection
+  :straight t
+  :after evil
+  :init
+  (setq evil-collection-company-use-tng nil)  ;; Is this a bug in evil-collection?
+  :custom
+  (evil-collection-outline-bind-tab-p nil)
+  :config
+  (setq evil-collection-mode-list
+        (remove 'lispy evil-collection-mode-list))
+  (evil-collection-init)
+  (keymap-set vertico-map "C-<down>" #'vertico-next)
+  (keymap-set vertico-map "C-<up>" #'vertico-previous)
+  (keymap-set vertico-map "M-h" #'vertico-directory-up))
+
+#+end_src
+
+
+
 * general.el
 
 #+begin_src emacs-lisp
-  ;; Make ESC quit prompts
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+;; Make ESC quit prompts
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-  (use-package general
-    :straight t
-    :after evil
-    :config
-    (general-create-definer efs/leader-keys
-      :states '(normal insert visual emacs)
-      :keymaps 'override
-      :prefix "SPC" ;; set leader
-      :global-prefix "M-SPC")) ;; access leader in insert mode)
+(use-package general
+  :straight t
+  :after evil
+  :config
+  (general-create-definer efs/leader-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "SPC" ;; set leader
+    :global-prefix "M-SPC")) ;; access leader in insert mode)
 
 #+end_src
 
@@ -715,68 +777,6 @@ folder, otherwise delete a word"
   (embark-collect-mode . embark-consult-preview-minor-mode))
 #+end_src
 
-
-* Evil
-
-#+begin_src emacs-lisp
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-(defun efs/evil-hook ()
-  (dolist (mode '(custom-mode
-                  eshell-mode
-                  git-rebase-mode
-                  erc-mode
-                  circe-server-mode
-                  circe-chat-mode
-                  circe-query-mode
-                  sauron-mode
-                  term-mode))
-  (add-to-list 'evil-emacs-state-modes mode)))
-
-(use-package undo-tree
-  :straight t
-  :init
-  (global-undo-tree-mode 1))
-
-(use-package evil
-  :straight t
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  (setq evil-respect-visual-line-mode t)
-  (setq evil-undo-system 'undo-tree)
-  :config
-  (add-hook 'evil-mode-hook 'efs/evil-hook)
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
-  ;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
-
-
-(use-package evil-collection
-  :straight t
-  :after evil
-  :init
-  (setq evil-collection-company-use-tng nil)  ;; Is this a bug in evil-collection?
-  :custom
-  (evil-collection-outline-bind-tab-p nil)
-  :config
-  (setq evil-collection-mode-list
-        (remove 'lispy evil-collection-mode-list))
-  (evil-collection-init)
-  (keymap-set vertico-map "C-<down>" #'vertico-next)
-  (keymap-set vertico-map "C-<up>" #'vertico-previous)
-  (keymap-set vertico-map "M-h" #'vertico-directory-up))
-
-#+end_src
 
 
 * TODO IDE Setup
