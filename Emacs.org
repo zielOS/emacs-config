@@ -170,12 +170,12 @@ CLOSED: [2023-10-15 Sun 01:34]
 ;; in separate dired buffers.  Makes copying or moving files between
 ;; directories easier.  The value `t' means to guess the default
 ;; target directory.
-(customize-set-variable 'dired-dwim-target t
-                        'dired-auto-revert-buffer t
-                        'dired-auto-revert-buffer t
-                        'eshell-scroll-to-bottom-on-input 'this
-                        'switch-to-buffer-in-dedicated-window 'pop
-                        'switch-to-buffer-obey-display-actions t)
+(customize-set-variable 'dired-dwim-target t)
+(customize-set-variable 'dired-auto-revert-buffer t)
+(customize-set-variable 'dired-auto-revert-buffer t)
+(customize-set-variable 'eshell-scroll-to-bottom-on-input 'this)
+(customize-set-variable 'switch-to-buffer-in-dedicated-window 'pop)
+&customize-set-variable 'switch-to-buffer-obey-display-actions t)
 
 
 (keymap-global-set "<remap> <list-buffers>" #'ibuffer-list-buffers)
