@@ -291,6 +291,11 @@ CLOSED: [2023-10-15 Sun 02:14]
 #+end_src
 
 
+* TODO Startup Setup
+** TODO Dashboard
+
+
+
 * general.el
 
 #+begin_src emacs-lisp
@@ -310,7 +315,169 @@ CLOSED: [2023-10-15 Sun 02:14]
 #+end_src
 
 
-* TODO Completion System
+* UI Configuration
+** Help Buffers
+
+#+begin_src emacs-lisp
+(use-package helpful
+  :straight t)
+
+;; Make `describe-*' screens more helpful
+(when (require 'helpful nil :noerror)
+  (keymap-set helpful-mode-map "<remap> <revert-buffer>" #'helpful-update)
+  (keymap-global-set "<remap> <describe-command>"        #'helpful-command)
+  (keymap-global-set "<remap> <describe-function>"       #'helpful-callable)
+  (keymap-global-set "<remap> <describe-key>"            #'helpful-key)
+  (keymap-global-set "<remap> <describe-symbol>"         #'helpful-symbol)
+  (keymap-global-set "<remap> <describe-variable>"       #'helpful-variable))
+
+(efs/leader-keys
+ "?" '(describe-keymap :which-key "describe keymap")
+ "h F" '(helpful-function :which-key "open file/unfold directory"))
+#+end_src
+
+** DONE Line Numbers
+
+#+begin_src emacs-lisp
+(global-display-line-numbers-mode -1)
+
+(setq-default display-line-numbers-grow-only t
+              display-line-numbers-width 2)
+
+;; Enable line numbers for some modes
+(dolist (mode '(prog-mode-hook
+                conf-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode t))))
+#+end_src
+
+** Elisp Demos
+
+#+begin_src emacs-lisp
+(use-package elisp-demos
+  :straight t)
+
+;; also add some examples
+(require 'elisp-demos)
+(advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update)
+#+end_src
+
+** Pulse like beacon
+
+#+begin_src emacs-lisp
+;; add visual pulse when changing focus, like beacon but built-in
+;; from from https://karthinks.com/software/batteries-included-with-emacs/
+(defun pulse-line (&rest _)
+  "Pulse the current line."
+  (pulse-momentary-highlight-one-line (point)))
+
+(dolist (command '(scroll-up-command
+                   scroll-down-command
+                   recenter-top-bottom
+                   other-window))
+  (advice-add command :after #'pulse-line))
+#+end_src
+
+** Misc
+
+#+begin_src emacs-lisp
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 20)        ; Give some breathing room
+
+(menu-bar-mode -1)            ; Disable the menu bar
+
+(column-number-mode t)
+
+#+end_src
+
+
+* File Management
+** Dired
+
+#+begin_src emacs-lisp
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+
+(use-package dired-single
+  :straight t
+  :commands (dired dired-jump))
+
+(use-package dired-open
+  :straight t
+  :commands (dired dired-jump)
+  :config
+  (setq dired-open-extensions '(("gif" . "sxiv")
+                                ("jpg" . "sxiv")
+                                ("png" . "sxiv")
+                                ("mkv" . "mpv")
+                                ("mp4" . "mpv"))))
+
+(use-package peep-dired
+  :straight t
+  :after dired
+  :hook (evil-normalize-keymaps . peep-dired-hook)
+  :config
+    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
+    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
+    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file))
+#+end_src
+
+** Dirvish
+
+#+begin_src emacs-lisp
+(use-package dirvish
+  :straight t
+  :init
+  (dirvish-override-dired-mode)
+  :custom
+  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+   '(("h" "~/"                          "Home")
+     ("d" "~/Downloads/"                "Downloads")
+     ("m" "/mnt/"                       "Drives")
+     ("t" "~/.local/share/Trash/files/" "TrashCan")))
+  :config
+  ;; (dirvish-peek-mode) ; Preview files in minibuffer
+  ;; (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
+  (setq dirvish-mode-line-format
+        '(:left (sort symlink) :right (omit yank index)))
+  (setq dirvish-attributes
+        '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
+  (setq delete-by-moving-to-trash t)
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --group-directories-first --no-group")
+  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish-fd)
+   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+    ("a"   . dirvish-quick-access)
+    ("f"   . dirvish-file-info-menu)
+    ("y"   . dirvish-yank-menu)
+    ("N"   . dirvish-narrow)
+    ("^"   . dirvish-history-last)
+    ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+    ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+    ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+    ("TAB" . dirvish-subtree-toggle)
+    ("M-f" . dirvish-history-go-forward)
+    ("M-b" . dirvish-history-go-backward)
+    ("M-l" . dirvish-ls-switches-menu)
+    ("M-m" . dirvish-mark-menu)
+    ("M-t" . dirvish-layout-toggle)
+    ("M-s" . dirvish-setup-menu)
+    ("M-e" . dirvish-emerge-menu)
+    ("M-j" . dirvish-fd-jump)))
+#+end_src
+
+
+* Completion System
 
 ** Preserve Minibuffer History with savehist-mode
 
@@ -448,7 +615,7 @@ folder, otherwise delete a word"
 #+end_src
 
 
-* DONE Evil
+* Evil
 
 #+begin_src emacs-lisp
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -510,10 +677,11 @@ folder, otherwise delete a word"
 
 #+end_src
 
+
 * TODO IDE Setup
 
-
 * TODO Lisp Setup
+
 
 * TODO Org Setup
 ** Packages
@@ -680,7 +848,6 @@ folder, otherwise delete a word"
   :defer t)
 #+end_src
 
-
 ** Keybindings
 
 #+begin_src emacs-lisp
@@ -729,7 +896,6 @@ folder, otherwise delete a word"
   (kbd "f") 'org-agenda-later
   (kbd "b") 'org-agenda-earlier)
 #+end_src
-
 
 ** Startup Setup functions
 
@@ -798,17 +964,52 @@ folder, otherwise delete a word"
   (if (get-buffer buffer)
 	  (let ((b (get-buffer buffer)))
 		(save-buffer b)
-		(kill-buffer b))))#+end_src
+		        (kill-buffer b))))
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun efs/org-font-setup ()
+    ;; Replace list hyphen with dot
+    (font-lock-add-keywords 'org-mode
+                            '(("^ *\\([-]\\) "
+                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+    ;; Set faces for heading levels
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font "JetBrainsMono Nerd Font" :weight 'medium :height (cdr face)))
+
+    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+    (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+    (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+
+#+end_src
 
 ** Configuration
 *** Preamble
 
 #+begin_src emacs-lisp
 (use-package org
-  ;; :pin elpa
+  :straight (:type built-in)
   :hook (org-mode . efs/org-setup)
   :hook (org-mode . efsprettify-symbols-setup)
   :hook (org-mode . efs/org-highlight-setup)
+  :hook (org-mode . efs/org-font-setup)
   :hook (org-capture-mode . evil-insert-state) ;; Start org-capture in Insert state by default
   :diminish org-indent-mode
   :diminish visual-line-mode
@@ -886,12 +1087,12 @@ folder, otherwise delete a word"
                            "|" "DONE(d)" "CANCELLED(C@)")))
 
 (setq org-todo-keyword-faces
-      '(("TODO"  :inherit (region org-todo) :foreground "DarkOrange1"   :weight bold)
-        ("WORK"  :inherit (org-todo region) :foreground "DarkOrange1"   :weight bold)
-        ("READ"  :inherit (org-todo region) :foreground "MediumPurple2" :weight bold)
-        ("PROJ"  :inherit (org-todo region) :foreground "orange3"     :weight bold)
-        ("STUDY" :inherit (region org-todo) :foreground "plum3"       :weight bold)
-        ("DONE" . "SeaGreen4")))
+      '(("TODO"  :inherit (region org-todo) :foreground "#FAB387"   :weight bold)
+        ("WORK"  :inherit (org-todo region) :foreground "#FAB387"   :weight bold)
+        ("READ"  :inherit (org-todo region) :foreground "#CBA6F7" :weight bold)
+        ("PROJ"  :inherit (org-todo region) :foreground "#F38BA8"     :weight bold)
+        ("STUDY" :inherit (region org-todo) :foreground "#F9E2AF"       :weight bold)
+        ("DONE" . "#A6E3A1")))
 #+end_src
 
 *** TODO Priorities
@@ -901,18 +1102,12 @@ folder, otherwise delete a word"
 (setq org-default-priority ?E) ;; If an item has no priority, it is considered [#E].
 
 (setq org-priority-faces
-      '((65 . "red2")
-        (66 . "Gold1")
-        (67 . "Goldenrod2")
-        (68 . "PaleTurquoise3")
-        (69 . "DarkSlateGray4")
-        (70 . "PaleTurquoise4")))
-#+end_src
-
-*** Org Babel
-
-#+begin_src
-
+      '((65 . "#EBA0AC")
+        (66 . "#F5E0DC")
+        (67 . "#F2CDCD")
+        (68 . "#B4BEFE")
+        (69 . "#7F849C")
+        (70 . "#94E2D5")))
 #+end_src
 
 *** Org Habits
@@ -927,11 +1122,370 @@ folder, otherwise delete a word"
 #+end_src
 
 ** Org Agenda
+*** Setup
 
-* TODO Startup Setup
-** TODO Dashboard
+#+begin_src emacs-lisp
+;; custom time stamp format. I don't use this.
+(setq org-time-stamp-custom-formats '("<%A, %B %d, %Y" . "<%m/%d/%y %a %I:%M %p>"))
 
-* TODO UI Configuration
+(setq org-agenda-restore-windows-after-quit t)
+
+(setq org-agenda-window-setup 'current-window)
+
+;; Only show upcoming deadlines for the next X days. By default it shows
+;; 14 days into the future, which seems excessive.
+(setq org-deadline-warning-days 3)
+;; If something is done, don't show its deadline
+(setq org-agenda-skip-deadline-if-done t)
+;; If something is done, don't show when it's scheduled for
+(setq org-agenda-skip-scheduled-if-done t)
+;; If something is scheduled, don't tell me it is due soon
+(setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+
+;; use AM-PM and not 24-hour time
+(setq org-agenda-timegrid-use-ampm t)
+
+;; A new day is 3am (I work late into the night)
+;; (setq org-extend-today-until 3)
+
+;; (setq org-agenda-time-grid '((daily today require-timed)
+;;                              (1000 1100 1200 1300 1400 1500 1600 1700 1800 1900 2000 2100 2200)
+;;                              "        " "----------------"))
+
+(setq org-agenda-time-grid nil)
+
+;; (setq org-agenda-span 'day)
+
+(setq org-agenda-block-separator ?-)
+;; (setq org-agenda-current-time-string "<----------------- Now")
+
+;; ;; (setq org-agenda-block-separator nil)
+
+;; (setq org-agenda-scheduled-leaders '("Plan | " "Sched.%2dx: ") ; ⇛
+;;       org-agenda-deadline-leaders '("Due: " "(in %1d d.) " "Due %1d d. ago: "))
+
+;; (setq org-agenda-prefix-format '((agenda . "  %-6:T %t%s")
+;;                                  (todo . "  %-6:T %t%s")
+;;                                  (tags . " %i %-12:c")
+;;                                  (search . " %i %-12:c")))
+
+;;;;; more true to defaults
+
+(setq org-agenda-prefix-format '((agenda . " %-12:T%?-12t% s")
+                                 (todo . " %i %-12:c")
+                                 (tags . " %i %-12:c")
+                                 (search . " %i %-12:c")))
+
+(setq org-agenda-deadline-leaders '("Deadline:  " "In %2d d.: " "%2d d. ago: "))
+
+(add-hook 'org-agenda-mode-hook
+          #'(lambda () (setq-local line-spacing 3)))
+
+(add-hook 'org-agenda-mode-hook
+          #'(lambda () (hide-mode-line-mode)))
+#+end_src
+
+*** Custom Views
+
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands nil)
+
+(setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
+
+(defvar jib-org-agenda-columbia-productivity-super-groups
+  '((:name "Personal Items" :tag "p" :order 10)
+    (:name "Extracurricular" :tag "ec" :order 5)
+    (:name "Todo" :todo ("TODO") :order 3)
+    (:name "Heads Up!"
+           :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
+    (:discard (:todo t))))
+
+(defvar jib-org-columbia-productivity-ql-query
+  '(and (not (tags "defer"))
+        (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
+        (or (effort 1)
+            (todo "TODO" "PROJ" "STUDY")
+            (and (todo)
+                 (tags "p" "ec" "lt")))))
+
+;; Day View
+(add-to-list 'org-agenda-custom-commands
+             '("c" "Columbia Day View"
+               ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
+                            (org-agenda-span 'day)
+                            (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
+                            (org-super-agenda-groups '(
+                                                       (:name "Today:"
+                                                              :scheduled t
+                                                              :order 2)
+                                                       (:name "Deadlines:"
+                                                              :deadline t
+                                                              :order 3)
+                                                       (:name "Today's Schedule:"
+                                                              :time-grid t
+                                                              :discard (:deadline t)
+                                                              :order 1)))))
+
+                (org-ql-block jib-org-columbia-productivity-ql-query
+                              ((org-ql-block-header "Productivity Overview:")
+                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+
+;; Day View No Agenda
+(add-to-list 'org-agenda-custom-commands
+             '("v" "Columbia Day View No Agenda"
+               ((org-ql-block '(todo)
+                              ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
+                                                                      :scheduled today
+                                                                      :deadline today) jib-org-agenda-columbia-productivity-super-groups)
+
+                                                        ;; '((:name "Today's Tasks"
+                                                        ;;                                  :scheduled today
+                                                        ;;                                  :deadline today)
+                                                        ;;                           (:discard (:tag "defer"))
+                                                        ;;                           (:name "Extracurricular:"
+                                                        ;;                                  :tag "ec"
+                                                        ;;                                  :order 10)
+                                                        ;;                           (:name "Personal:"
+                                                        ;;                                  :tag "p"
+                                                        ;;                                  :order 5)
+                                                        ;;                           (:name "Projects"
+                                                        ;;                                  :todo ("STUDY" "PROJ")
+                                                        ;;                                  :tag "lt")
+                                                        ;;                           (:discard (:todo t)))
+                                                        ))))))
+
+;; Three-day view
+(add-to-list 'org-agenda-custom-commands
+             '("w" "Columbia Four-Day View"
+               ((agenda "" ((org-agenda-span 4)
+                            (org-agenda-entry-types '(:deadline :scheduled))
+                            (org-agenda-start-on-weekday nil)
+                            (org-deadline-warning-days 0)))
+
+                (org-ql-block jib-org-columbia-productivity-ql-query
+                              ((org-ql-block-header "Productivity Overview:")
+                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+
+;; Six-day view
+(add-to-list 'org-agenda-custom-commands
+             '("q" "Columbia Ten-Day View"
+               ((agenda "" ((org-agenda-span 10)
+                            (org-agenda-entry-types '(:deadline :scheduled))
+                            (org-agenda-start-on-weekday nil)
+                            (org-deadline-warning-days 0))))))
+#+end_src
+
+** Org Capture
+
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands nil)
+
+(setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
+
+(defvar jib-org-agenda-columbia-productivity-super-groups
+  '((:name "Personal Items" :tag "p" :order 10)
+    (:name "Extracurricular" :tag "ec" :order 5)
+    (:name "Todo" :todo ("TODO") :order 3)
+    (:name "Heads Up!"
+           :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
+    (:discard (:todo t))))
+
+(defvar jib-org-columbia-productivity-ql-query
+  '(and (not (tags "defer"))
+        (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
+        (or (effort 1)
+            (todo "TODO" "PROJ" "STUDY")
+            (and (todo)
+                 (tags "p" "ec" "lt")))))
+
+;; Day View
+(add-to-list 'org-agenda-custom-commands
+             '("c" "Columbia Day View"
+               ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
+                            (org-agenda-span 'day)
+                            (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
+                            (org-super-agenda-groups '(
+                                                       (:name "Today:"
+                                                              :scheduled t
+                                                              :order 2)
+                                                       (:name "Deadlines:"
+                                                              :deadline t
+                                                              :order 3)
+                                                       (:name "Today's Schedule:"
+                                                              :time-grid t
+                                                              :discard (:deadline t)
+                                                              :order 1)))))
+
+                (org-ql-block jib-org-columbia-productivity-ql-query
+                              ((org-ql-block-header "Productivity Overview:")
+                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+
+;; Day View No Agenda
+(add-to-list 'org-agenda-custom-commands
+             '("v" "Columbia Day View No Agenda"
+               ((org-ql-block '(todo)
+                              ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
+                                                                      :scheduled today
+                                                                      :deadline today) jib-org-agenda-columbia-productivity-super-groups)
+
+                                                        ;; '((:name "Today's Tasks"
+                                                        ;;                                  :scheduled today
+                                                        ;;                                  :deadline today)
+                                                        ;;                           (:discard (:tag "defer"))
+                                                        ;;                           (:name "Extracurricular:"
+                                                        ;;                                  :tag "ec"
+                                                        ;;                                  :order 10)
+                                                        ;;                           (:name "Personal:"
+                                                        ;;                                  :tag "p"
+                                                        ;;                                  :order 5)
+                                                        ;;                           (:name "Projects"
+                                                        ;;                                  :todo ("STUDY" "PROJ")
+                                                        ;;                                  :tag "lt")
+                                                        ;;                           (:discard (:todo t)))
+                                                        ))))))
+
+;; Three-day view
+(add-to-list 'org-agenda-custom-commands
+             '("w" "Columbia Four-Day View"
+               ((agenda "" ((org-agenda-span 4)
+                            (org-agenda-entry-types '(:deadline :scheduled))
+                            (org-agenda-start-on-weekday nil)
+                            (org-deadline-warning-days 0)))
+
+                (org-ql-block jib-org-columbia-productivity-ql-query
+                              ((org-ql-block-header "Productivity Overview:")
+                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+
+;; Six-day view
+(add-to-list 'org-agenda-custom-commands
+             '("q" "Columbia Ten-Day View"
+               ((agenda "" ((org-agenda-span 10)
+                            (org-agenda-entry-types '(:deadline :scheduled))
+                            (org-agenda-start-on-weekday nil)
+                            (org-deadline-warning-days 0))))))
+#+end_src
+
+** Org Export
+
+#+begin_src emacs-lisp
+;; (setq org-export-backends '(ascii beamer html latex md odt))
+
+(setq org-export-with-broken-links t
+      org-export-with-smart-quotes t
+      org-export-allow-bind-keywords t)
+
+;; From https://stackoverflow.com/questions/23297422/org-mode-timestamp-format-when-exported
+(defun org-export-filter-timestamp-remove-brackets (timestamp backend info)
+  "removes relevant brackets from a timestamp"
+  (cond
+   ((org-export-derived-backend-p backend 'latex)
+    (replace-regexp-in-string "[<>]\\|[][]" "" timestamp))
+   ((org-export-derived-backend-p backend 'html)
+    (replace-regexp-in-string "&[lg]t;\\|[][]" "" timestamp))))
+
+
+;; HTML-specific
+(setq org-html-validation-link nil) ;; No validation button on HTML exports
+
+;; LaTeX Specific
+(eval-after-load 'ox '(add-to-list
+                       'org-export-filter-timestamp-functions
+                       'org-export-filter-timestamp-remove-brackets))
+
+(use-package ox-hugo
+  :straight t
+  :defer 2
+  :after ox
+  :config
+  (setq org-hugo-base-dir "~/Projects/cpb"))
+
+(use-package ox-moderncv
+  :straight t
+  :defer t
+  :init (require 'ox-moderncv))
+#+end_src
+
+** LaTeX Classes
+
+#+begin_src emacs-lisp
+(setq org-latex-listings t) ;; Uses listings package for code exports
+(setq org-latex-compiler "xelatex") ;; XeLaTex rather than pdflatex
+
+;; not sure what this is, look into it
+;; '(org-latex-active-timestamp-format "\\texttt{%s}")
+;; '(org-latex-inactive-timestamp-format "\\texttt{%s}")
+
+;; LaTeX Classes
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("org-plain-latex" ;; I use this in base class in all of my org exports.
+                 "\\documentclass{extarticle}
+[NO-DEFAULT-PACKAGES]
+[PACKAGES]
+[EXTRA]"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+#+end_src
+
+** Misc Org Mode
+
+#+begin_src emacs-lisp
+(setq org-clock-mode-line-total 'current) ;; Show only timer from current clock session in modeline
+(setq org-clock-clocked-in-display 'both)
+
+(setq org-attach-id-dir ".org-attach/"
+      org-attach-use-inheritance t)
+
+
+) ;; This parenthesis ends the org use-package.
+#+end_src
+
+** Org Babel
+*** Configure Babel Languages
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+        (python . t)))
+
+    (push '("conf-unix" . conf-unix) org-src-lang-modes))
+
+#+end_src
+
+*** Structure Templates
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'org
+    ;; This is needed as of Org 9.2
+    (require 'org-tempo)
+
+    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+    (add-to-list 'org-structure-template-alist '("li" . "src lisp"))
+    (add-to-list 'org-structure-template-alist '("py" . "src python")))
+
+#+end_src
+
+*** Auto-tangle configuation files
+
+#+begin_src emacs-lisp
+  ;; Automatically tangle our Emacs.org config file when we save it
+  (defun efs/org-babel-tangle-config ()
+    (when (string-equal (file-name-directory (buffer-file-name))
+                        (expand-file-name user-emacs-directory))
+      ;; Dynamic scoping to the rescue
+      (let ((org-confirm-babel-evaluate nil))
+        (org-babel-tangle))))
+
+  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+
+#+end_src
+
 
 * TODO Latex Setup
 
