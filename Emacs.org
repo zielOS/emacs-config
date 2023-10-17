@@ -2,25 +2,45 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+STARTUP: overview
 
-* DONE Startup Performance
-CLOSED: [2023-10-15 Sun 01:23]
+* early-init.el
 
-#+begin_src emacs-lisp
-;; The default is 800 kilobytes.  Measured in bytes.
-(setq gc-cons-threshold (* 100 1000 1000))
+#+begin_src emacs-lisp :tangle ./early-init.el :mkdirp yes
+;; Garbage Collections
+(setq gc-cons-percentage 0.6)
 
-(defun efs/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                     (time-subtract after-init-time before-init-time)))
-           gcs-done))
-
-(add-hook 'emacs-startup-hook #'efs/display-startup-time    )
-#+end_src`
+;; Compile warnings
+;;  (setq warning-minimum-level :emergency)
+(setq native-comp-async-report-warnings-errors 'silent) ;; native-comp warning
+(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 
 
-* DONE Package Management
+;; MISC OPTIMIZATIONS ----
+;;; optimizations (froom Doom's core.el). See that file for descriptions.
+(setq idle-update-delay 1.0)
+
+;; Disabling bidi (bidirectional editing stuff)
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)  ; emacs 27 only - disables bidirectional parenthesis
+
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
+(setq fast-but-imprecise-scrolling t)
+(setq inhibit-compacting-font-caches t)
+
+(setq inhibit-startup-message t)
+
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 20)        ; Give some breathing room
+(menu-bar-mode 0)            ; Disable the menu bar
+(column-number-mode t)
+(menu-bar-mode 0)
+#+end_src
+
+
+* Package Management
 CLOSED: [2023-10-15 Sun 01:23]
 
 ** sources
@@ -86,6 +106,33 @@ CLOSED: [2023-10-15 Sun 01:23]
 #+end_src
 
 #+RESULTS:
+
+
+
+* Garbage Collections
+CLOSED: [2023-10-15 Sun 01:23]
+
+#+begin_src emacs-lisp
+(use-package gcmh
+  :straight t
+  :diminish gcmh-mode
+  :config
+  (setq gcmh-idle-delay 5
+        gcmh-high-cons-threshold (* 16 1024 1024))  ; 16mb
+  (gcmh-mode 1))
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-percentage 0.1))) ;; Default value for `gc-cons-percentage'
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "Emacs ready in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+#+end_src`
 
 
 * Keep Folders Clean
@@ -167,11 +214,6 @@ CLOSED: [2023-10-15 Sun 01:36]
 
 ;; Do not save duplicates in kill-ring
 (customize-set-variable 'kill-do-not-save-duplicates t)
-
-;; Better support for files with long lines
-(setq-default bidi-paragraph-direction 'left-to-right)
-(setq-default bidi-inhibit-bpa t)
-(global-so-long-mode 1)
 
 ;; define a key to define the word at point.
 (keymap-set global-map "M-#" #'dictionary-lookup-definition)
@@ -291,11 +333,6 @@ CLOSED: [2023-10-15 Sun 02:14]
 #+end_src
 
 
-* TODO Startup Setup
-** TODO Dashboard
-
-
-
 * general.el
 
 #+begin_src emacs-lisp
@@ -336,7 +373,7 @@ CLOSED: [2023-10-15 Sun 02:14]
  "h F" '(helpful-function :which-key "open file/unfold directory"))
 #+end_src
 
-** DONE Line Numbers
+** Line Numbers
 
 #+begin_src emacs-lisp
 (global-display-line-numbers-mode -1)
@@ -377,18 +414,82 @@ CLOSED: [2023-10-15 Sun 02:14]
   (advice-add command :after #'pulse-line))
 #+end_src
 
-** Misc
+** Dashboard
 
 #+begin_src emacs-lisp
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 20)        ; Give some breathing room
+  (use-package dashboard
+    :straight t
+    :init
+    (setq initial-buffer-choice 'dashboard-open)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-display-icons-p t)
+    (setq dashboard-set-navigator t)
+    (setq dashboard-icon-type 'nerd-icons)
+    (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+    ;;(setq dashboard-startup-banner 'logo)
+    (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
+    (setq dashboard-center-content t) ;; set to 't' for centered content
+    (setq dashboard-items '((recents . 5)
+                            (agenda . 5 )
+                            (bookmarks . 5)
+                            (projects . 3)
+                            (registers . 3)))
+    :custom
+    (dashboard-modify-heading-icons '((recents . "file-text")
+                                      (bookmarks . "book")))
+    :config
+    (dashboard-setup-startup-hook))
+#+end_src
 
-(menu-bar-mode -1)            ; Disable the menu bar
+** rainbow-mode
 
-(column-number-mode t)
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :straight t
+    :diminish
+    :hook org-mode prog-mode)
+#+end_src
 
+** which-key
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :straight t
+  :init
+  (which-key-mode 1)
+  :diminish
+  :config
+  (setq which-key-side-window-location 'bottom
+    which-key-sort-order #'which-key-key-order-alpha
+    which-key-allow-imprecise-window-fit nil
+    which-key-sort-uppercase-first nil
+    which-key-add-column-padding 1
+    which-key-max-display-columns nil
+    which-key-min-display-lines 6
+    which-key-side-window-slot -10
+    which-key-side-window-max-height 0.25
+    which-key-idle-delay 0.8
+    which-key-max-description-length 25
+    which-key-allow-imprecise-window-fit nil
+    which-key-separator " → " ))
+(efs/leader-keys
+  "SPC" '(counsel-M-x :which-key "Counsel M-x"))
+#+end_src
+
+** doom-modeline
+
+#+begin_src emacs-lisp
+(use-package doom-modeline
+  :straight t
+  :init (doom-modeline-mode 1)
+  :config(setq doom-modeline-icon t
+               doom-modeline-height 35
+               doom-modeline-lsp t
+               doom-modeline-total-line-number t
+               doom-modeline-major-mode-icon t
+               doom-modeline-time t
+               doom-modeline-env-enable-python t))
 #+end_src
 
 
@@ -1489,6 +1590,92 @@ folder, otherwise delete a word"
 
 * TODO Latex Setup
 
+
+* TODO eshell
+
+#+begin_src emacs-lisp
+(use-package eshell-toggle
+  :straight t
+  :custom
+  (eshell-toggle-size-fraction 3)
+  (eshell-toggle-use-projectile-root t)
+  (eshell-toggle-run-command nil)
+  (eshell-toggle-init-function #'eshell-toggle-init-ansi-term)
+  :bind
+  ("C-/" . eshell-toggle))
+
+(use-package eshell-syntax-highlighting
+  :straight t
+  :after esh-mode
+  :config
+  (eshell-syntax-highlighting-global-mode +1))
+
+;; eshell-syntax-highlighting -- adds fish/zsh-like syntax highlighting.
+;; eshell-rc-script -- your profile for eshell; like a bashrc for eshell.
+;; eshell-aliases-file -- sets an aliases file for the eshell.
+
+(setq eshell-rc-script (concat user-emacs-directory "eshell/profile")
+      eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
+      eshell-history-size 5000
+      eshell-buffer-maximum-lines 5000
+      eshell-hist-ignoredups t
+      eshell-scroll-to-bottom-on-input t
+      eshell-destroy-buffer-when-process-dies t
+      eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
+#+end_src
+
+
+* Buffer Management
+
+#+begin_src emacs-lisp
+  (efs/leader-keys
+   "b b" '(switch-to-buffer :wk "Switch to buffer")
+   "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
+   "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
+   "b d" '(bookmark-delete :wk "Delete bookmark")
+   "b i" '(ibuffer :wk "Ibuffer")
+   "b k" '(kill-current-buffer :wk "Kill current buffer")
+   "b K" '(kill-some-buffers :wk "Kill multiple buffers")
+   "b l" '(list-bookmarks :wk "List bookmarks")
+   "b m" '(bookmark-set :wk "Set bookmark")
+   "b n" '(next-buffer :wk "Next buffer")
+   "b p" '(previous-buffer :wk "Previous buffer")
+   "b r" '(revert-buffer :wk "Reload buffer")
+   "b R" '(rename-buffer :wk "Rename buffer")
+   "b s" '(basic-save-buffer :wk "Save buffer")
+   "b S" '(save-some-buffers :wk "Save multiple buffers")
+   "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
+
+#+end_src
+
+
+* Window Management
+
+#+begin_src emacs-lisp
+  (efs/leader-keys
+    ;; Window splits
+    "w q" '(evil-window-delete :wk "Close window")
+    "w n" '(evil-window-new :wk "New window")
+    "w s" '(evil-window-split :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")
+
+    "w w" '(evil-window-next :wk "Goto next window")
+    ;; Move Windows
+    "w H" '(buf-move-left :wk "Buffer move left")
+    "w J" '(buf-move-down :wk "Buffer move down")
+    "w K" '(buf-move-up :wk "Buffer move up")
+    "w L" '(buf-move-right :wk "Buffer move right"))
+
+  (general-define-key
+   ;; Window motions
+   "<C-M-left>" '(evil-window-left :wk "Window left")
+   "<C-M-down>" '(evil-window-down :wk "Window down")
+   "<C-M-up>" '(evil-window-up :wk "Window up")
+   "<C-M-right>" '(evil-window-right :wk "Window right"))
+#+end_src
+
+
+
 * TODO Application
 ** Calendar
 ** App Launcher
@@ -1527,3 +1714,38 @@ folder, otherwise delete a word"
 
 ** Calculator
 ** Mail
+** PDF
+
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :straight t
+  :mode  ("\\.pdf\\'" . pdf-view-mode)
+  :config
+  (pdf-loader-install)
+  (setq-default pdf-view-display-size 'fit-width)
+  (setq pdf-view-continuous t)
+  (setq pdf-view-midnight-colors '("#CDD6F4" . "#11111B" ))
+  :general
+  (general-define-key :states 'motion :keymaps 'pdf-view-mode-map
+                      ;; Arrows for movement as well
+                      (kbd "<down>") 'pdf-view-next-line-or-next-page
+                      (kbd "<up>") 'pdf-view-previous-line-or-previous-page
+
+                      (kbd "<down>") 'pdf-view-next-line-or-next-page
+                      (kbd "<up>") 'pdf-view-previous-line-or-previous-page
+
+                      (kbd "<left>") 'image-backward-hscroll
+                      (kbd "<right>") 'image-forward-hscroll
+
+                      "H" 'pdf-view-fit-height-to-window
+                      "0" 'pdf-view-fit-height-to-window
+                      "W" 'pdf-view-fit-width-to-window
+                      "=" 'pdf-view-enlarge
+                      "-" 'pdf-view-shrink
+
+                      "q" 'quit-window
+                      "Q" 'kill-this-buffer
+                      "g" 'revert-buffer
+
+                      "C-s" 'isearch-forward))
+#+end_src
