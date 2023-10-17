@@ -1260,7 +1260,7 @@ folder, otherwise delete a word"
 (use-package org
   :straight (:type built-in)
   :hook (org-mode . efs/org-setup)
-  :hook (org-mode . efsprettify-symbols-setup)
+  :hook (org-mode . efs/prettify-symbols-setup)
   :hook (org-mode . efs/org-highlight-setup)
   :hook (org-mode . efs/org-font-setup)
   :hook (org-capture-mode . evil-insert-state) ;; Start org-capture in Insert state by default
