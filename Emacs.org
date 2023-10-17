@@ -338,57 +338,57 @@ CLOSED: [2023-10-15 Sun 02:14]
 * Evil
 
 #+begin_src emacs-lisp
-(defun efs/evil-hook ()
-  (dolist (mode '(custom-mode
-                  eshell-mode
-                  git-rebase-mode
-                  erc-mode
-                  circe-server-mode
-                  circe-chat-mode
-                  circe-query-mode
-                  sauron-mode
-                  term-mode))
-  (add-to-list 'evil-emacs-state-modes mode)))
+  (defun efs/evil-hook ()
+    (dolist (mode '(custom-mode
+                    eshell-mode
+                    git-rebase-mode
+                    erc-mode
+                    circe-server-mode
+                    circe-chat-mode
+                    circe-query-mode
+                    sauron-mode
+                    term-mode))
+    (add-to-list 'evil-emacs-state-modes mode)))
 
-(use-package undo-tree
-  :straight t
-  :init
-  (global-undo-tree-mode 1))
+  (use-package undo-tree
+    :straight t
+    :init
+    (global-undo-tree-mode 1))
 
-(use-package evil
-  :straight t
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  (setq evil-respect-visual-line-mode t)
-  (setq evil-undo-system 'undo-tree)
-  :config
-  (add-hook 'evil-mode-hook 'efs/evil-hook)
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+  (use-package evil
+    :straight t
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    (setq evil-respect-visual-line-mode t)
+    (setq evil-undo-system 'undo-tree)
+    :config
+    (add-hook 'evil-mode-hook 'efs/evil-hook)
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-  ;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    ;; Use visual line motions even outside of visual-line-mode buffers
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
 
-(use-package evil-collection
-  :straight t
-  :after evil
-  :init
-  (setq evil-collection-company-use-tng nil)  ;; Is this a bug in evil-collection?
-  :custom
-  (evil-collection-outline-bind-tab-p nil)
-  :config
-  (setq evil-collection-mode-list
-        (remove 'lispy evil-collection-mode-list))
-  (evil-collection-init))
+  (use-package evil-collection
+    :straight t
+    :after evil
+    :init
+    (setq evil-collection-company-use-tng nil)  ;; Is this a bug in evil-collection?
+    :custom
+    (evil-collection-outline-bind-tab-p nil)
+    :config
+    (setq evil-collection-mode-list
+          (remove 'lispy evil-collection-mode-list))
+    (evil-collection-init))
 
 
 #+end_src
@@ -420,7 +420,7 @@ CLOSED: [2023-10-15 Sun 02:14]
 (efs/leader-keys
  "f f" '(find-file :wk "find file")
  "f p" '((lambda () (interactive)
-           (dired "~/.emacs.d/"))
+           (dired "~/.config/emacs/"))
          :wk "Open user-emacs-directory in dired")
  "f r" '(counsel-recentf :wk "Find recent files")
  "/" '(comment-line :wk "comment lines"))
@@ -472,42 +472,34 @@ CLOSED: [2023-10-15 Sun 02:14]
 ** Line Numbers
 
 #+begin_src emacs-lisp
-(global-display-line-numbers-mode -1)
+  (global-display-line-numbers-mode -1)
 
-(setq-default display-line-numbers-grow-only t
-              display-line-numbers-width 2)
+  (setq-default display-line-numbers-grow-only t
+                display-line-numbers-width 2)
 
-;; Enable line numbers for some modes
-(dolist (mode '(prog-mode-hook
-                conf-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode t))))
+  ;; Enable line numbers for some modes
+  (dolist (mode '(prog-mode-hook
+                  conf-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode t))))
 #+end_src
 
 ** Elisp Demos
 
 #+begin_src emacs-lisp
-(use-package elisp-demos
-  :straight t)
+  (use-package elisp-demos
+    :straight t)
 
-;; also add some examples
-(require 'elisp-demos)
-(advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update)
+  ;; also add some examples
+  (require 'elisp-demos)
+  (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update)
 #+end_src
 
-** Pulse like beacon
+** Beacon
 
 #+begin_src emacs-lisp
-;; add visual pulse when changing focus, like beacon but built-in
-;; from from https://karthinks.com/software/batteries-included-with-emacs/
-(defun pulse-line (&rest _)
-  "Pulse the current line."
-  (pulse-momentary-highlight-one-line (point)))
-
-(dolist (command '(scroll-up-command
-                   scroll-down-command
-                   recenter-top-bottom
-                   other-window))
-  (advice-add command :after #'pulse-line))
+  (use-package beacon
+    :straight t
+    :init (beacon-mode))
 #+end_src
 
 ** Dashboard
@@ -645,187 +637,215 @@ CLOSED: [2023-10-15 Sun 02:14]
     (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
     (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file))
 #+end_src
-
 ** Dirvish
 
 #+begin_src emacs-lisp
-(use-package dirvish
-  :straight t
-  :init
-  (dirvish-override-dired-mode)
-  :custom
-  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
-   '(("h" "~/"                          "Home")
-     ("d" "~/Downloads/"                "Downloads")
-     ("m" "/mnt/"                       "Drives")
-     ("t" "~/.local/share/Trash/files/" "TrashCan")))
-  :config
-  ;; (dirvish-peek-mode) ; Preview files in minibuffer
-  ;; (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-  (setq dirvish-mode-line-format
-        '(:left (sort symlink) :right (omit yank index)))
-  (setq dirvish-attributes
-        '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
-  (setq delete-by-moving-to-trash t)
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --group-directories-first --no-group")
-  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-  (("C-c f" . dirvish-fd)
-   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-    ("a"   . dirvish-quick-access)
-    ("f"   . dirvish-file-info-menu)
-    ("y"   . dirvish-yank-menu)
-    ("N"   . dirvish-narrow)
-    ("^"   . dirvish-history-last)
-    ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-    ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-    ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-    ("TAB" . dirvish-subtree-toggle)
-    ("M-f" . dirvish-history-go-forward)
-    ("M-b" . dirvish-history-go-backward)
-    ("M-l" . dirvish-ls-switches-menu)
-    ("M-m" . dirvish-mark-menu)
-    ("M-t" . dirvish-layout-toggle)
-    ("M-s" . dirvish-setup-menu)
-    ("M-e" . dirvish-emerge-menu)
-    ("M-j" . dirvish-fd-jump)))
+  (use-package dirvish
+    :straight t
+    :init
+    (dirvish-override-dired-mode)
+    :custom
+    (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+     '(("h" "~/"                          "Home")
+       ("d" "~/Downloads/"                "Downloads")
+       ("m" "/mnt/"                       "Drives")
+       ("t" "~/.local/share/Trash/files/" "TrashCan")))
+    :config
+    ;; (dirvish-peek-mode) ; Preview files in minibuffer
+    ;; (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
+    (setq dirvish-mode-line-format
+          '(:left (sort symlink) :right (omit yank index)))
+    (setq dirvish-attributes
+          '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
+    (setq delete-by-moving-to-trash t)
+    (setq dired-listing-switches
+          "-l --almost-all --human-readable --group-directories-first --no-group")
+    :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+    (("C-c f" . dirvish-fd)
+     :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+      ("a"   . dirvish-quick-access)
+      ("f"   . dirvish-file-info-menu)
+      ("y"   . dirvish-yank-menu)
+      ("N"   . dirvish-narrow)
+      ("^"   . dirvish-history-last)
+      ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+      ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+      ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+      ("M-f" . dirvish-history-go-forward)
+      ("M-b" . dirvish-history-go-backward)
+      ("M-l" . dirvish-ls-switches-menu)
+      ("M-m" . dirvish-mark-menu)
+      ("M-t" . dirvish-layout-toggle)
+      ("M-s" . dirvish-setup-menu)
+      ("M-e" . dirvish-emerge-menu)
+      ("M-j" . dirvish-fd-jump)))
 #+end_src
 
 
 * Completion System
 
-** Preserve Minibuffer History with savehist-mode
+** Vertico
 
 #+begin_src emacs-lisp
-(use-package savehist
-  :straight t
-  :config
-  (setq history-length 25)
-  (savehist-mode 1)
+  (use-package vertico
+    :straight t)
 
-  ;; Individual history elements can be configured separately
-  (put 'minibuffer-history 'history-length 25)
-  (put 'evil-ex-history 'history-length 50)
-  (put 'kill-ring 'history-length 25))
+  (when (require 'vertico nil :noerror)
+    (require 'vertico-directory)
+    ;; Cycle back to top/bottom result when the edge is reached
+    (customize-set-variable 'vertico-cycle t)
+
+    ;; Start Vertico
+    (vertico-mode 1)
+
+    ;; Turn off the built-in fido-vertical-mode and icomplete-vertical-mode, if
+    ;; they have been turned on by crafted-defaults-config, because they interfere
+    ;; with this module.
+    
+    (fido-mode -1)
+    (fido-vertical-mode -1)
+    (icomplete-mode -1)
+    (icomplete-vertical-mode -1)) 
 #+end_src
-
-** Completion with Vertico
+** Marginalia
 
 #+begin_src emacs-lisp
-(defun dw/minibuffer-backward-kill (arg)
-  "When minibuffer is completing a file name delete up to parent
-folder, otherwise delete a word"
-  (interactive "p")
-  (if minibuffer-completing-file-name
-      ;; Borrowed from https://github.com/raxod502/selectrum/issues/498#issuecomment-803283608
-      (if (string-match-p "/." (minibuffer-contents))
-          (zap-up-to-char (- arg) ?/)
-        (delete-minibuffer-contents))
-      (backward-kill-word arg)))
+  (use-package marginalia
+    :straight t)
 
-(use-package vertico
-  :straight '(vertico :host github
-                      :repo "minad/vertico"
-                      :branch "main")
-  :bind (:map vertico-map
-         ("C-j" . vertico-next)
-         ("C-k" . vertico-previous)
-         ("C-f" . vertico-exit)
-         :map minibuffer-local-map
-         ("M-h" . dw/minibuffer-backward-kill))
-  :custom
-  (vertico-cycle t)
-  :custom-face
-  (vertico-current ((t (:background "#3a3f5a"))))
-  :init
-  (vertico-mode))
-
-(keymap-set vertico-map "C-<down>" #'vertico-next)
-(keymap-set vertico-map "C-<up>" #'vertico-previous)
-(keymap-set vertico-map "M-h" #'vertico-directory-up)
+  (when (require 'marginalia nil :noerror)
+  ;; Configure Marginalia
+  (customize-set-variable 'marginalia-annotators
+                          '(marginalia-annotators-heavy
+                            marginalia-annotators-light
+                            nil))
+  (marginalia-mode 1))
 #+end_src
-
-** Completion in Regions with Corfu
+** Consult
 
 #+begin_src emacs-lisp
-(use-package corfu
-  :straight '(corfu :host github
-                    :repo "minad/corfu")
-  :bind (:map corfu-map
-         ("C-j" . corfu-next)
-         ("C-k" . corfu-previous)
-         ("C-f" . corfu-insert))
-  :custom
-  (corfu-cycle t)
-  :config
-  (corfu-global-mode))
-#+end_src
+  (use-package consult
+    :straight t)
 
-** Improved Candidate Filtering with Orderless
+  (when (require 'orderless nil :noerror)
+    ;; Set up Orderless for better fuzzy matching
+    (customize-set-variable 'completion-styles '(orderless basic))
+    (customize-set-variable 'completion-category-overrides
+                            '((file (styles . (partial-completion))))))
+#+end_src
+** Orderless
 
 #+begin_src emacs-lisp
-(use-package orderless
-  :straight t
-  :init
-  (setq completion-styles '(orderless)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion))))))
-#+end_src
+  (use-package orderless
+    :straight t)
 
-** Consult Commands
+  (when (require 'orderless nil :noerror)
+  ;; Set up Orderless for better fuzzy matching
+  (customize-set-variable 'completion-styles '(orderless basic))
+  (customize-set-variable 'completion-category-overrides
+                          '((file (styles . (partial-completion))))))
+#+end_src
+** Embark
 
 #+begin_src emacs-lisp
-(use-package consult
-  :straight t)
+  (use-package embark
+    :straight t)
+  (use-package embark-consult
+    :after embark
+    :straight t)
 
-(when (locate-library "consult")
-  ;; Set some consult bindings
-  (keymap-global-set "C-s" 'consult-line)
-  (keymap-set minibuffer-local-map "C-r" 'consult-history)
+  (when (require 'embark nil :noerror)
+    (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
+    (keymap-global-set "C-." 'embark-act)
 
-  (setq completion-in-region-function #'consult-completion-in-region))
+  ;; Use Embark to show bindings in a key prefix with `C-h`
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    (when (require 'embark-consult nil :noerror)
+      (with-eval-after-load 'embark-consult
+        (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
 #+end_src
-
-** Completion Annotations with Marginalia
+** Corfu
 
 #+begin_src emacs-lisp
-(use-package marginalia
-  :after vertico
-  :straight t
-  :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-  :init
-  (marginalia-mode))
-#+end_src
+  (use-package corfu
+     :straight t)
 
-** Completion Actions with Embark
+  (use-package corfu-terminal
+    :straight t)
+
+  (when (require 'corfu nil :noerror)
+
+   (unless (display-graphic-p)
+     (when (require 'corfu-terminal nil :noerror)
+       (corfu-terminal-mode +1)))
+
+   ;; Setup corfu for popup like completion
+   (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
+   (customize-set-variable 'corfu-auto t)         ; Enable auto completion
+   (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
+
+   (global-corfu-mode 1)
+   (when (require 'corfu-popupinfo nil :noerror)
+
+     (corfu-popupinfo-mode 1)
+     (eldoc-add-command #'corfu-insert)
+     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
+     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
+     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle))) 
+#+end_src
+** Cape
 
 #+begin_src emacs-lisp
-(use-package embark
-  :straight t
-  :bind (("C-S-a" . embark-act)
-         :map minibuffer-local-map
-         ("C-d" . embark-act))
-  :config
+  (use-package cape
+    :straight t)
 
-  ;; Show Embark actions via which-key
-  (setq embark-action-indicator
-        (lambda (map)
-          (which-key--show-keymap "Embark" map nil nil 'no-paging)
-          #'which-key--hide-popup-ignore-command)
-        embark-become-indicator embark-action-indicator))
+  (when (require 'cape nil :noerror)
+    ;; Setup Cape for better completion-at-point support and more
 
-(use-package embark-consult
-  :straight '(embark-consult :host github
-                             :repo "oantolin/embark"
-                             :files ("embark-consult.el"))
-  :after (embark consult)
-  :demand t
-  :hook
-  (embark-collect-mode . embark-consult-preview-minor-mode))
+    ;; Add useful defaults completion sources from cape
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+
+    ;; Silence the pcomplete capf, no errors or messages!
+    ;; Important for corfu
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+    ;; Ensure that pcomplete does not write to the buffer
+    ;; and behaves as a pure `completion-at-point-function'.
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+
+    ;; No auto-completion or completion-on-quit in eshell
+    (defun crafted-completion-corfu-eshell ()
+      "Special settings for when using corfu with eshell."
+      (setq-local corfu-quit-at-boundary t
+                  corfu-quit-no-match t
+                  corfu-auto nil)
+      (corfu-mode))
+    (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 #+end_src
 
 
+
+** company
+
+#+begin_src emacs-lisp
+  (use-package company
+    :straight t
+    :config
+    (global-company-mode t)
+    (setq company-idle-delay 0.0)
+    (setq company-dabbrev-downcase nil)
+    (setq company-show-numbers t))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package company-box
+    :straight t
+    :if (display-graphic-p)
+    :after (company)
+    :hook (company-mode . company-box-mode))
+#+end_src
 
 * DONE Lisp Setup
 
@@ -936,61 +956,91 @@ folder, otherwise delete a word"
 #+end_src
 
 
-* TODO Org Setup
+* Org Setup
+CLOSED: [2023-10-17 Tue 02:13]
 ** Packages
 *** Org Super Agenda
 
 #+begin_src emacs-lisp
-(use-package org-super-agenda
-  :straight t
-  :after org
-  :config
-  (setq org-super-agenda-header-map nil) ;; takes over 'j'
-  ;; (setq org-super-agenda-header-prefix " ◦ ") ;; There are some unicode "THIN SPACE"s after the ◦
-  ;; Hide the thin width char glyph. This is dramatic but lets me not be annoyed
-  (add-hook 'org-agenda-mode-hook
-            #'(lambda () (setq-local nobreak-char-display nil)))
-  (org-super-agenda-mode))
+  (use-package org-super-agenda
+    :straight t
+    :after org
+    :config
+    (setq org-super-agenda-header-map nil) ;; takes over 'j'
+    ;; (setq org-super-agenda-header-prefix " ◦ ") ;; There are some unicode "THIN SPACE"s after the ◦
+    ;; Hide the thin width char glyph. This is dramatic but lets me not be annoyed
+    (add-hook 'org-agenda-mode-hook
+              #'(lambda () (setq-local nobreak-char-display nil)))
+    (org-super-agenda-mode))
 #+end_src
 
-*** Org Superstar
+*** Org-superstar
 
 #+begin_src emacs-lisp
-(use-package org-superstar
-  :straight t
-  :config
-  (setq org-superstar-leading-bullet " ")
-  (setq org-superstar-special-todo-items t) ;; Makes TODO header bullets into boxes
-  (setq org-superstar-todo-bullet-alist '(("TODO" . 9744)
-                                          ("INPROG-TODO" . 9744)
-                                          ("WORK" . 9744)
-                                          ("STUDY" . 9744)
-                                          ("SOMEDAY" . 9744)
-                                          ("READ" . 9744)
-                                          ("PROJ" . 9744)
-                                          ("CONTACT" . 9744)
-                                          ("DONE" . 9745)))
-  :hook (org-mode . org-superstar-mode))
+  (use-package org-superstar
+    :straight t
+    :config
+    (setq org-superstar-leading-bullet " ")
+    (setq org-superstar-special-todo-items t) ;; Makes TODO header bullets into boxes
+    (setq org-superstar-todo-bullet-alist '(("TODO" . 9744)
+                                            ("INPROG-TODO" . 9744)
+                                            ("WORK" . 9744)
+                                            ("STUDY" . 9744)
+                                            ("SOMEDAY" . 9744)
+                                            ("READ" . 9744)
+                                            ("PROJ" . 9744)
+                                            ("CONTACT" . 9744)
+                                            ("DONE" . 9745)))
+    ;; :hook (org-mode . org-superstar-mode)
+    )
 
-;; Removes gap when you add a new heading
-(setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
+  ;; Removes gap when you add a new heading
+  (setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
 #+end_src
 
 *** Org Modern
 
 #+begin_src emacs-lisp
-(use-package org-modern
-  :straight t
-  :hook (org-mode . org-modern-mode)
-  :config
+  (use-package org-modern
+    :straight t)
+
+   ;; Add frame borders and window dividers
+  (modify-all-frames-parameters
+   '((right-divider-width . 10)
+     (internal-border-width . 10)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
   (setq
-   ;; org-modern-star '("●" "○" "✸" "✿")
+   ;; Edit settings
+   org-auto-align-tags t
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-ellipsis "…"
    org-modern-star '( "⌾" "✸" "◈" "◇")
    org-modern-list '((42 . "◦") (43 . "•") (45 . "–"))
-   org-modern-tag nil
-   org-modern-priority nil
-   org-modern-todo nil
-   org-modern-table nil))
+   
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "⭠ now ─────────────────────────────────────────────────")
+
+  (global-org-modern-mode) 
 #+end_src
 
 *** Evil Org
@@ -1096,11 +1146,10 @@ folder, otherwise delete a word"
 *** valign
 
 #+begin_src emacs-lisp
-(use-package valign
-  :straight t
-  :defer t)
+  (use-package valign
+    :straight t
+    :defer t)
 #+end_src
-
 ** Keybindings
 
 #+begin_src emacs-lisp
@@ -1149,7 +1198,6 @@ folder, otherwise delete a word"
   (kbd "f") 'org-agenda-later
   (kbd "b") 'org-agenda-earlier)
 #+end_src
-
 ** Startup Setup functions
 
 #+begin_src emacs-lisp
@@ -1182,26 +1230,25 @@ folder, otherwise delete a word"
 #+end_src
 
 #+begin_src emacs-lisp
-(defface jib-read
-  '((t (:foreground "MediumPurple2")))
-  "Custom face for highlighting read."
-  :group 'jib)
+  (defface jib-read
+    '((t (:foreground "MediumPurple2")))
+    "Custom face for highlighting read."
+    :group 'jib)
 #+end_src
 
 #+begin_src emacs-lisp
- (defun efs/org-highlight-setup ()
-   (highlight-regexp "\\<\\(TODO\\|NEXT\\) \\(Read\\)\\>" 'jib-read 2))
+  (defun efs/org-highlight-setup ()
+    (highlight-regexp "\\<\\(TODO\\|NEXT\\) \\(Read\\)\\>" 'jib-read 2))
 #+end_src
 
 #+begin_src emacs-lisp
-(defun efs/org-setup ()
-  (org-indent-mode) ;; Keeps org items like text under headings, lists, nicely indented
-  (visual-line-mode 1) ;; Nice line wrapping
-  (centered-cursor-mode) ;; Enable centered cursor mode
-  (smartparens-mode 0) ;; Disable smartparents
-  (hl-prog-extra-mode) ;; Highlighting with regexps
-  (setq-local line-spacing (+ jib-default-line-spacing 2)) ;; A bit more line spacing for orgmode
-  (valign-mode))
+  (defun efs/org-setup ()
+    (org-indent-mode) ;; Keeps org items like text under headings, lists, nicely indented
+    (visual-line-mode 1) ;; Nice line wrapping
+    (centered-cursor-mode) ;; Enable centered cursor mode
+    (smartparens-mode 0) ;; Disable smartparents
+    (hl-prog-extra-mode) ;; Highlighting with regexps
+    (valign-mode))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1252,7 +1299,6 @@ folder, otherwise delete a word"
     (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 #+end_src
-
 ** Configuration
 *** Preamble
 
@@ -1373,7 +1419,6 @@ folder, otherwise delete a word"
       org-habit-completed-glyph ?✓
       org-habit-graph-column 40)
 #+end_src
-
 ** Org Agenda
 *** Setup
 
@@ -1527,7 +1572,6 @@ folder, otherwise delete a word"
                             (org-agenda-start-on-weekday nil)
                             (org-deadline-warning-days 0))))))
 #+end_src
-
 ** Org Capture
 
 #+begin_src emacs-lisp
@@ -1617,7 +1661,6 @@ folder, otherwise delete a word"
                             (org-agenda-start-on-weekday nil)
                             (org-deadline-warning-days 0))))))
 #+end_src
-
 ** Org Export
 
 #+begin_src emacs-lisp
@@ -1657,7 +1700,6 @@ folder, otherwise delete a word"
   :defer t
   :init (require 'ox-moderncv))
 #+end_src
-
 ** LaTeX Classes
 
 #+begin_src emacs-lisp
@@ -1682,7 +1724,6 @@ folder, otherwise delete a word"
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 #+end_src
-
 ** Misc Org Mode
 
 #+begin_src emacs-lisp
@@ -1695,7 +1736,6 @@ folder, otherwise delete a word"
 
 ) ;; This parenthesis ends the org use-package.
 #+end_src
-
 ** Org Babel
 *** Configure Babel Languages
 
@@ -1910,17 +1950,32 @@ folder, otherwise delete a word"
   highlight-indent-guides-responsive 'top)
   :hook (prog-mode . highlight-indent-guides-mode))
 #+end_src
-
 ** Lisp
 ** Python
 ** Documents
-
 ** Format-on-save
+#+begin_src emacs-lisp
+  (use-package format-all
+    :straight t
+    :init (format-all-mode 1))
+#+end_src
+
+* Projectile
 
 #+begin_src emacs-lisp
-(use-package format-all
-  :straight t
-  :init (format-all-mode 1))
+  (use-package projectile
+    :straight t
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    ;; NOTE: Set this to the folder where you keep your Git repos!
+    (when (file-directory-p "~/Projects")
+      (setq projectile-project-search-path '("~/Projects")))
+    (setq projectile-switch-project-action #'projectile-dired))
+
 #+end_src
 
 * Latex
@@ -2484,35 +2539,35 @@ folder, otherwise delete a word"
 ** App Launcher
 
 #+begin_src emacs-lisp
-(use-package app-launcher
-  :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
+  (use-package app-launcher
+    :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
 
-;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
+  ;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
 
-(defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
-  "Define a launcher command.
+  (defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
+    "Define a launcher command.
 
-Bookmark-selector is a package revolving around using emacs
-outside of emacs to browse your bookmarks. Most of the commands
-defined, consist of opening an emacs frame with only a
-minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
-calling FUNCTION and deleting the frame after the function
-completes or is canceled."
-  `(with-selected-frame (make-frame '((name . ,NAME)
-                                      (minibuffer . only)
-                                      (width . ,WIDTH)
-                                      (height . ,HEIGHT)))
-     (unwind-protect
-         (funcall ,FUNCTION)
-       (delete-frame))))
-
-(defun emacs-run-launcher ()
-  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
-  (interactive)
-  (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
-    (unwind-protect
-        (funcall ,FUNCTION)
-      (delete-frame)))
+  Bookmark-selector is a package revolving around using emacs
+  outside of emacs to browse your bookmarks. Most of the commands
+  defined, consist of opening an emacs frame with only a
+  minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
+  calling FUNCTION and deleting the frame after the function
+  completes or is canceled."
+    `(with-selected-frame (make-frame '((name . ,NAME)
+                                        (minibuffer . only)
+                                        (width . ,WIDTH)
+                                        (height . ,HEIGHT)))
+       (unwind-protect
+           (funcall ,FUNCTION)
+         (delete-frame))))
+  
+  (defun emacs-run-launcher ()
+    "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+    (interactive)
+    (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
+      (unwind-protect
+          (funcall ,FUNCTION)
+        (delete-frame)))
 #+end_src
 
 ** Calculator
