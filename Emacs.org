@@ -386,11 +386,7 @@ CLOSED: [2023-10-15 Sun 02:14]
   :config
   (setq evil-collection-mode-list
         (remove 'lispy evil-collection-mode-list))
-  (evil-collection-init)
-  (keymap-set vertico-map "C-<down>" #'vertico-next)
-  (keymap-set vertico-map "C-<up>" #'vertico-previous)
-  (keymap-set vertico-map "M-h" #'vertico-directory-up))
-
+  (evil-collection-init))
 #+end_src
 
 
@@ -727,6 +723,10 @@ folder, otherwise delete a word"
   (vertico-current ((t (:background "#3a3f5a"))))
   :init
   (vertico-mode))
+
+(keymap-set vertico-map "C-<down>" #'vertico-next)
+(keymap-set vertico-map "C-<up>" #'vertico-previous)
+(keymap-set vertico-map "M-h" #'vertico-directory-up)
 #+end_src
 
 ** Completion in Regions with Corfu
@@ -774,11 +774,7 @@ folder, otherwise delete a word"
          ("C-M-j" . persp-switch-to-buffer*)
          :map minibuffer-local-map
          ("C-r" . consult-history))
-  :custom
-  (consult-project-root-function #'dw/get-project-root)
-  (completion-in-region-function #'consult-completion-in-region)
-  :config
-  (consult-preview-mode))
+  (setq completion-in-region-function #'consult-completion-in-region))
 #+end_src
 
 ** Completion Annotations with Marginalia
@@ -836,7 +832,7 @@ folder, otherwise delete a word"
 
 #+begin_src emacs-lisp
 (use-package aggressive-indent
-  :straigh t)
+  :straight t)
 
 (when (locate-library "aggressive-indent")
   (add-hook 'lisp-mode-hook #'aggressive-indent-mode)
@@ -1648,7 +1644,7 @@ folder, otherwise delete a word"
   (setq org-hugo-base-dir "~/Projects/cpb"))
 
 (use-package ox-moderncv
-  :straight t
+  :straight '(org-cv :host github :repo "Titan-C/org-cv")
   :defer t
   :init (require 'ox-moderncv))
 #+end_src
@@ -1913,13 +1909,10 @@ folder, otherwise delete a word"
 ** Format-on-save
 
 #+begin_src emacs-lisp
-(use-package format-all-region-or-buffer
+(use-package format-all
   :straight t
   :init (format-all-mode 1))
 #+end_src
-
-
-
 
 * Latex
 ** auctex
