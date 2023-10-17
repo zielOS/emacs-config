@@ -759,21 +759,14 @@ folder, otherwise delete a word"
 ** Consult Commands
 
 #+begin_src emacs-lisp
-(use-package projectile
+(use-package consult
   :straight t)
 
-(defun dw/get-project-root ()
-  (when (fboundp 'projectile-project-root)
-    (projectile-project-root)))
+(when (locate-library "consult")
+  ;; Set some consult bindings
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
 
-(use-package consult
-  :straight t
-  :demand t
-  :bind (("C-s" . consult-line)
-         ("C-M-l" . consult-imenu)
-         ("C-M-j" . persp-switch-to-buffer*)
-         :map minibuffer-local-map
-         ("C-r" . consult-history))
   (setq completion-in-region-function #'consult-completion-in-region))
 #+end_src
 
