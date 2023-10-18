@@ -2030,7 +2030,6 @@ CLOSED: [2023-10-17 Tue 02:13]
    "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
    "c t" 'orgtbl-mode))
 #+end_src
-
 ** Import *.sty
 
 #+begin_src emacs-lisp
@@ -2074,7 +2073,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 	   (lambda (file) (concat "#+LATEX_HEADER: \\usepackage{" (file-name-sans-extension (file-relative-name file default-directory)) "}\n"))
 	   (my/list-sty)))))
 #+end_src
-
 ** Snippets
 *** Greek letters
 
@@ -2255,7 +2253,6 @@ CLOSED: [2023-10-17 Tue 02:13]
  'latex-mode
  my/latex-section-snippets)
 #+end_src
-
 ** lsp-latex
 
 #+begin_src emacs-lisp
@@ -2271,7 +2268,6 @@ CLOSED: [2023-10-17 Tue 02:13]
     (add-hook 'bibtex-mode-hook 'lsp)))
 
 #+end_src
-
 ** company-auctex
 
 #+begin_src emacs-lisp
@@ -2281,7 +2277,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   :config
   (company-auctex-init))
 #+end_src
-
 ** company-math
 
 #+begin_src emacs-lisp
@@ -2296,7 +2291,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 (add-hook 'TeX-mode-hook 'my-latex-mode-setup)
 #+end_src
-
 ** company-reftex
 
 #+begin_src emacs-lisp
@@ -2316,7 +2310,6 @@ CLOSED: [2023-10-17 Tue 02:13]
     'company-reftex-labels
     'company-reftex-citations))
 #+end_src
-
 ** cdlatex
 
 #+begin_src emacs-lisp
@@ -2327,7 +2320,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 	 (org-mode . turn-on-org-cdlatex)))
 
 #+end_src
-
 ** auctex-latexmk
 
 #+begin_src emacs-lisp
@@ -2337,7 +2329,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 (auctex-latexmk-setup)
 (setq auctex-latexmk-inherit-TeX-PDF-mode t)
 #+end_src
-
 ** evil-tex
 
 #+begin_src emacs-lisp
@@ -2346,7 +2337,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 (add-hook 'LaTeX-mode-hook #'evil-tex-mode)
 #+end_src
-
 ** latex-preview-pane
 
 #+begin_src emacs-lisp
@@ -2354,7 +2344,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   :straight t)
 (latex-preview-pane-enable)
 #+end_src
-
 ** org-ref
 
 #+begin_src emacs-lisp
@@ -2383,7 +2372,6 @@ CLOSED: [2023-10-17 Tue 02:13]
    "M-RET" 'org-ref-bibtex-hydra/body))
 
 #+end_src
-
 ** ivy-bibtex
 
 #+begin_src emacs-lisp
@@ -2569,43 +2557,42 @@ CLOSED: [2023-10-17 Tue 02:13]
           (funcall ,FUNCTION)
         (delete-frame)))
 #+end_src
-
 ** Calculator
 ** Mail
 ** PDF
 
 #+begin_src emacs-lisp
-(use-package pdf-tools
-  :straight t
-  :mode  ("\\.pdf\\'" . pdf-view-mode)
-  :config
-  (pdf-loader-install)
-  (setq-default pdf-view-display-size 'fit-width)
-  (setq pdf-view-continuous t)
-  (setq pdf-view-midnight-colors '("#CDD6F4" . "#11111B" ))
-  :general
-  (general-define-key :states 'motion :keymaps 'pdf-view-mode-map
-                      ;; Arrows for movement as well
-                      (kbd "<down>") 'pdf-view-next-line-or-next-page
-                      (kbd "<up>") 'pdf-view-previous-line-or-previous-page
+  (use-package pdf-tools
+    :straight t
+    :mode  ("\\.pdf\\'" . pdf-view-mode)
+    :config
+    (pdf-loader-install)
+    (setq-default pdf-view-display-size 'fit-width)
+    (setq pdf-view-continuous t)
+    (setq pdf-view-midnight-colors '("#CDD6F4" . "#11111B" ))
+    :general
+    (general-define-key :states 'motion :keymaps 'pdf-view-mode-map
+                        ;; Arrows for movement as well
+                        (kbd "<down>") 'pdf-view-next-line-or-next-page
+                        (kbd "<up>") 'pdf-view-previous-line-or-previous-page
 
-                      (kbd "<down>") 'pdf-view-next-line-or-next-page
-                      (kbd "<up>") 'pdf-view-previous-line-or-previous-page
+                        (kbd "<down>") 'pdf-view-next-line-or-next-page
+                        (kbd "<up>") 'pdf-view-previous-line-or-previous-page
 
-                      (kbd "<left>") 'image-backward-hscroll
-                      (kbd "<right>") 'image-forward-hscroll
+                        (kbd "<left>") 'image-backward-hscroll
+                        (kbd "<right>") 'image-forward-hscroll
 
-                      "H" 'pdf-view-fit-height-to-window
-                      "0" 'pdf-view-fit-height-to-window
-                      "W" 'pdf-view-fit-width-to-window
-                      "=" 'pdf-view-enlarge
-                      "-" 'pdf-view-shrink
+                        "H" 'pdf-view-fit-height-to-window
+                        "0" 'pdf-view-fit-height-to-window
+                        "W" 'pdf-view-fit-width-to-window
+                        "=" 'pdf-view-enlarge
+                        "-" 'pdf-view-shrink
 
-                      "q" 'quit-window
-                      "Q" 'kill-this-buffer
-                      "g" 'revert-buffer
+                        "q" 'quit-window
+                        "Q" 'kill-this-buffer
+                        "g" 'revert-buffer
 
-                      "C-s" 'isearch-forward))
+                        "C-s" 'isearch-forward))
 #+end_src
 
 
