@@ -429,23 +429,23 @@ CLOSED: [2023-10-15 Sun 02:14]
 ** Font
 
 #+begin_src emacs-lisp
-(defun efs/set-font-faces ()
-  (message "Setting faces!")
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 95)
+  (defun efs/set-font-faces ()
+    (message "Setting faces!")
+    (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 135)
 
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 95)
+    ;; Set the fixed pitch face
+    (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 135)
 
-  ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 95 :weight 'regular))
+    ;; Set the variable pitch face
+    (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 135 :weight 'regular))
 
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (setq doom-modeline-icon t)
-                (with-selected-frame frame
-                  (efs/set-font-faces))))
-  (efs/set-font-faces))
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  (setq doom-modeline-icon t)
+                  (with-selected-frame frame
+                    (efs/set-font-faces))))
+    (efs/set-font-faces))
 #+end_src
 
 ** Help Buffers
@@ -1982,57 +1982,58 @@ CLOSED: [2023-10-17 Tue 02:13]
 ** auctex
 
 #+begin_src emacs-lisp
-    (use-package tex
-      :straight auctex
-      :config
-      (setq-default TeX-auto-save t)
-      (setq-default TeX-parse-self t)
-      (TeX-PDF-mode)
-      ;; Use XeLaTeX & stuff
-      (setq-default TeX-engine 'xetex)
-      (setq-default TeX-command-extra-options "-shell-escape")
-      (setq-default TeX-source-correlate-method 'synctex)
-      (TeX-source-correlate-mode)
-      (setq-default TeX-source-correlate-start-server t)
-      (setq-default LaTeX-math-menu-unicode t)
+  (use-package tex
+    :straight auctex
+    :config
+    (setq-default TeX-auto-save t)
+    (setq-default TeX-parse-self t)
+    (TeX-PDF-mode)
+    ;; Use XeLaTeX & stuff
+    (setq-default TeX-engine 'xetex)
+    (setq-default TeX-command-extra-options "-shell-escape")
+    (setq-default TeX-source-correlate-method 'synctex)
+    (TeX-source-correlate-mode)
+    (setq-default TeX-source-correlate-start-server t)
+    (setq-default LaTeX-math-menu-unicode t)
 
-      (setq-default font-latex-fontify-sectioning 1.3)
+    (setq-default font-latex-fontify-sectioning 1.3)
 
-      ;; Scale preview for my DPI
-      (setq-default preview-scale-function 1.4)
-      (when (boundp 'tex--prettify-symbols-alist)
-        (assoc-delete-all "--" tex--prettify-symbols-alist)
-        (assoc-delete-all "---" tex--prettify-symbols-alist))
+    ;; Scale preview for my DPI
+    (setq-default preview-scale-function 1.4)
+    (when (boundp 'tex--prettify-symbols-alist)
+      (assoc-delete-all "--" tex--prettify-symbols-alist)
+      (assoc-delete-all "---" tex--prettify-symbols-alist))
 
-      (add-hook 'LaTeX-mode-hook
-    	    (lambda ()
-    	      (TeX-fold-mode 1)
-    	      (outline-minor-mode)))
+    (add-hook 'LaTeX-mode-hook
+  	    (lambda ()
+  	      (TeX-fold-mode 1)
+  	      (outline-minor-mode)))
 
-      (add-to-list 'TeX-view-program-selection
-    	       '(output-pdf "Zathura"))
+    (add-to-list 'TeX-view-program-selection
+  	       '(output-pdf "Zathura"))
 
-      ;; Do not run lsp within templated TeX files
-      (add-hook 'LaTeX-mode-hook
-    	    (lambda ()
-    	      (unless (string-match "\.hogan\.tex$" (buffer-name))
-    		(lsp))
-    	      (setq-local lsp-diagnostic-package :none)
-    	      (setq-local flycheck-checker 'tex-chktex)))
+    ;; Do not run lsp within templated TeX files
+    (add-hook 'LaTeX-mode-hook
+  	    (lambda ()
+  	      (unless (string-match "\.hogan\.tex$" (buffer-name))
+  		(lsp))
+  	      (setq-local lsp-diagnostic-package :none)
+  	      (setq-local flycheck-checker 'tex-chktex)))
 
-      (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
-      (add-hook 'LaTeX-mode-hook #'smartparens-mode)
-      (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
-      ;; Turn on RefTeX in AUCTeX
-      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-      ;; Activate nice interface between RefTeX and AUCTeX
-      (setq reftex-plug-into-AUCTeX t)
+    (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
+    (add-hook 'LaTeX-mode-hook #'smartparens-mode)
+    (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+    ;; Turn on RefTeX in AUCTeX
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+    ;; Activate nice interface between RefTeX and AUCTeX
+    (setq reftex-plug-into-AUCTeX t)
 
-      (efs/leader-keys
-        :keymaps '(LaTeX-mode-map latex-mode-map)
-       "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
-       "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
-       "c t" 'orgtbl-mode))
+    (efs/leader-keys
+      :keymaps '(LaTeX-mode-map latex-mode-map)
+     "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
+     "b e" '(reftex-citation :wk "Enter reftex citation")
+     "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
+     "c t" 'orgtbl-mode))
 #+end_src
 ** Import *.sty
 
