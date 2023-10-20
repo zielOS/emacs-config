@@ -654,6 +654,8 @@ CLOSED: [2023-10-15 Sun 02:14]
     ;; (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
     (setq dirvish-mode-line-format
           '(:left (sort symlink) :right (omit yank index)))
+    (setq dirvish-preview-dispatchers
+  	(cl-substitute 'pdf-preface 'pdf dirvish-preview-dispatchers))
     (setq dirvish-attributes
           '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
     (setq delete-by-moving-to-trash t)
@@ -1244,7 +1246,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   (defun efs/org-setup ()
     (org-indent-mode) ;; Keeps org items like text under headings, lists, nicely indented
     (visual-line-mode 1) ;; Nice line wrapping
-    (centered-cursor-mode) ;; Enable centered cursor mode
     (smartparens-mode 0) ;; Disable smartparents
     (hl-prog-extra-mode) ;; Highlighting with regexps
     (valign-mode))
@@ -1422,282 +1423,282 @@ CLOSED: [2023-10-17 Tue 02:13]
 *** Setup
 
 #+begin_src emacs-lisp
-;; custom time stamp format. I don't use this.
-(setq org-time-stamp-custom-formats '("<%A, %B %d, %Y" . "<%m/%d/%y %a %I:%M %p>"))
+  ;; custom time stamp format. I don't use this.
+  (setq org-time-stamp-custom-formats '("<%A, %B %d, %Y" . "<%m/%d/%y %a %I:%M %p>"))
 
-(setq org-agenda-restore-windows-after-quit t)
+  (setq org-agenda-restore-windows-after-quit t)
 
-(setq org-agenda-window-setup 'current-window)
+  (setq org-agenda-window-setup 'current-window)
 
-;; Only show upcoming deadlines for the next X days. By default it shows
-;; 14 days into the future, which seems excessive.
-(setq org-deadline-warning-days 3)
-;; If something is done, don't show its deadline
-(setq org-agenda-skip-deadline-if-done t)
-;; If something is done, don't show when it's scheduled for
-(setq org-agenda-skip-scheduled-if-done t)
-;; If something is scheduled, don't tell me it is due soon
-(setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+  ;; Only show upcoming deadlines for the next X days. By default it shows
+  ;; 14 days into the future, which seems excessive.
+  (setq org-deadline-warning-days 3)
+  ;; If something is done, don't show its deadline
+  (setq org-agenda-skip-deadline-if-done t)
+  ;; If something is done, don't show when it's scheduled for
+  (setq org-agenda-skip-scheduled-if-done t)
+  ;; If something is scheduled, don't tell me it is due soon
+  (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
 
-;; use AM-PM and not 24-hour time
-(setq org-agenda-timegrid-use-ampm t)
+  ;; use AM-PM and not 24-hour time
+  (setq org-agenda-timegrid-use-ampm t)
 
-;; A new day is 3am (I work late into the night)
-;; (setq org-extend-today-until 3)
+  ;; A new day is 3am (I work late into the night)
+  ;; (setq org-extend-today-until 3)
 
-;; (setq org-agenda-time-grid '((daily today require-timed)
-;;                              (1000 1100 1200 1300 1400 1500 1600 1700 1800 1900 2000 2100 2200)
-;;                              "        " "----------------"))
+  ;; (setq org-agenda-time-grid '((daily today require-timed)
+  ;;                              (1000 1100 1200 1300 1400 1500 1600 1700 1800 1900 2000 2100 2200)
+  ;;                              "        " "----------------"))
 
-(setq org-agenda-time-grid nil)
+  (setq org-agenda-time-grid nil)
 
-;; (setq org-agenda-span 'day)
+  ;; (setq org-agenda-span 'day)
 
-(setq org-agenda-block-separator ?-)
-;; (setq org-agenda-current-time-string "<----------------- Now")
+  (setq org-agenda-block-separator ?-)
+  ;; (setq org-agenda-current-time-string "<----------------- Now")
 
-;; ;; (setq org-agenda-block-separator nil)
+  ;; ;; (setq org-agenda-block-separator nil)
 
-;; (setq org-agenda-scheduled-leaders '("Plan | " "Sched.%2dx: ") ; ⇛
-;;       org-agenda-deadline-leaders '("Due: " "(in %1d d.) " "Due %1d d. ago: "))
+  ;; (setq org-agenda-scheduled-leaders '("Plan | " "Sched.%2dx: ") ; ⇛
+  ;;       org-agenda-deadline-leaders '("Due: " "(in %1d d.) " "Due %1d d. ago: "))
 
-;; (setq org-agenda-prefix-format '((agenda . "  %-6:T %t%s")
-;;                                  (todo . "  %-6:T %t%s")
-;;                                  (tags . " %i %-12:c")
-;;                                  (search . " %i %-12:c")))
+  ;; (setq org-agenda-prefix-format '((agenda . "  %-6:T %t%s")
+  ;;                                  (todo . "  %-6:T %t%s")
+  ;;                                  (tags . " %i %-12:c")
+  ;;                                  (search . " %i %-12:c")))
 
-;;;;; more true to defaults
+  ;;;;; more true to defaults
 
-(setq org-agenda-prefix-format '((agenda . " %-12:T%?-12t% s")
-                                 (todo . " %i %-12:c")
-                                 (tags . " %i %-12:c")
-                                 (search . " %i %-12:c")))
+  (setq org-agenda-prefix-format '((agenda . " %-12:T%?-12t% s")
+                                   (todo . " %i %-12:c")
+                                   (tags . " %i %-12:c")
+                                   (search . " %i %-12:c")))
 
-(setq org-agenda-deadline-leaders '("Deadline:  " "In %2d d.: " "%2d d. ago: "))
+  (setq org-agenda-deadline-leaders '("Deadline:  " "In %2d d.: " "%2d d. ago: "))
 
-(add-hook 'org-agenda-mode-hook
-          #'(lambda () (setq-local line-spacing 3)))
+  (add-hook 'org-agenda-mode-hook
+            #'(lambda () (setq-local line-spacing 3)))
 
-(add-hook 'org-agenda-mode-hook
-          #'(lambda () (hide-mode-line-mode)))
+  (add-hook 'org-agenda-mode-hook
+            #'(lambda () (hide-mode-line-mode)))
 #+end_src
 
 *** Custom Views
 
 #+begin_src emacs-lisp
-(setq org-agenda-custom-commands nil)
+  (setq org-agenda-custom-commands nil)
 
-(setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
+  (setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
 
-(defvar jib-org-agenda-columbia-productivity-super-groups
-  '((:name "Personal Items" :tag "p" :order 10)
-    (:name "Extracurricular" :tag "ec" :order 5)
-    (:name "Todo" :todo ("TODO") :order 3)
-    (:name "Heads Up!"
-           :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
-    (:discard (:todo t))))
+  (defvar jib-org-agenda-columbia-productivity-super-groups
+    '((:name "Personal Items" :tag "p" :order 10)
+      (:name "Extracurricular" :tag "ec" :order 5)
+      (:name "Todo" :todo ("TODO") :order 3)
+      (:name "Heads Up!"
+             :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
+      (:discard (:todo t))))
 
-(defvar jib-org-columbia-productivity-ql-query
-  '(and (not (tags "defer"))
-        (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
-        (or (effort 1)
-            (todo "TODO" "PROJ" "STUDY")
-            (and (todo)
-                 (tags "p" "ec" "lt")))))
+  (defvar jib-org-columbia-productivity-ql-query
+    '(and (not (tags "defer"))
+          (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
+          (or (effort 1)
+              (todo "TODO" "PROJ" "STUDY")
+              (and (todo)
+                   (tags "p" "ec" "lt")))))
 
-;; Day View
-(add-to-list 'org-agenda-custom-commands
-             '("c" "Columbia Day View"
-               ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
-                            (org-agenda-span 'day)
-                            (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
-                            (org-super-agenda-groups '(
-                                                       (:name "Today:"
-                                                              :scheduled t
-                                                              :order 2)
-                                                       (:name "Deadlines:"
-                                                              :deadline t
-                                                              :order 3)
-                                                       (:name "Today's Schedule:"
-                                                              :time-grid t
-                                                              :discard (:deadline t)
-                                                              :order 1)))))
+  ;; Day View
+  (add-to-list 'org-agenda-custom-commands
+               '("c" "Columbia Day View"
+                 ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
+                              (org-agenda-span 'day)
+                              (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
+                              (org-super-agenda-groups '(
+                                                         (:name "Today:"
+                                                                :scheduled t
+                                                                :order 2)
+                                                         (:name "Deadlines:"
+                                                                :deadline t
+                                                                :order 3)
+                                                         (:name "Today's Schedule:"
+                                                                :time-grid t
+                                                                :discard (:deadline t)
+                                                                :order 1)))))
 
-                (org-ql-block jib-org-columbia-productivity-ql-query
-                              ((org-ql-block-header "Productivity Overview:")
-                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+                  (org-ql-block jib-org-columbia-productivity-ql-query
+                                ((org-ql-block-header "Productivity Overview:")
+                                 (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
 
-;; Day View No Agenda
-(add-to-list 'org-agenda-custom-commands
-             '("v" "Columbia Day View No Agenda"
-               ((org-ql-block '(todo)
-                              ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
-                                                                      :scheduled today
-                                                                      :deadline today) jib-org-agenda-columbia-productivity-super-groups)
+  ;; Day View No Agenda
+  (add-to-list 'org-agenda-custom-commands
+               '("v" "Columbia Day View No Agenda"
+                 ((org-ql-block '(todo)
+                                ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
+                                                                        :scheduled today
+                                                                        :deadline today) jib-org-agenda-columbia-productivity-super-groups)
 
-                                                        ;; '((:name "Today's Tasks"
-                                                        ;;                                  :scheduled today
-                                                        ;;                                  :deadline today)
-                                                        ;;                           (:discard (:tag "defer"))
-                                                        ;;                           (:name "Extracurricular:"
-                                                        ;;                                  :tag "ec"
-                                                        ;;                                  :order 10)
-                                                        ;;                           (:name "Personal:"
-                                                        ;;                                  :tag "p"
-                                                        ;;                                  :order 5)
-                                                        ;;                           (:name "Projects"
-                                                        ;;                                  :todo ("STUDY" "PROJ")
-                                                        ;;                                  :tag "lt")
-                                                        ;;                           (:discard (:todo t)))
-                                                        ))))))
+                                                          ;; '((:name "Today's Tasks"
+                                                          ;;                                  :scheduled today
+                                                          ;;                                  :deadline today)
+                                                          ;;                           (:discard (:tag "defer"))
+                                                          ;;                           (:name "Extracurricular:"
+                                                          ;;                                  :tag "ec"
+                                                          ;;                                  :order 10)
+                                                          ;;                           (:name "Personal:"
+                                                          ;;                                  :tag "p"
+                                                          ;;                                  :order 5)
+                                                          ;;                           (:name "Projects"
+                                                          ;;                                  :todo ("STUDY" "PROJ")
+                                                          ;;                                  :tag "lt")
+                                                          ;;                           (:discard (:todo t)))
+                                                          ))))))
 
-;; Three-day view
-(add-to-list 'org-agenda-custom-commands
-             '("w" "Columbia Four-Day View"
-               ((agenda "" ((org-agenda-span 4)
-                            (org-agenda-entry-types '(:deadline :scheduled))
-                            (org-agenda-start-on-weekday nil)
-                            (org-deadline-warning-days 0)))
+  ;; Three-day view
+  (add-to-list 'org-agenda-custom-commands
+               '("w" "Columbia Four-Day View"
+                 ((agenda "" ((org-agenda-span 4)
+                              (org-agenda-entry-types '(:deadline :scheduled))
+                              (org-agenda-start-on-weekday nil)
+                              (org-deadline-warning-days 0)))
 
-                (org-ql-block jib-org-columbia-productivity-ql-query
-                              ((org-ql-block-header "Productivity Overview:")
-                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+                  (org-ql-block jib-org-columbia-productivity-ql-query
+                                ((org-ql-block-header "Productivity Overview:")
+                                 (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
 
-;; Six-day view
-(add-to-list 'org-agenda-custom-commands
-             '("q" "Columbia Ten-Day View"
-               ((agenda "" ((org-agenda-span 10)
-                            (org-agenda-entry-types '(:deadline :scheduled))
-                            (org-agenda-start-on-weekday nil)
-                            (org-deadline-warning-days 0))))))
+  ;; Six-day view
+  (add-to-list 'org-agenda-custom-commands
+               '("q" "Columbia Ten-Day View"
+                 ((agenda "" ((org-agenda-span 10)
+                              (org-agenda-entry-types '(:deadline :scheduled))
+                              (org-agenda-start-on-weekday nil)
+                              (org-deadline-warning-days 0))))))
 #+end_src
 ** Org Capture
 
 #+begin_src emacs-lisp
-(setq org-agenda-custom-commands nil)
+  (setq org-agenda-custom-commands nil)
 
-(setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
+  (setq org-agenda-hide-tags-regexp "\\(ec\\|lit\\|sci\\|edu\\|ds\\|calc3\\)")
 
-(defvar jib-org-agenda-columbia-productivity-super-groups
-  '((:name "Personal Items" :tag "p" :order 10)
-    (:name "Extracurricular" :tag "ec" :order 5)
-    (:name "Todo" :todo ("TODO") :order 3)
-    (:name "Heads Up!"
-           :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
-    (:discard (:todo t))))
+  (defvar jib-org-agenda-columbia-productivity-super-groups
+    '((:name "Personal Items" :tag "p" :order 10)
+      (:name "Extracurricular" :tag "ec" :order 5)
+      (:name "Todo" :todo ("TODO") :order 3)
+      (:name "Heads Up!"
+             :todo ("PROJ" "WORK" "STUDY") :tag "lt" :order 4)
+      (:discard (:todo t))))
 
-(defvar jib-org-columbia-productivity-ql-query
-  '(and (not (tags "defer"))
-        (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
-        (or (effort 1)
-            (todo "TODO" "PROJ" "STUDY")
-            (and (todo)
-                 (tags "p" "ec" "lt")))))
+  (defvar jib-org-columbia-productivity-ql-query
+    '(and (not (tags "defer"))
+          (not (scheduled)) ;; rationale --- if it's scheduled I don't need the heads-up
+          (or (effort 1)
+              (todo "TODO" "PROJ" "STUDY")
+              (and (todo)
+                   (tags "p" "ec" "lt")))))
 
-;; Day View
-(add-to-list 'org-agenda-custom-commands
-             '("c" "Columbia Day View"
-               ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
-                            (org-agenda-span 'day)
-                            (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
-                            (org-super-agenda-groups '(
-                                                       (:name "Today:"
-                                                              :scheduled t
-                                                              :order 2)
-                                                       (:name "Deadlines:"
-                                                              :deadline t
-                                                              :order 3)
-                                                       (:name "Today's Schedule:"
-                                                              :time-grid t
-                                                              :discard (:deadline t)
-                                                              :order 1)))))
+  ;; Day View
+  (add-to-list 'org-agenda-custom-commands
+               '("c" "Columbia Day View"
+                 ((agenda "" ((org-agenda-overriding-header "Columbia Productivity View")
+                              (org-agenda-span 'day)
+                              (org-agenda-sorting-strategy '(scheduled-up deadline-up priority-down))
+                              (org-super-agenda-groups '(
+                                                         (:name "Today:"
+                                                                :scheduled t
+                                                                :order 2)
+                                                         (:name "Deadlines:"
+                                                                :deadline t
+                                                                :order 3)
+                                                         (:name "Today's Schedule:"
+                                                                :time-grid t
+                                                                :discard (:deadline t)
+                                                                :order 1)))))
 
-                (org-ql-block jib-org-columbia-productivity-ql-query
-                              ((org-ql-block-header "Productivity Overview:")
-                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+                  (org-ql-block jib-org-columbia-productivity-ql-query
+                                ((org-ql-block-header "Productivity Overview:")
+                                 (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
 
-;; Day View No Agenda
-(add-to-list 'org-agenda-custom-commands
-             '("v" "Columbia Day View No Agenda"
-               ((org-ql-block '(todo)
-                              ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
-                                                                      :scheduled today
-                                                                      :deadline today) jib-org-agenda-columbia-productivity-super-groups)
+  ;; Day View No Agenda
+  (add-to-list 'org-agenda-custom-commands
+               '("v" "Columbia Day View No Agenda"
+                 ((org-ql-block '(todo)
+                                ((org-super-agenda-groups (push '(:name "Today's Tasks" ;; jib-org-super-agenda-school-groups, with this added on
+                                                                        :scheduled today
+                                                                        :deadline today) jib-org-agenda-columbia-productivity-super-groups)
 
-                                                        ;; '((:name "Today's Tasks"
-                                                        ;;                                  :scheduled today
-                                                        ;;                                  :deadline today)
-                                                        ;;                           (:discard (:tag "defer"))
-                                                        ;;                           (:name "Extracurricular:"
-                                                        ;;                                  :tag "ec"
-                                                        ;;                                  :order 10)
-                                                        ;;                           (:name "Personal:"
-                                                        ;;                                  :tag "p"
-                                                        ;;                                  :order 5)
-                                                        ;;                           (:name "Projects"
-                                                        ;;                                  :todo ("STUDY" "PROJ")
-                                                        ;;                                  :tag "lt")
-                                                        ;;                           (:discard (:todo t)))
-                                                        ))))))
+                                                          ;; '((:name "Today's Tasks"
+                                                          ;;                                  :scheduled today
+                                                          ;;                                  :deadline today)
+                                                          ;;                           (:discard (:tag "defer"))
+                                                          ;;                           (:name "Extracurricular:"
+                                                          ;;                                  :tag "ec"
+                                                          ;;                                  :order 10)
+                                                          ;;                           (:name "Personal:"
+                                                          ;;                                  :tag "p"
+                                                          ;;                                  :order 5)
+                                                          ;;                           (:name "Projects"
+                                                          ;;                                  :todo ("STUDY" "PROJ")
+                                                          ;;                                  :tag "lt")
+                                                          ;;                           (:discard (:todo t)))
+                                                          ))))))
 
-;; Three-day view
-(add-to-list 'org-agenda-custom-commands
-             '("w" "Columbia Four-Day View"
-               ((agenda "" ((org-agenda-span 4)
-                            (org-agenda-entry-types '(:deadline :scheduled))
-                            (org-agenda-start-on-weekday nil)
-                            (org-deadline-warning-days 0)))
+  ;; Three-day view
+  (add-to-list 'org-agenda-custom-commands
+               '("w" "Columbia Four-Day View"
+                 ((agenda "" ((org-agenda-span 4)
+                              (org-agenda-entry-types '(:deadline :scheduled))
+                              (org-agenda-start-on-weekday nil)
+                              (org-deadline-warning-days 0)))
 
-                (org-ql-block jib-org-columbia-productivity-ql-query
-                              ((org-ql-block-header "Productivity Overview:")
-                               (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
+                  (org-ql-block jib-org-columbia-productivity-ql-query
+                                ((org-ql-block-header "Productivity Overview:")
+                                 (org-super-agenda-groups jib-org-agenda-columbia-productivity-super-groups))))))
 
-;; Six-day view
-(add-to-list 'org-agenda-custom-commands
-             '("q" "Columbia Ten-Day View"
-               ((agenda "" ((org-agenda-span 10)
-                            (org-agenda-entry-types '(:deadline :scheduled))
-                            (org-agenda-start-on-weekday nil)
-                            (org-deadline-warning-days 0))))))
+  ;; Six-day view
+  (add-to-list 'org-agenda-custom-commands
+               '("q" "Columbia Ten-Day View"
+                 ((agenda "" ((org-agenda-span 10)
+                              (org-agenda-entry-types '(:deadline :scheduled))
+                              (org-agenda-start-on-weekday nil)
+                              (org-deadline-warning-days 0))))))
 #+end_src
 ** Org Export
 
 #+begin_src emacs-lisp
-;; (setq org-export-backends '(ascii beamer html latex md odt))
+  ;; (setq org-export-backends '(ascii beamer html latex md odt))
 
-(setq org-export-with-broken-links t
-      org-export-with-smart-quotes t
-      org-export-allow-bind-keywords t)
+  (setq org-export-with-broken-links t
+        org-export-with-smart-quotes t
+        org-export-allow-bind-keywords t)
 
-;; From https://stackoverflow.com/questions/23297422/org-mode-timestamp-format-when-exported
-(defun org-export-filter-timestamp-remove-brackets (timestamp backend info)
-  "removes relevant brackets from a timestamp"
-  (cond
-   ((org-export-derived-backend-p backend 'latex)
-    (replace-regexp-in-string "[<>]\\|[][]" "" timestamp))
-   ((org-export-derived-backend-p backend 'html)
-    (replace-regexp-in-string "&[lg]t;\\|[][]" "" timestamp))))
+  ;; From https://stackoverflow.com/questions/23297422/org-mode-timestamp-format-when-exported
+  (defun org-export-filter-timestamp-remove-brackets (timestamp backend info)
+    "removes relevant brackets from a timestamp"
+    (cond
+     ((org-export-derived-backend-p backend 'latex)
+      (replace-regexp-in-string "[<>]\\|[][]" "" timestamp))
+     ((org-export-derived-backend-p backend 'html)
+      (replace-regexp-in-string "&[lg]t;\\|[][]" "" timestamp))))
 
 
-;; HTML-specific
-(setq org-html-validation-link nil) ;; No validation button on HTML exports
+  ;; HTML-specific
+  (setq org-html-validation-link nil) ;; No validation button on HTML exports
+  
+  ;; LaTeX Specific
+  (eval-after-load 'ox '(add-to-list
+                         'org-export-filter-timestamp-functions
+                         'org-export-filter-timestamp-remove-brackets))
 
-;; LaTeX Specific
-(eval-after-load 'ox '(add-to-list
-                       'org-export-filter-timestamp-functions
-                       'org-export-filter-timestamp-remove-brackets))
+  (use-package ox-hugo
+    :straight t
+    :defer 2
+    :after ox
+    :config
+    (setq org-hugo-base-dir "~/Projects/cpb"))
 
-(use-package ox-hugo
-  :straight t
-  :defer 2
-  :after ox
-  :config
-  (setq org-hugo-base-dir "~/Projects/cpb"))
-
-(use-package ox-moderncv
-  :straight '(org-cv :host github :repo "Titan-C/org-cv")
-  :defer t
-  :init (require 'ox-moderncv))
+  (use-package ox-moderncv
+    :straight '(org-cv :host github :repo "Titan-C/org-cv")
+    :defer t
+    :init (require 'ox-moderncv))
 #+end_src
 ** LaTeX Classes
 
@@ -1982,7 +1983,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 #+begin_src emacs-lisp
   (use-package tex
-    :defer t
     :straight auctex
     :config
     (setq-default TeX-auto-save t)
@@ -2253,21 +2253,6 @@ CLOSED: [2023-10-17 Tue 02:13]
  'latex-mode
  my/latex-section-snippets)
 #+end_src
-** lsp-latex
-
-#+begin_src emacs-lisp
-(use-package lsp-latex
-  :straight t
-  :config
-  (with-eval-after-load "tex-mode"
-    (add-hook 'tex-mode-hook 'lsp)
-    (add-hook 'latex-mode-hook 'lsp))
-
-  ;; For bibtex
-  (with-eval-after-load "bibtex"
-    (add-hook 'bibtex-mode-hook 'lsp)))
-
-#+end_src
 ** company-auctex
 
 #+begin_src emacs-lisp
@@ -2291,25 +2276,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 (add-hook 'TeX-mode-hook 'my-latex-mode-setup)
 #+end_src
-** company-reftex
-
-#+begin_src emacs-lisp
-(use-package company-reftex
-  :straight t)
-
-(add-hook 'Latex-mode-hook 'turn-on-reftex)
-(add-hook 'latex-mode-hook 'turn-on-reftex)
-
-(custom-set-variables
- '(package-selected-packages (quote (company-reftex company))))
-(custom-set-faces)
-
-(eval-after-load "company"
-  '(add-to-list
-    'company-backends
-    'company-reftex-labels
-    'company-reftex-citations))
-#+end_src
 ** cdlatex
 
 #+begin_src emacs-lisp
@@ -2328,14 +2294,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 (auctex-latexmk-setup)
 (setq auctex-latexmk-inherit-TeX-PDF-mode t)
-#+end_src
-** evil-tex
-
-#+begin_src emacs-lisp
-(use-package evil-tex
-  :straight t)
-
-(add-hook 'LaTeX-mode-hook #'evil-tex-mode)
 #+end_src
 ** latex-preview-pane
 
