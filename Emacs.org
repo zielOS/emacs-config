@@ -1982,53 +1982,57 @@ CLOSED: [2023-10-17 Tue 02:13]
 ** auctex
 
 #+begin_src emacs-lisp
-  (use-package tex
-    :straight auctex
-    :config
-    (setq-default TeX-auto-save t)
-    (setq-default TeX-parse-self t)
-    (TeX-PDF-mode)
-    ;; Use XeLaTeX & stuff
-    (setq-default TeX-engine 'xetex)
-    (setq-default TeX-command-extra-options "-shell-escape")
-    (setq-default TeX-source-correlate-method 'synctex)
-    (TeX-source-correlate-mode)
-    (setq-default TeX-source-correlate-start-server t)
-    (setq-default LaTeX-math-menu-unicode t)
+    (use-package tex
+      :straight auctex
+      :config
+      (setq-default TeX-auto-save t)
+      (setq-default TeX-parse-self t)
+      (TeX-PDF-mode)
+      ;; Use XeLaTeX & stuff
+      (setq-default TeX-engine 'xetex)
+      (setq-default TeX-command-extra-options "-shell-escape")
+      (setq-default TeX-source-correlate-method 'synctex)
+      (TeX-source-correlate-mode)
+      (setq-default TeX-source-correlate-start-server t)
+      (setq-default LaTeX-math-menu-unicode t)
 
-    (setq-default font-latex-fontify-sectioning 1.3)
+      (setq-default font-latex-fontify-sectioning 1.3)
 
-    ;; Scale preview for my DPI
-    (setq-default preview-scale-function 1.4)
-    (when (boundp 'tex--prettify-symbols-alist)
-      (assoc-delete-all "--" tex--prettify-symbols-alist)
-      (assoc-delete-all "---" tex--prettify-symbols-alist))
+      ;; Scale preview for my DPI
+      (setq-default preview-scale-function 1.4)
+      (when (boundp 'tex--prettify-symbols-alist)
+        (assoc-delete-all "--" tex--prettify-symbols-alist)
+        (assoc-delete-all "---" tex--prettify-symbols-alist))
 
-    (add-hook 'LaTeX-mode-hook
-  	    (lambda ()
-  	      (TeX-fold-mode 1)
-  	      (outline-minor-mode)))
+      (add-hook 'LaTeX-mode-hook
+    	    (lambda ()
+    	      (TeX-fold-mode 1)
+    	      (outline-minor-mode)))
 
-    (add-to-list 'TeX-view-program-selection
-  	       '(output-pdf "PDF Tools"))
+      (add-to-list 'TeX-view-program-selection
+    	       '(output-pdf "Zathura"))
 
-    ;; Do not run lsp within templated TeX files
-    (add-hook 'LaTeX-mode-hook
-  	    (lambda ()
-  	      (unless (string-match "\.hogan\.tex$" (buffer-name))
-  		(lsp))
-  	      (setq-local lsp-diagnostic-package :none)
-  	      (setq-local flycheck-checker 'tex-chktex)))
+      ;; Do not run lsp within templated TeX files
+      (add-hook 'LaTeX-mode-hook
+    	    (lambda ()
+    	      (unless (string-match "\.hogan\.tex$" (buffer-name))
+    		(lsp))
+    	      (setq-local lsp-diagnostic-package :none)
+    	      (setq-local flycheck-checker 'tex-chktex)))
 
-    (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
-    (add-hook 'LaTeX-mode-hook #'smartparens-mode)
-    (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+      (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
+      (add-hook 'LaTeX-mode-hook #'smartparens-mode)
+      (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+      ;; Turn on RefTeX in AUCTeX
+      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+      ;; Activate nice interface between RefTeX and AUCTeX
+      (setq reftex-plug-into-AUCTeX t)
 
-    (efs/leader-keys
-      :keymaps '(LaTeX-mode-map latex-mode-map)
-     "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
-     "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
-     "c t" 'orgtbl-mode))
+      (efs/leader-keys
+        :keymaps '(LaTeX-mode-map latex-mode-map)
+       "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
+       "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
+       "c t" 'orgtbl-mode))
 #+end_src
 ** Import *.sty
 
@@ -2330,16 +2334,20 @@ CLOSED: [2023-10-17 Tue 02:13]
    "M-RET" 'org-ref-bibtex-hydra/body))
 
 #+end_src
-** ivy-bibtex
+** helm-bibtex
 
 #+begin_src emacs-lisp
-(use-package ivy-bibtex
-  :straight t
-  :after (org-ref)
-  :init
-  (efs/leader-keys "fB" 'ivy-bibtex))
+  (use-package helm-bibtex
+    :straight t
+    :after (org-ref)
+    :init
+    (efs/leader-keys "fB" 'helm-bibtex))
 
-(add-hook 'bibtex-mode 'smartparens-mode)
+  (add-hook 'bibtex-mode 'smartparens-mode)
+
+  (autoload 'helm-bibtex "helm-bibtex" "" t)
+  (setq bibtex-completion-bibliography
+        '("~/Documents/Papers/Information_Processing/main.bib"))
 #+end_src
 
 
