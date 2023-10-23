@@ -602,39 +602,39 @@ CLOSED: [2023-10-15 Sun 02:14]
 ** Dired
 
 #+begin_src emacs-lisp
-(use-package dired
-  :ensure nil
-  :commands (dired dired-jump)
-  :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-agho --group-directories-first"))
-  :config
-  (evil-collection-define-key 'normal 'dired-mode-map
-    "h" 'dired-single-up-directory
-    "l" 'dired-single-buffer))
+  (use-package dired
+    :ensure nil
+    :commands (dired dired-jump)
+    :bind (("C-x C-j" . dired-jump))
+    :custom ((dired-listing-switches "-agho --group-directories-first"))
+    :config
+    (evil-collection-define-key 'normal 'dired-mode-map
+      "h" 'dired-single-up-directory
+      "l" 'dired-single-buffer))
 
-(use-package dired-single
-  :straight t
-  :commands (dired dired-jump))
+  (use-package dired-single
+    :straight t
+    :commands (dired dired-jump))
 
-(use-package dired-open
-  :straight t
-  :commands (dired dired-jump)
-  :config
-  (setq dired-open-extensions '(("gif" . "sxiv")
-                                ("jpg" . "sxiv")
-                                ("png" . "sxiv")
-                                ("mkv" . "mpv")
-                                ("mp4" . "mpv"))))
+  (use-package dired-open
+    :straight t
+    :commands (dired dired-jump)
+    :config
+    (setq dired-open-extensions '(("gif" . "sxiv")
+                                  ("jpg" . "sxiv")
+                                  ("png" . "sxiv")
+                                  ("mkv" . "mpv")
+                                  ("mp4" . "mpv"))))
 
-(use-package peep-dired
-  :straight t
-  :after dired
-  :hook (evil-normalize-keymaps . peep-dired-hook)
-  :config
-    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
-    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
-    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
-    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file))
+  (use-package peep-dired
+    :straight t
+    :after dired
+    :hook (evil-normalize-keymaps . peep-dired-hook)
+    :config
+      (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+      (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
+      (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
+      (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file))
 #+end_src
 ** Dirvish
 
@@ -825,7 +825,6 @@ CLOSED: [2023-10-15 Sun 02:14]
       (corfu-mode))
     (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 #+end_src
-
 
 
 ** company
