@@ -140,20 +140,20 @@ CLOSED: [2023-10-15 Sun 01:23]
 * Keep Folders Clean
 
 #+begin_src emacs-lisp
-;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-(setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-      url-history-file (expand-file-name "url/history" user-emacs-directory))
+  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+        url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-;; Use no-littering to automatically set common paths to the new user-emacs-directory
-(use-package no-littering
-  :straight t)
+  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
+  (use-package no-littering
+    :straight t)
 
-;; Keep customization settings in a temporary file (thanks Ambrevar!)
-(setq custom-file
-      (if (boundp 'server-socket-dir)
-          (expand-file-name "custom.el" server-socket-dir)
-        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
-(load custom-file t)
+  ;; Keep customization settings in a temporary file (thanks Ambrevar!)
+  (setq custom-file
+        (if (boundp 'server-socket-dir)
+            (expand-file-name "custom.el" server-socket-dir)
+          (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+  (load custom-file t)
 #+end_src
 
 
@@ -1150,83 +1150,104 @@ CLOSED: [2023-10-17 Tue 02:13]
     :straight t
     :defer t)
 #+end_src
+
+*** smartparens-mode
+
+#+begin_src emacs-lisp
+  (use-package smartparens-mode
+    :straight smartparens  ;; install the package
+    :hook (prog-mode text-mode markdown-mode) ;; add `smartparens-mode` to these hooks
+    :config
+    ;; load default config
+    (require 'smartparens-config))
+
+#+end_src
+
+*** hl-prog-extra
+
+#+begin_src emacs-lisp
+  (use-package hl-prog-extra
+    :straight t
+    :commands (hl-prog-extra-mode))
+#+end_src
+
 ** Keybindings
 
 #+begin_src emacs-lisp
-(general-def
-  :states 'normal
-  :keymaps 'org-mode-map
-  "t" 'org-todo
-  "<return>" 'org-open-at-point-global
-  "S-<up>" 'org-shiftup
-  "S-<down>" 'org-shiftdown
-  "<f5>" 'org-ctrl-c-ctrl-c)
+  (general-def
+    :states 'normal
+    :keymaps 'org-mode-map
+    "t" 'org-todo
+    "<return>" 'org-open-at-point-global
+    "S-<up>" 'org-shiftup
+    "S-<down>" 'org-shiftdown
+    "<f5>" 'org-ctrl-c-ctrl-c)
 #+end_src
 
 #+begin_src emacs-lisp
-(general-def
-  :states 'insert
-  :keymaps 'org-mode-map
-  "C-o" 'evil-org-open-above
-  "S-<left>" 'org-shiftleft
-  "S-<right>" 'org-shiftright)
+  (general-def
+    :states 'insert
+    :keymaps 'org-mode-map
+    "C-o" 'evil-org-open-above
+    "S-<left>" 'org-shiftleft
+    "S-<right>" 'org-shiftright)
 #+end_src
 
 #+begin_src emacs-lisp
-(efs/leader-keys
- :states 'motion
- :keymaps '(org-mode-map)
- "" nil
- "o a" '(org-agenda :which-key "org agenda")
- "o c" '(org-capture :which-key "org-capture")
- "o s" '(org-agenda-schedule :which-key "schedule")
- "o d" '(org-agenda-deadline :which-key "deadline")
- "o t" '(org-agenda-set-tags :which-key "set tags")
- "o p" '(org-set-property :which-key "set property")
+  (efs/leader-keys
+   :states 'motion
+   :keymaps '(org-mode-map)
+   "" nil
+   "o a" '(org-agenda :which-key "org agenda")
+   "o c" '(org-capture :which-key "org-capture")
+   "o s" '(org-agenda-schedule :which-key "schedule")
+   "o d" '(org-agenda-deadline :which-key "deadline")
+   "o t" '(org-agenda-set-tags :which-key "set tags")
+   "o p" '(org-set-property :which-key "set property")
 
- "o i" '(nil :which-key "insert")
- "o i l" '(org-insert-link :which-key "org-insert-link")
- "o i L" '(counsel-org-link :which-key "counsel-org-link")
- "o c" '(nil :which-key "clocking")
- "o c i" '(org-agenda-clock-in :which-key "clock in")
- "o c o" '(org-agenda-clock-out :which-key "clock out")
- "o c j" '(org-clock-goto :which-key "jump to clock"))
+   "o i" '(nil :which-key "insert")
+   "o i l" '(org-insert-link :which-key "org-insert-link")
+   "o i L" '(counsel-org-link :which-key "counsel-org-link")
+   "o c" '(nil :which-key "clocking")
+   "o c i" '(org-agenda-clock-in :which-key "clock in")
+   "o c o" '(org-agenda-clock-out :which-key "clock out")
+   "o c j" '(org-clock-goto :which-key "jump to clock"))
 #+end_src
 
 #+begin_src emacs-lisp
-(evil-define-key 'motion org-agenda-mode-map
-  (kbd "f") 'org-agenda-later
-  (kbd "b") 'org-agenda-earlier)
+  (evil-define-key 'motion org-agenda-mode-map
+    (kbd "f") 'org-agenda-later
+    (kbd "b") 'org-agenda-earlier)
 #+end_src
 ** Startup Setup functions
 
 #+begin_src emacs-lisp
-(defun efs/prettify-symbols-setup ()
-  ;; checkboxes
-  (push '("[ ]" .  "☐") prettify-symbols-alist)
-  (push '("[X]" . "☑" ) prettify-symbols-alist)
-  ;; (push '("[X]" . "☒" ) prettify-symbols-alist)
-  (push '("[-]" . "❍" ) prettify-symbols-alist)
+  (defun efs/prettify-symbols-setup ()
+    ;; checkboxes
+    (push '("[ ]" .  "☐") prettify-symbols-alist)
+    (push '("[X]" . "☑" ) prettify-symbols-alist)
+    ;; (push '("[X]" . "☒" ) prettify-symbols-alist)
+    (push '("[-]" . "❍" ) prettify-symbols-alist)
 
-  ;; org-babel
-  (push '("#+BEGIN_SRC" . ?≫) prettify-symbols-alist)
-  (push '("#+END_SRC" . ?≫) prettify-symbols-alist)
-  (push '("#+begin_src" . ?≫) prettify-symbols-alist)
-  (push '("#+end_src" . ?≫) prettify-symbols-alist)
+    ;; org-babel
+    (push '("#+BEGIN_SRC" . ?≫) prettify-symbols-alist)
+    (push '("#+END_SRC" . ?≫) prettify-symbols-alist)
+    (push '("#+begin_src" . ?≫) prettify-symbols-alist)
+    (push '("#+end_src" . ?≫) prettify-symbols-alist)
 
-  (push '("#+BEGIN_QUOTE" . ?❝) prettify-symbols-alist)
-  (push '("#+END_QUOTE" . ?❞) prettify-symbols-alist)
+    (push '("#+BEGIN_QUOTE" . ?❝) prettify-symbols-alist)
+    (push '("#+END_QUOTE" . ?❞) prettify-symbols-alist)
 
-  ;; (push '("#+BEGIN_SRC python" . ) prettify-symbols-alist) ;; This is the Python symbol. Comes up weird for some reason
-  (push '("#+RESULTS:" . ?≚ ) prettify-symbols-alist)
+    ;; (push '("#+BEGIN_SRC python" . ) prettify-symbols-alist) ;; This is the Python symbol. Comes up weird for some reason
+    (push '("#+RESULTS:" . ?≚ ) prettify-symbols-alist)
 
-  ;; drawers
-  (push '(":PROPERTIES:" . ?) prettify-symbols-alist)
+    ;; drawers
+    (push '(":PROPERTIES:" . ?) prettify-symbols-alist)
 
-  ;; tags
-  ;; (push '(":Misc:" . "" ) prettify-symbols-alist)
+    ;; tags
+    ;; (push '(":Misc:" . "" ) prettify-symbols-alist)
 
-  (prettify-symbols-mode))
+    (prettify-symbols-mode))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1317,50 +1338,50 @@ CLOSED: [2023-10-17 Tue 02:13]
 *** Visuals
 
 #+begin_src emacs-lisp
-(setq org-ellipsis "…")
-;; ⤵ ▼ ⬎  
-(setq org-src-fontify-natively t) ;; Syntax highlighting in org src blocks
-(setq org-highlight-latex-and-related '(native)) ;; Highlight inline LaTeX
-(setq org-startup-folded 'showeverything)
-(setq org-image-actual-width 300)
-(setq org-fontify-whole-heading-line t)
-(setq org-pretty-entities t)
+  (setq org-ellipsis " ")
+  ;; ⤵ ▼ ⬎  
+  (setq org-src-fontify-natively t) ;; Syntax highlighting in org src blocks
+  (setq org-highlight-latex-and-related '(native)) ;; Highlight inline LaTeX
+  (setq org-startup-folded 'showeverything)
+  (setq org-image-actual-width 300)
+  (setq org-fontify-whole-heading-line t)
+  (setq org-pretty-entities t)
 #+end_src
 
 *** Interaction
 
 #+begin_src emacs-lisp
-(setq org-cycle-separator-lines 1)
-(setq org-catch-invisible-edits 'show-and-error) ;; 'smart
-(setq org-src-tab-acts-natively t)
+  (setq org-cycle-separator-lines 1)
+  (setq org-catch-invisible-edits 'show-and-error) ;; 'smart
+  (setq org-src-tab-acts-natively t)
 
-;; M-Ret can split lines on items and tables but not headlines and not on anything else (unconfigured)
-(setq org-M-RET-may-split-line '((headline) (item . t) (table . t) (default)))
-(setq org-loop-over-headlines-in-active-region nil)
+  ;; M-Ret can split lines on items and tables but not headlines and not on anything else (unconfigured)
+  (setq org-M-RET-may-split-line '((headline) (item . t) (table . t) (default)))
+  (setq org-loop-over-headlines-in-active-region nil)
 
-;; Opens links to other org file in same frame (rather than splitting)
-(setq org-link-frame-setup '((file . find-file)))
+  ;; Opens links to other org file in same frame (rather than splitting)
+  (setq org-link-frame-setup '((file . find-file)))
 
-(setq org-log-done t
-      org-log-into-drawer t)
+  (setq org-log-done t
+        org-log-into-drawer t)
 
-;; Automatically change bullet type when indenting
-;; Ex: indenting a + makes the bullet a *.
-(setq org-list-demote-modify-bullet
-      '(("+" . "*") ("*" . "-") ("-" . "+")))
-
-
-;; Automatically save and close the org files I most frequently archive to.
-;; I see no need to keep them open and crowding my buffer list.
-;; Uses my own function jib/save-and-close-this-buffer.
-(dolist (file '("homework-archive.org_archive" "todo-archive.org_archive"))
-  (advice-add 'org-archive-subtree-default :after
-              (lambda () (jib/save-and-close-this-buffer file))))
+  ;; Automatically change bullet type when indenting
+  ;; Ex: indenting a + makes the bullet a *.
+  (setq org-list-demote-modify-bullet
+        '(("+" . "*") ("*" . "-") ("-" . "+")))
 
 
-(advice-add 'counsel-org-goto :after #'jib/post-org-goto)
-(advice-add 'org-agenda-goto :after #'jib/post-org-goto)
-(advice-add 'org-agenda-switch-to :after #'jib/post-org-goto)
+  ;; Automatically save and close the org files I most frequently archive to.
+  ;; I see no need to keep them open and crowding my buffer list.
+  ;; Uses my own function jib/save-and-close-this-buffer.
+  (dolist (file '("homework-archive.org_archive" "todo-archive.org_archive"))
+    (advice-add 'org-archive-subtree-default :after
+                (lambda () (jib/save-and-close-this-buffer file))))
+
+
+  (advice-add 'counsel-org-goto :after #'jib/post-org-goto)
+  (advice-add 'org-agenda-goto :after #'jib/post-org-goto)
+  (advice-add 'org-agenda-switch-to :after #'jib/post-org-goto)
 #+end_src
 
 *** TODO Tags
@@ -1428,6 +1449,11 @@ CLOSED: [2023-10-17 Tue 02:13]
   (setq org-agenda-restore-windows-after-quit t)
 
   (setq org-agenda-window-setup 'current-window)
+
+  (setq org-agenda-files
+        '("~/org/Tasks.org"
+          "~/org/Habits.org"))
+ 
 
   ;; Only show upcoming deadlines for the next X days. By default it shows
   ;; 14 days into the future, which seems excessive.
