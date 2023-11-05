@@ -401,7 +401,7 @@ CLOSED: [2023-10-15 Sun 02:14]
  "f p" '((lambda () (interactive)
            (dired "~/.config/emacs/"))
          :wk "Open user-emacs-directory in dired")
- "f r" '(counsel-recentf :wk "Find recent files")
+ "f r" '(recentf-open :wk "Find recent files")
  "/" '(comment-line :wk "comment lines"))
 #+end_src
 
