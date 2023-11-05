@@ -35,7 +35,7 @@
   (scroll-bar-mode -1)        ; Disable visible scrollbar
   (tool-bar-mode -1)          ; Disable the toolbar
   (tooltip-mode -1)           ; Disable tooltips
-  (set-fringe-mode 20)        ; Give some breathing room
+  (set-fringe-mode 5)        ; Give some breathing room
   (menu-bar-mode 0)            ; Disable the menu bar
   (column-number-mode t)
   (menu-bar-mode 0)
@@ -309,28 +309,6 @@ CLOSED: [2023-10-15 Sun 02:14]
                (inhibit-same-window . t)
                (window-height . 10)))
 
-
-#+end_src
-
-** DONE Miscellenous
-CLOSED: [2023-10-15 Sun 02:14]
-
-#+begin_src emacs-lisp
-;; Load source (.el) or the compiled (.elc or .eln) file whichever is
-;; newest
-(customize-set-variable 'load-prefer-newer t)
-
-;; Make shebang (#!) file executable when saved
-(add-hook 'after-save-hook
-          #'executable-make-buffer-file-executable-if-script-p)
-
-;; Turn on repeat mode to allow certain keys to repeat on the last
-;; keystroke. For example, C-x [ to page backward, after pressing this
-;; keystroke once, pressing repeated [ keys will continue paging
-;; backward. `repeat-mode' is exited with the normal C-g, by movement
-;; keys, typing, or pressing ESC three times.
-(unless (version< emacs-version "28")
-  (repeat-mode 1))
 
 #+end_src
 
