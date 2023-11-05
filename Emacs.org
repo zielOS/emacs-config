@@ -8,14 +8,14 @@
   ;; Garbage Collections
   (setq gc-cons-percentage 0.6)
 
-  ;; Compile warnings
-  ;;  (setq warning-minimum-level :emergency)
+    ;; Compile warnings
+    ;;  (setq warning-minimum-level :emergency)
   (setq native-comp-async-report-warnings-errors 'silent) ;; native-comp warning
   (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 
 
   ;; MISC OPTIMIZATIONS ----
-  ;;; optimizations (froom Doom's core.el). See that file for descriptions.
+    ;;; optimizations (froom Doom's core.el). See that file for descriptions.
   (setq idle-update-delay 1.0)
 
   ;; Disabling bidi (bidirectional editing stuff)
@@ -36,9 +36,11 @@
   (tool-bar-mode -1)          ; Disable the toolbar
   (tooltip-mode -1)           ; Disable tooltips
   (set-fringe-mode 5)        ; Give some breathing room
-  (menu-bar-mode 0)            ; Disable the menu bar
+  (menu-bar-mode -1)            ; Disable the menu bar
   (column-number-mode t)
-  (menu-bar-mode 0)
+  (setq inhibit-startup-screen t)
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
 #+end_src
 
 
@@ -576,6 +578,78 @@ CLOSED: [2023-10-15 Sun 02:14]
 
 
 
+** Delete Trailing Whitespace
+#+begin_src emacs-lisp
+  (setq my/trailing-whitespace-modes '(markdown-mode))
+
+  (require 'cl-extra)
+
+  (add-hook 'before-save-hook
+  	  (lambda ()
+  	    (unless (cl-some #'derived-mode-p my/trailing-whitespace-modes)
+  	      (delete-trailing-whitespace))))
+#+end_src
+
+** Tabs
+
+#+begin_src emacs-lisp
+  (setq tab-always-indent nil)
+
+  (setq-default default-tab-width 4)
+  (setq-default tab-width 4)
+  (setq-default evil-indent-convert-tabs nil)
+  (setq-default indent-tabs-mode nil)
+  (setq-default evil-shift-round nil)
+#+end_src
+
+** Accents
+#+begin_src emacs-lisp
+  (use-package accent
+    :straight t
+    :init
+    (general-define-key
+     :states '(normal)
+     "gs" #'accent-menu)
+    (general-define-key
+     :states '(normal insert)
+     "M-n" #'accent-menu)
+    :commands (accent-menu)
+    :config
+    (general-define-key
+     :keymaps 'popup-menu-keymap
+     "C-j" #'popup-next
+     "C-k" #'popup-previous
+     "M-j" #'popup-next
+     "M-k" #'popup-previous)
+    (setq accent-custom '((a (ā))
+  			(A (Ā)))))
+#+end_src
+
+* Snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet-snippets
+    :disabled
+    :straight t)
+
+  (use-package yasnippet
+    :straight t
+    :config
+    (setq yas-snippet-dirs
+  	`(,(concat (expand-file-name user-emacs-directory) "snippets")
+  	  ;; yasnippet-snippets-dir
+  	  ))
+    (setq yas-triggers-in-field t)
+    (yas-global-mode 1)
+    (efs/leader-keys
+      :keymaps 'yas-minor-mode-map
+      :infix "es"
+      "" '(:wk "yasnippet")
+      "n" #'yas-new-snippet
+      "s" #'yas-insert-snippet
+      "v" #'yas-visit-snippet-file))
+
+#+end_src
+
 * File Management
 ** Dired
 
@@ -680,11 +754,11 @@ CLOSED: [2023-10-15 Sun 02:14]
     ;; Turn off the built-in fido-vertical-mode and icomplete-vertical-mode, if
     ;; they have been turned on by crafted-defaults-config, because they interfere
     ;; with this module.
-    
+
     (fido-mode -1)
     (fido-vertical-mode -1)
     (icomplete-mode -1)
-    (icomplete-vertical-mode -1)) 
+    (icomplete-vertical-mode -1))
 #+end_src
 ** Marginalia
 
@@ -771,7 +845,7 @@ CLOSED: [2023-10-15 Sun 02:14]
      (eldoc-add-command #'corfu-insert)
      (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
      (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle))) 
+     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
 #+end_src
 ** Cape
 
@@ -1007,7 +1081,7 @@ CLOSED: [2023-10-17 Tue 02:13]
    org-ellipsis "…"
    org-modern-star '( "⌾" "✸" "◈" "◇")
    org-modern-list '((42 . "◦") (43 . "•") (45 . "–"))
-   
+
    ;; Agenda styling
    org-agenda-tags-column 0
    org-agenda-block-separator ?─
@@ -1018,7 +1092,7 @@ CLOSED: [2023-10-17 Tue 02:13]
    org-agenda-current-time-string
    "⭠ now ─────────────────────────────────────────────────")
 
-  (global-org-modern-mode) 
+  (global-org-modern-mode)
 #+end_src
 
 *** Evil Org
@@ -1317,7 +1391,7 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 #+begin_src emacs-lisp
   (setq org-ellipsis " ")
-  ;; ⤵ ▼ ⬎  
+  ;; ⤵ ▼ ⬎
   (setq org-src-fontify-natively t) ;; Syntax highlighting in org src blocks
   (setq org-highlight-latex-and-related '(native)) ;; Highlight inline LaTeX
   (setq org-startup-folded 'showeverything)
@@ -1431,7 +1505,7 @@ CLOSED: [2023-10-17 Tue 02:13]
   (setq org-agenda-files
         '("~/org/Tasks.org"
           "~/org/Habits.org"))
- 
+
 
   ;; Only show upcoming deadlines for the next X days. By default it shows
   ;; 14 days into the future, which seems excessive.
@@ -1685,7 +1759,7 @@ CLOSED: [2023-10-17 Tue 02:13]
 
   ;; HTML-specific
   (setq org-html-validation-link nil) ;; No validation button on HTML exports
-  
+
   ;; LaTeX Specific
   (eval-after-load 'ox '(add-to-list
                          'org-export-filter-timestamp-functions
@@ -1955,6 +2029,114 @@ CLOSED: [2023-10-17 Tue 02:13]
 #+end_src
 ** Lisp
 ** Python
+
+*** ein
+
+#+begin_src emacs-lisp
+  (use-package ein
+    :straight t)
+#+end_src
+
+*** pyright
+
+#+begin_src emacs-lisp
+  (setq my/pipenv-python-alist '())
+
+  (defun my/get-pipenv-python ()
+    (let ((default-directory (projectile-project-root)))
+      (if (file-exists-p "Pipfile")
+  	(let ((asc (assoc default-directory my/pipenv-python-alist)))
+  	  (if asc
+  	      (cdr asc)
+  	    (let ((python-executable
+  		   (string-trim (shell-command-to-string "PIPENV_IGNORE_VIRTUALENVS=1 pipenv run which python 2>/dev/null"))))
+  	      (if (string-match-p ".*not found.*" python-executable)
+  		  (message "Pipfile found, but not pipenv executable!")
+  		(message (format "Found pipenv python: %s" python-executable))
+  		(add-to-list 'my/pipenv-python-alist (cons default-directory python-executable))
+  		python-executable))))
+        "python")))
+
+  (use-package lsp-pyright
+    :straight t
+    :defer t
+    :hook (python-mode . (lambda ()
+  			 (require 'lsp-pyright)
+  			 (setq-local lsp-pyright-python-executable-cmd (my/get-pipenv-python))
+  			 (lsp))))
+
+  (add-hook 'python-mode-hook #'smartparens-mode)
+  (add-hook 'python-mode-hook #'hs-minor-mode)
+#+end_src
+
+*** pipenv
+#+begin_src emacs-lisp
+  (use-package pipenv
+    :straight t
+    :hook (python-mode . pipenv-mode)
+    :init
+    (setq
+     pipenv-projectile-after-switch-function
+     #'pipenv-projectile-after-switch-extended))
+
+#+end_src
+
+*** yapf
+#+begin_src emacs-lisp
+  (use-package yapfify
+    :straight (:repo "JorisE/yapfify" :host github)
+    :disabled
+    :commands (yapfify-region
+  	     yapfify-buffer
+  	     yapfify-region-or-buffer
+  	     yapf-mode))
+
+#+end_src
+
+*** black
+#+begin_src emacs-lisp
+  (use-package python-black
+    :straight t
+    :commands (python-black-buffer)
+    :config
+    (setq python-black-command "black"))
+
+#+end_src
+
+*** isort
+
+#+begin_src emacs-lisp
+(use-package py-isort
+  :straight t
+  :commands (py-isort-buffer py-isort-region))
+#+end_src
+
+*** code-cells
+
+#+begin_src emacs-lisp
+  (use-package code-cells
+    :straight t
+    :commands (code-cells-mode code-cells-convert-ipynb))
+#+end_src
+
+*** tensorboard
+
+#+begin_src emacs-lisp
+  (setq my/tensorboard-buffer "TensorBoard-out")
+
+  (defun my/tensorboard ()
+    (interactive)
+    (start-process
+     "tensorboard"
+     my/tensorboard-buffer
+     "tensorboard"
+     "serve"
+     "--logdir"
+     (car (find-file-read-args "Directory: " t)))
+    (display-buffer my/tensorboard-buffer))
+
+#+end_src
+
 ** Documents
 ** Format-on-save
 #+begin_src emacs-lisp
@@ -2518,7 +2700,7 @@ CLOSED: [2023-10-17 Tue 02:13]
        (unwind-protect
            (funcall ,FUNCTION)
          (delete-frame))))
-  
+
   (defun emacs-run-launcher ()
     "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
     (interactive)
