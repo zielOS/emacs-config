@@ -256,29 +256,8 @@ CLOSED: [2023-10-15 Sun 02:14]
     ("b" dumb-jump-back "Back"))
   ;; not a great key as a mnemonic, but easy to press quickly
   (keymap-set dumb-jump-mode-map "C-M-y" #'dumb-jump-hydra/body))
-
-;; use xref
-(with-eval-after-load 'dumb-jump
-  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
-
-
 #+end_src
 
-** DONE Persistence between sessions
-CLOSED: [2023-10-15 Sun 02:14]
-
-#+begin_src emacs-lisp
-;; Turn on recentf mode
-(add-hook 'after-init-hook #'recentf-mode)
-
-;; Enable savehist-mode for command history
-(savehist-mode 1)
-
-;; save the bookmarks file every time a bookmark is made or deleted
-;; rather than waiting for Emacs to be killed.  Useful especially when
-;; Emacs is a long running process.
-(customize-set-variable 'bookmark-save-flag 1)
-#+end_src
 
 ** DONE Window Management
 CLOSED: [2023-10-15 Sun 02:14]
@@ -1817,14 +1796,13 @@ CLOSED: [2023-10-17 Tue 02:13]
 *** Configure Babel Languages
 
 #+begin_src emacs-lisp
-  (with-eval-after-load 'org
-    (org-babel-do-load-languages
-        'org-babel-load-languages
-        '((emacs-lisp . t)
-        (python . t)))
-
-    (push '("conf-unix" . conf-unix) org-src-lang-modes))
-
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t) ;; Other languages
+   (shell . t)
+   ;; Python & Jupyter
+   (python . t)
+   (jupyter . t)))
 #+end_src
 
 *** Structure Templates
@@ -2030,11 +2008,26 @@ CLOSED: [2023-10-17 Tue 02:13]
 ** Lisp
 ** Python
 
-*** ein
+*** jupyter
 
 #+begin_src emacs-lisp
-  (use-package ein
+  (use-package jupyter
     :straight t)
+#+end_src
+
+#+begin_src emacs-lisp
+  (org-babel-jupyter-override-src-block "python")
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq ob-async-no-async-languages-alist '("python" "jupyter-python"))
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun my/jupyter-refresh-kernelspecs ()
+    "Refresh Jupyter kernelspecs"
+    (interactive)
+    (jupyter-available-kernelspecs t))
 #+end_src
 
 *** pyright
