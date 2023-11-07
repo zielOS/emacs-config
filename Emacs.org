@@ -170,110 +170,6 @@ CLOSED: [2023-10-15 Sun 01:34]
 (customize-set-variable 'ibuffer-old-time 24)
 #+end_src
 
-** DONE Completion Settings
-CLOSED: [2023-10-15 Sun 01:35]
-
-#+begin_src emacs-lisp
-;; No matter which completion mode is used:
-(customize-set-variable 'tab-always-indent 'complete)
-(customize-set-variable 'completion-cycle-threshold 3)
-(customize-set-variable 'completion-category-overrides
-                        '((file (styles . (partial-completion)))))
-(customize-set-variable 'completions-detailed t)
-
-;; use completion system instead of popup window
-(customize-set-variable 'xref-show-definitions-function
-                        #'xref-show-definitions-completing-read)
-
-#+end_src
-
-** DONE Editing
-CLOSED: [2023-10-15 Sun 01:36]
-
-#+begin_src emacs-lisp
-;; Typed text replaces the selection if the selection is active,
-;; pressing delete or backspace deletes the selection.
-(delete-selection-mode)
-
-;; Use spaces instead of tabs
-(setq-default indent-tabs-mode t)
-
-;; Do not save duplicates in kill-ring
-(customize-set-variable 'kill-do-not-save-duplicates t)
-
-;; define a key to define the word at point.
-(keymap-set global-map "M-#" #'dictionary-lookup-definition)
-
-;; Show dictionary definition on the left
-(add-to-list 'display-buffer-alist
-             '("^\\*Dictionary\\*"
-               (display-buffer-in-side-window)
-               (side . left)
-               (window-width . 70)))
-
-;; turn on spell checking, if available.
-(with-eval-after-load 'ispell
-  (when (executable-find ispell-program-name)
-    (add-hook 'text-mode-hook #'flyspell-mode)
-    (add-hook 'prog-mode-hook #'flyspell-prog-mode)))
-
-
-#+end_src
-
-** DONE Navigation
-CLOSED: [2023-10-15 Sun 02:14]
-
-#+begin_src emacs-lisp
-;; add hydra to facilitate remembering the keys and actions for dumb-jump
-(when (and (require 'hydra nil :noerror)
-           (require 'dumb-jump nil :noerror))
-  (defhydra dumb-jump-hydra (:color blue :columns 3)
-    "Dumb Jump"
-    ("j" dumb-jump-go "Go")
-    ("o" dumb-jump-go-other-window "Other window")
-    ("e" dumb-jump-go-prefer-external "Go external")
-    ("x" dumb-jump-go-prefer-external-other-window "Go external other window")
-    ("i" dumb-jump-go-prompt "Prompt")
-    ("l" dumb-jump-quick-look "Quick look")
-    ("b" dumb-jump-back "Back"))
-  ;; not a great key as a mnemonic, but easy to press quickly
-  (keymap-set dumb-jump-mode-map "C-M-y" #'dumb-jump-hydra/body))
-#+end_src
-
-
-** DONE Window Management
-CLOSED: [2023-10-15 Sun 02:14]
-
-#+begin_src emacs-lisp
-;; Make scrolling less stuttered
-(setq auto-window-vscroll nil)
-(customize-set-variable 'fast-but-imprecise-scrolling t)
-(customize-set-variable 'scroll-conservatively 101)
-(customize-set-variable 'scroll-margin 0)
-(customize-set-variable 'scroll-preserve-screen-position t)
-
-;; open man pages in their own window, and switch to that window to
-;; facilitate reading and closing the man page.
-(customize-set-variable 'Man-notify-method 'aggressive)
-
-;; keep the Ediff control panel in the same frame
-(customize-set-variable 'ediff-window-setup-function
-                        'ediff-setup-windows-plain)
-
-;; Window configuration for special windows.
-(add-to-list 'display-buffer-alist
-             '("\\*Help\\*"
-               (display-buffer-reuse-window display-buffer-pop-up-window)
-               (inhibit-same-window . t)))
-
-(add-to-list 'display-buffer-alist
-             '("\\*Completions\\*"
-               (display-buffer-reuse-window display-buffer-pop-up-window)
-               (inhibit-same-window . t)
-               (window-height . 10)))
-
-
-#+end_src
 
 
 * Evil
@@ -291,11 +187,6 @@ CLOSED: [2023-10-15 Sun 02:14]
                     term-mode))
     (add-to-list 'evil-emacs-state-modes mode)))
 
-  (use-package undo-tree
-    :straight t
-    :init
-    (global-undo-tree-mode 1))
-
   (use-package evil
     :straight t
     :init
@@ -304,7 +195,6 @@ CLOSED: [2023-10-15 Sun 02:14]
     (setq evil-want-C-u-scroll t)
     (setq evil-want-C-i-jump nil)
     (setq evil-respect-visual-line-mode t)
-    (setq evil-undo-system 'undo-tree)
     :config
     (add-hook 'evil-mode-hook 'efs/evil-hook)
     (evil-mode 1)
@@ -327,13 +217,9 @@ CLOSED: [2023-10-15 Sun 02:14]
     (setq evil-collection-mode-list
           (remove 'lispy evil-collection-mode-list))
     (evil-collection-init))
-
-
 #+end_src
 
-
-
-* general.el
+* general
 
 #+begin_src emacs-lisp
   ;; Make ESC quit prompts
@@ -350,8 +236,6 @@ CLOSED: [2023-10-15 Sun 02:14]
       :global-prefix "M-SPC")) ;; access leader in insert mode)
 #+end_src
 
-
-
 * Basic Keybindings
 
 #+begin_src emacs-lisp
@@ -362,6 +246,157 @@ CLOSED: [2023-10-15 Sun 02:14]
          :wk "Open user-emacs-directory in dired")
  "f r" '(recentf-open :wk "Find recent files")
  "/" '(comment-line :wk "comment lines"))
+#+end_src
+
+
+
+* Completion System
+
+** Ivy
+
+#+begin_src emacs-lisp
+(use-package ivy
+  :straight t
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-f" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :init
+  (ivy-mode 1)
+  :config
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-wrap t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+
+  ;; Use different regex strategies per completion command
+  (push '(completion-at-point . ivy--regex-fuzzy) ivy-re-builders-alist) ;; This doesn't seem to work...
+  (push '(swiper . ivy--regex-ignore-order) ivy-re-builders-alist)
+  (push '(counsel-M-x . ivy--regex-ignore-order) ivy-re-builders-alist)
+
+  ;; Set minibuffer height for different commands
+  (setf (alist-get 'counsel-projectile-ag ivy-height-alist) 15)
+  (setf (alist-get 'counsel-projectile-rg ivy-height-alist) 15)
+  (setf (alist-get 'swiper ivy-height-alist) 15)
+  (setf (alist-get 'counsel-switch-buffer ivy-height-alist) 7))
+
+(use-package ivy-rich
+  :straight t
+  :init
+  (ivy-rich-mode 1)
+  :after counsel
+  :config
+  (setq ivy-format-function #'ivy-format-function-line)
+  (setq ivy-rich-display-transformers-list
+        (plist-put ivy-rich-display-transformers-list
+                   'ivy-switch-buffer
+                   '(:columns
+                     ((ivy-rich-candidate (:width 40))
+                      (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right)); return the buffer indicators
+                      (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))          ; return the major mode info
+                      (ivy-rich-switch-buffer-project (:width 15 :face success))             ; return project name using `projectile'
+                      (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))  ; return file path relative to project root or `default-directory' if project is nil
+                     :predicate
+                     (lambda (cand)
+                       (if-let ((buffer (get-buffer cand)))
+                           ;; Don't mess with EXWM buffers
+                           (with-current-buffer buffer
+                             (not (derived-mode-p 'exwm-mode)))))))))
+#+end_src
+
+
+** Counsel
+
+#+begin_src emacs-lisp
+(use-package counsel
+  :straight t
+  :demand t
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         ;; ("C-M-j" . counsel-switch-buffer)
+         ("C-M-l" . counsel-imenu)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
+#+end_src
+
+** flx
+
+#+begin_src emacs-lisp
+(use-package flx
+  :straight t
+  :after ivy
+  :defer t
+  :init
+  (setq ivy-flx-limit 10000))
+
+(use-package wgrep
+  :straight t)
+#+end_src
+
+** prescient
+
+#+begin_src emacs-lisp
+(use-package prescient
+  :straight t
+  :after counsel
+  :config
+  (prescient-persist-mode 1))
+
+(use-package ivy-prescient
+  :straight t
+  :after prescient
+  :config
+  (ivy-prescient-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+  "r"   '(ivy-resume :which-key "ivy resume")
+  "f"   '(:ignore t :which-key "files")
+  "ff"  '(counsel-find-file :which-key "open file")
+  "C-f" 'counsel-find-file
+  "fr"  '(counsel-recentf :which-key "recent files")
+  "fR"  '(revert-buffer :which-key "revert file")
+  "fj"  '(counsel-file-jump :which-key "jump to file"))
+#+end_src
+
+
+
+
+** company
+
+#+begin_src emacs-lisp
+(use-package company
+  :straight t
+  :config
+  (global-company-mode t)
+  (setq company-idle-delay 0.0)
+  (setq company-dabbrev-downcase nil)
+  (setq company-show-numbers -1))
+#+end_src
+
+
+#+begin_src emacs-lisp
+(use-package company-box
+  :straight t
+  :after (company)
+  :hook (company-mode . company-box-mode))
 #+end_src
 
 * UI Configuration
@@ -689,170 +724,281 @@ CLOSED: [2023-10-15 Sun 02:14]
 #+end_src
 
 
-* Completion System
-
-** Vertico
-
-#+begin_src emacs-lisp
-  (use-package vertico
-    :straight t)
-
-  (when (require 'vertico nil :noerror)
-    (require 'vertico-directory)
-    ;; Cycle back to top/bottom result when the edge is reached
-    (customize-set-variable 'vertico-cycle t)
-
-    ;; Start Vertico
-    (vertico-mode 1
-                  )
-
-    ;; Turn off the built-in fido-vertical-mode and icomplete-vertical-mode, if
-    ;; they have been turned on by crafted-defaults-config, because they interfere
-    ;; with this module.
-
-    (fido-mode -1)
-    (fido-vertical-mode -1)
-    (icomplete-mode -1)
-    (icomplete-vertical-mode -1))
-#+end_src
-** Marginalia
+* IDE Setup
+** General setup
+*** Treemacs
 
 #+begin_src emacs-lisp
-  (use-package marginalia
-    :straight t)
+(use-package treemacs
+  :straight t
+  :defer t
+  :config
+  (setq treemacs-space-between-root-nodes nil))
 
-  (when (require 'marginalia nil :noerror)
-  ;; Configure Marginalia
-  (customize-set-variable 'marginalia-annotators
-                          '(marginalia-annotators-heavy
-                            marginalia-annotators-light
-                            nil))
-  (marginalia-mode 1))
-#+end_src
-** Consult
+(efs/leader-keys
+ :keymaps 'treemacs-mode-map
+ :states '(normal emacs)
+ "q" '(treemacs-quit :which-key "close treemacs"))
 
-#+begin_src emacs-lisp
-  (use-package consult
-    :straight t)
+(use-package treemacs-evil
+  :straight t
+  :after (treemacs evil))
 
-  (when (require 'orderless nil :noerror)
-    ;; Set up Orderless for better fuzzy matching
-    (customize-set-variable 'completion-styles '(orderless basic))
-    (customize-set-variable 'completion-category-overrides
-                            '((file (styles . (partial-completion))))))
-#+end_src
-** Orderless
-
-#+begin_src emacs-lisp
-  (use-package orderless
-    :straight t)
-
-  (when (require 'orderless nil :noerror)
-  ;; Set up Orderless for better fuzzy matching
-  (customize-set-variable 'completion-styles '(orderless basic))
-  (customize-set-variable 'completion-category-overrides
-                          '((file (styles . (partial-completion))))))
-#+end_src
-** Embark
-
-#+begin_src emacs-lisp
-  (use-package embark
-    :straight t)
-  (use-package embark-consult
-    :after embark
-    :straight t)
-
-  (when (require 'embark nil :noerror)
-    (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
-    (keymap-global-set "C-." 'embark-act)
-
-  ;; Use Embark to show bindings in a key prefix with `C-h`
-    (setq prefix-help-command #'embark-prefix-help-command)
-
-    (when (require 'embark-consult nil :noerror)
-      (with-eval-after-load 'embark-consult
-        (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
-#+end_src
-** Corfu
-
-#+begin_src emacs-lisp
-  (use-package corfu
-     :straight t)
-
-  (use-package corfu-terminal
-    :straight t)
-
-  (when (require 'corfu nil :noerror)
-
-   (unless (display-graphic-p)
-     (when (require 'corfu-terminal nil :noerror)
-       (corfu-terminal-mode +1)))
-
-   ;; Setup corfu for popup like completion
-   (customize-set-variable 'corfu-cycle t)        ; Allows cycling through candidates
-   (customize-set-variable 'corfu-auto t)         ; Enable auto completion
-   (customize-set-variable 'corfu-auto-prefix 2)  ; Complete with less prefix keys
-
-   (global-corfu-mode 1)
-   (when (require 'corfu-popupinfo nil :noerror)
-
-     (corfu-popupinfo-mode 1)
-     (eldoc-add-command #'corfu-insert)
-     (keymap-set corfu-map "M-p" #'corfu-popupinfo-scroll-down)
-     (keymap-set corfu-map "M-n" #'corfu-popupinfo-scroll-up)
-     (keymap-set corfu-map "M-d" #'corfu-popupinfo-toggle)))
-#+end_src
-** Cape
-
-#+begin_src emacs-lisp
-  (use-package cape
-    :straight t)
-
-  (when (require 'cape nil :noerror)
-    ;; Setup Cape for better completion-at-point support and more
-
-    ;; Add useful defaults completion sources from cape
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-
-    ;; Silence the pcomplete capf, no errors or messages!
-    ;; Important for corfu
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure `completion-at-point-function'.
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
-
-    ;; No auto-completion or completion-on-quit in eshell
-    (defun crafted-completion-corfu-eshell ()
-      "Special settings for when using corfu with eshell."
-      (setq-local corfu-quit-at-boundary t
-                  corfu-quit-no-match t
-                  corfu-auto nil)
-      (corfu-mode))
-    (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 #+end_src
 
+*** LSP
+**** Setup
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :straight t
+  :hook (
+         (typescript-mode . lsp)
+         (js-mode . lsp)
+         (vue-mode . lsp)
+         (go-mode . lsp)
+         (svelte-mode . lsp)
+         (python-mode . lsp)
+         (json-mode . lsp)
+         (haskell-mode . lsp)
+         (haskell-literate-mode . lsp)
+         (java-mode . lsp)
+         ;; (csharp-mode . lsp)
+         )
+  :commands lsp
+  :init
+  (setq lsp-keymap-prefix nil)
+  :config
+  (setq lsp-idle-delay 1)
+  (lsp-enable-which-key-integration t))
 
-** company
+(use-package lsp-ui
+  :straight t
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-doc-delay 2)
+  (lsp-ui-doc-position 'bottom)
+  (setq lsp-ui-sideline-show-hover nil))
+#+end_src
+
+**** Integrations
 
 #+begin_src emacs-lisp
-  (use-package company
+(use-package lsp-treemacs
+  :straight t
+  :after lsp
+  :commands lsp-treemacs-errors-list)
+#+end_src
+
+**** Keybindings
+
+#+begin_src emacs-lisp
+(efs/leader-keys
+  :infix "l"
+  "d" '(lsp-ui-peek-find-definitions)
+  "r" '(lsp-rename)
+  "u" '(lsp-ui-peek-find-references)
+  "s" '(lsp-ui-find-workspace-symbol)
+  "l" '(lsp-execute-code-action)
+  "e" '(list-flycheck-errors))
+#+end_src
+
+**** UI
+
+#+begin_src emacs-lisp
+(defun my/lsp--progress-status ()
+  "Returns the status of the progress for the current workspaces."
+  (-let ((progress-status
+	  (s-join
+	   "|"
+	   (-keep
+	    (lambda (workspace)
+	      (let ((tokens (lsp--workspace-work-done-tokens workspace)))
+		(unless (ht-empty? tokens)
+		  (mapconcat
+		   (-lambda ((&WorkDoneProgressBegin :message? :title :percentage?))
+		     (concat (if percentage?
+				 (if (numberp percentage?)
+				     (format "%.0f%%%% " percentage?)
+				   (format "%s%%%% " percentage?))
+			       "")
+			     (let ((msg (url-unhex-string (or message\? title))))
+			       (if (string-match-p "\\`file:///" msg)
+				   (file-name-nondirectory msg)))))
+		   (ht-values tokens)
+		   "|"))))
+	    (lsp-workspaces)))))
+    (unless (s-blank? progress-status)
+      (concat lsp-progress-prefix progress-status))))
+
+(with-eval-after-load 'lsp-mode
+  (advice-add 'lsp--progress-status :override #'my/lsp--progress-status))
+#+end_src
+
+*** Flycheck
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :straight t
+  :config
+  (global-flycheck-mode)
+  (setq flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
+  ;; (add-hook 'evil-insert-state-exit-hook
+  ;;           (lambda ()
+  ;;             (if flycheck-checker
+  ;;                 (flycheck-buffer))
+  ;;             ))
+  (advice-add 'flycheck-eslint-config-exists-p :override (lambda() t))
+  (add-to-list 'display-buffer-alist
+	       `(,(rx bos "*Flycheck errors*" eos)
+		 (display-buffer-reuse-window
+		  display-buffer-in-side-window)
+		 (side            . bottom)
+		 (reusable-frames . visible)
+		 (window-height   . 0.33))))
+#+end_src
+
+*** DAP
+
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :straight t
+  :commands (dap-debug)
+  :init
+  (setq lsp-enable-dap-auto-configure nil)
+  :config
+
+  (setq dap-ui-variable-length 100)
+  (setq dap-auto-show-output nil)
+  (require 'dap-node)
+  (dap-node-setup)
+
+  (require 'dap-chrome)
+  (dap-chrome-setup)
+
+  (require 'dap-python)
+  (require 'dap-php)
+
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1))
+#+end_src
+
+*** highlight-indent-guides
+
+#+begin_src emacs-lisp
+(use-package highlight-indent-guides
+  :straight t
+  :config
+  (setq highlight-indent-guides-method 'character
+  highlight-indent-guides-responsive 'top)
+  :hook (prog-mode . highlight-indent-guides-mode))
+#+end_src
+** Python
+
+*** jupyter
+
+
+*** pyright
+
+#+begin_src emacs-lisp
+  (setq my/pipenv-python-alist '())
+
+  (defun my/get-pipenv-python ()
+    (let ((default-directory (projectile-project-root)))
+      (if (file-exists-p "Pipfile")
+  	(let ((asc (assoc default-directory my/pipenv-python-alist)))
+  	  (if asc
+  	      (cdr asc)
+  	    (let ((python-executable
+  		   (string-trim (shell-command-to-string "PIPENV_IGNORE_VIRTUALENVS=1 pipenv run which python 2>/dev/null"))))
+  	      (if (string-match-p ".*not found.*" python-executable)
+  		  (message "Pipfile found, but not pipenv executable!")
+  		(message (format "Found pipenv python: %s" python-executable))
+  		(add-to-list 'my/pipenv-python-alist (cons default-directory python-executable))
+  		python-executable))))
+        "python")))
+
+  (use-package lsp-pyright
     :straight t
+    :defer t
+    :hook (python-mode . (lambda ()
+  			 (require 'lsp-pyright)
+  			 (setq-local lsp-pyright-python-executable-cmd (my/get-pipenv-python))
+  			 (lsp))))
+
+  (add-hook 'python-mode-hook #'smartparens-mode)
+  (add-hook 'python-mode-hook #'hs-minor-mode)
+#+end_src
+
+*** pipenv
+#+begin_src emacs-lisp
+  (use-package pipenv
+    :straight t
+    :hook (python-mode . pipenv-mode)
+    :init
+    (setq
+     pipenv-projectile-after-switch-function
+     #'pipenv-projectile-after-switch-extended))
+
+#+end_src
+
+*** yapf
+#+begin_src emacs-lisp
+  (use-package yapfify
+    :straight (:repo "JorisE/yapfify" :host github)
+    :disabled
+    :commands (yapfify-region
+  	     yapfify-buffer
+  	     yapfify-region-or-buffer
+  	     yapf-mode))
+
+#+end_src
+
+*** black
+#+begin_src emacs-lisp
+  (use-package python-black
+    :straight t
+    :commands (python-black-buffer)
     :config
-    (global-company-mode t)
-    (setq company-idle-delay 0.0)
-    (setq company-dabbrev-downcase nil)
-    (setq company-show-numbers t))
+    (setq python-black-command "black"))
+
 #+end_src
 
+*** isort
+
 #+begin_src emacs-lisp
-  (use-package company-box
-    :straight t
-    :if (display-graphic-p)
-    :after (company)
-    :hook (company-mode . company-box-mode))
+(use-package py-isort
+  :straight t
+  :commands (py-isort-buffer py-isort-region))
 #+end_src
+
+*** code-cells
+
+#+begin_src emacs-lisp
+  (use-package code-cells
+    :straight t
+    :commands (code-cells-mode code-cells-convert-ipynb))
+#+end_src
+
+*** tensorboard
+
+#+begin_src emacs-lisp
+  (setq my/tensorboard-buffer "TensorBoard-out")
+
+  (defun my/tensorboard ()
+    (interactive)
+    (start-process
+     "tensorboard"
+     my/tensorboard-buffer
+     "tensorboard"
+     "serve"
+     "--logdir"
+     (car (find-file-read-args "Directory: " t)))
+    (display-buffer my/tensorboard-buffer))
+
+#+end_src
+
 
 
 * Org Setup
@@ -1649,289 +1795,8 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 #+end_src
 
-* IDE Setup
-** General setup
-*** Treemacs
-
-#+begin_src emacs-lisp
-(use-package treemacs
-  :straight t
-  :defer t
-  :config
-  (setq treemacs-space-between-root-nodes nil))
-
-(efs/leader-keys
- :keymaps 'treemacs-mode-map
- :states '(normal emacs)
- "q" '(treemacs-quit :which-key "close treemacs"))
-
-(use-package treemacs-evil
-  :straight t
-  :after (treemacs evil))
 
 #+end_src
-
-*** LSP
-**** Setup
-#+begin_src emacs-lisp
-(use-package lsp-mode
-  :straight t
-  :hook (
-         (typescript-mode . lsp)
-         (js-mode . lsp)
-         (vue-mode . lsp)
-         (go-mode . lsp)
-         (svelte-mode . lsp)
-         (python-mode . lsp)
-         (json-mode . lsp)
-         (haskell-mode . lsp)
-         (haskell-literate-mode . lsp)
-         (java-mode . lsp)
-         ;; (csharp-mode . lsp)
-         )
-  :commands lsp
-  :init
-  (setq lsp-keymap-prefix nil)
-  :config
-  (setq lsp-idle-delay 1)
-  (lsp-enable-which-key-integration t))
-
-(use-package lsp-ui
-  :straight t
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (setq lsp-ui-doc-delay 2)
-  (lsp-ui-doc-position 'bottom)
-  (setq lsp-ui-sideline-show-hover nil))
-#+end_src
-
-**** Integrations
-
-#+begin_src emacs-lisp
-(use-package lsp-treemacs
-  :straight t
-  :after lsp
-  :commands lsp-treemacs-errors-list)
-#+end_src
-
-**** Keybindings
-
-#+begin_src emacs-lisp
-(efs/leader-keys
-  :infix "l"
-  "d" '(lsp-ui-peek-find-definitions)
-  "r" '(lsp-rename)
-  "u" '(lsp-ui-peek-find-references)
-  "s" '(lsp-ui-find-workspace-symbol)
-  "l" '(lsp-execute-code-action)
-  "e" '(list-flycheck-errors))
-#+end_src
-
-**** UI
-
-#+begin_src emacs-lisp
-(defun my/lsp--progress-status ()
-  "Returns the status of the progress for the current workspaces."
-  (-let ((progress-status
-	  (s-join
-	   "|"
-	   (-keep
-	    (lambda (workspace)
-	      (let ((tokens (lsp--workspace-work-done-tokens workspace)))
-		(unless (ht-empty? tokens)
-		  (mapconcat
-		   (-lambda ((&WorkDoneProgressBegin :message? :title :percentage?))
-		     (concat (if percentage?
-				 (if (numberp percentage?)
-				     (format "%.0f%%%% " percentage?)
-				   (format "%s%%%% " percentage?))
-			       "")
-			     (let ((msg (url-unhex-string (or message\? title))))
-			       (if (string-match-p "\\`file:///" msg)
-				   (file-name-nondirectory msg)))))
-		   (ht-values tokens)
-		   "|"))))
-	    (lsp-workspaces)))))
-    (unless (s-blank? progress-status)
-      (concat lsp-progress-prefix progress-status))))
-
-(with-eval-after-load 'lsp-mode
-  (advice-add 'lsp--progress-status :override #'my/lsp--progress-status))
-#+end_src
-
-*** Flycheck
-
-#+begin_src emacs-lisp
-(use-package flycheck
-  :straight t
-  :config
-  (global-flycheck-mode)
-  (setq flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
-  ;; (add-hook 'evil-insert-state-exit-hook
-  ;;           (lambda ()
-  ;;             (if flycheck-checker
-  ;;                 (flycheck-buffer))
-  ;;             ))
-  (advice-add 'flycheck-eslint-config-exists-p :override (lambda() t))
-  (add-to-list 'display-buffer-alist
-	       `(,(rx bos "*Flycheck errors*" eos)
-		 (display-buffer-reuse-window
-		  display-buffer-in-side-window)
-		 (side            . bottom)
-		 (reusable-frames . visible)
-		 (window-height   . 0.33))))
-#+end_src
-
-*** DAP
-
-#+begin_src emacs-lisp
-(use-package dap-mode
-  :straight t
-  :commands (dap-debug)
-  :init
-  (setq lsp-enable-dap-auto-configure nil)
-  :config
-
-  (setq dap-ui-variable-length 100)
-  (setq dap-auto-show-output nil)
-  (require 'dap-node)
-  (dap-node-setup)
-
-  (require 'dap-chrome)
-  (dap-chrome-setup)
-
-  (require 'dap-python)
-  (require 'dap-php)
-
-  (dap-mode 1)
-  (dap-ui-mode 1)
-  (dap-tooltip-mode 1)
-  (tooltip-mode 1))
-#+end_src
-
-*** highlight-indent-guides
-
-#+begin_src emacs-lisp
-(use-package highlight-indent-guides
-  :straight t
-  :config
-  (setq highlight-indent-guides-method 'character
-  highlight-indent-guides-responsive 'top)
-  :hook (prog-mode . highlight-indent-guides-mode))
-#+end_src
-** Lisp
-** Python
-
-*** jupyter
-
-*** pyright
-
-#+begin_src emacs-lisp
-  (setq my/pipenv-python-alist '())
-
-  (defun my/get-pipenv-python ()
-    (let ((default-directory (projectile-project-root)))
-      (if (file-exists-p "Pipfile")
-  	(let ((asc (assoc default-directory my/pipenv-python-alist)))
-  	  (if asc
-  	      (cdr asc)
-  	    (let ((python-executable
-  		   (string-trim (shell-command-to-string "PIPENV_IGNORE_VIRTUALENVS=1 pipenv run which python 2>/dev/null"))))
-  	      (if (string-match-p ".*not found.*" python-executable)
-  		  (message "Pipfile found, but not pipenv executable!")
-  		(message (format "Found pipenv python: %s" python-executable))
-  		(add-to-list 'my/pipenv-python-alist (cons default-directory python-executable))
-  		python-executable))))
-        "python")))
-
-  (use-package lsp-pyright
-    :straight t
-    :defer t
-    :hook (python-mode . (lambda ()
-  			 (require 'lsp-pyright)
-  			 (setq-local lsp-pyright-python-executable-cmd (my/get-pipenv-python))
-  			 (lsp))))
-
-  (add-hook 'python-mode-hook #'smartparens-mode)
-  (add-hook 'python-mode-hook #'hs-minor-mode)
-#+end_src
-
-*** pipenv
-#+begin_src emacs-lisp
-  (use-package pipenv
-    :straight t
-    :hook (python-mode . pipenv-mode)
-    :init
-    (setq
-     pipenv-projectile-after-switch-function
-     #'pipenv-projectile-after-switch-extended))
-
-#+end_src
-
-*** yapf
-#+begin_src emacs-lisp
-  (use-package yapfify
-    :straight (:repo "JorisE/yapfify" :host github)
-    :disabled
-    :commands (yapfify-region
-  	     yapfify-buffer
-  	     yapfify-region-or-buffer
-  	     yapf-mode))
-
-#+end_src
-
-*** black
-#+begin_src emacs-lisp
-  (use-package python-black
-    :straight t
-    :commands (python-black-buffer)
-    :config
-    (setq python-black-command "black"))
-
-#+end_src
-
-*** isort
-
-#+begin_src emacs-lisp
-(use-package py-isort
-  :straight t
-  :commands (py-isort-buffer py-isort-region))
-#+end_src
-
-*** code-cells
-
-#+begin_src emacs-lisp
-  (use-package code-cells
-    :straight t
-    :commands (code-cells-mode code-cells-convert-ipynb))
-#+end_src
-
-*** tensorboard
-
-#+begin_src emacs-lisp
-  (setq my/tensorboard-buffer "TensorBoard-out")
-
-  (defun my/tensorboard ()
-    (interactive)
-    (start-process
-     "tensorboard"
-     my/tensorboard-buffer
-     "tensorboard"
-     "serve"
-     "--logdir"
-     (car (find-file-read-args "Directory: " t)))
-    (display-buffer my/tensorboard-buffer))
-
-#+end_src
-
-** Documents
-** Format-on-save
-#+begin_src emacs-lisp
-  (use-package format-all
-    :straight t
-    :init (format-all-mode 1))
-#+end_src
-
 * Projectile
 
 #+begin_src emacs-lisp
@@ -1954,58 +1819,58 @@ CLOSED: [2023-10-17 Tue 02:13]
 ** auctex
 
 #+begin_src emacs-lisp
-  (use-package tex
-    :straight auctex
-    :config
-    (setq-default TeX-auto-save t)
-    (setq-default TeX-parse-self t)
-    (TeX-PDF-mode)
-    ;; Use XeLaTeX & stuff
-    (setq-default TeX-engine 'xetex)
-    (setq-default TeX-command-extra-options "-shell-escape")
-    (setq-default TeX-source-correlate-method 'synctex)
-    (TeX-source-correlate-mode)
-    (setq-default TeX-source-correlate-start-server t)
-    (setq-default LaTeX-math-menu-unicode t)
+(use-package tex
+  :straight auctex
+  :config
+  (setq-default TeX-auto-save t)
+  (setq-default TeX-parse-self t)
+  (TeX-PDF-mode)
+  ;; Use XeLaTeX & stuff
+  (setq-default TeX-engine 'xetex)
+  (setq-default TeX-command-extra-options "-shell-escape")
+  (setq-default TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-mode)
+  (setq-default TeX-source-correlate-start-server t)
+  (setq-default LaTeX-math-menu-unicode t)
 
-    (setq-default font-latex-fontify-sectioning 1.3)
+  (setq-default font-latex-fontify-sectioning 1.3)
 
-    ;; Scale preview for my DPI
-    (setq-default preview-scale-function 1.4)
-    (when (boundp 'tex--prettify-symbols-alist)
-      (assoc-delete-all "--" tex--prettify-symbols-alist)
-      (assoc-delete-all "---" tex--prettify-symbols-alist))
+  ;; Scale preview for my DPI
+  (setq-default preview-scale-function 1.4)
+  (when (boundp 'tex--prettify-symbols-alist)
+    (assoc-delete-all "--" tex--prettify-symbols-alist)
+    (assoc-delete-all "---" tex--prettify-symbols-alist))
 
-    (add-hook 'LaTeX-mode-hook
-  	    (lambda ()
-  	      (TeX-fold-mode 1)
-  	      (outline-minor-mode)))
+  (add-hook 'LaTeX-mode-hook
+  	        (lambda ()
+  	          (TeX-fold-mode 1)
+  	          (outline-minor-mode)))
 
-    (add-to-list 'TeX-view-program-selection
-  	       '(output-pdf "Zathura"))
+  (add-to-list 'TeX-view-program-selection
+  	           '(output-pdf "PDF Tools"))
 
-    ;; Do not run lsp within templated TeX files
-    (add-hook 'LaTeX-mode-hook
-  	    (lambda ()
-  	      (unless (string-match "\.hogan\.tex$" (buffer-name))
-  		(lsp))
-  	      (setq-local lsp-diagnostic-package :none)
-  	      (setq-local flycheck-checker 'tex-chktex)))
+  ;; Do not run lsp within templated TeX files
+  (add-hook 'LaTeX-mode-hook
+  	        (lambda ()
+  	          (unless (string-match "\.hogan\.tex$" (buffer-name))
+  		        (lsp))
+  	          (setq-local lsp-diagnostic-package :none)
+  	          (setq-local flycheck-checker 'tex-chktex)))
 
-    (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
-    (add-hook 'LaTeX-mode-hook #'smartparens-mode)
-    (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
-    ;; Turn on RefTeX in AUCTeX
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    ;; Activate nice interface between RefTeX and AUCTeX
-    (setq reftex-plug-into-AUCTeX t)
+  (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'LaTeX-mode-hook #'smartparens-mode)
+  (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+  ;; Turn on RefTeX in AUCTeX
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  ;; Activate nice interface between RefTeX and AUCTeX
+  (setq reftex-plug-into-AUCTeX t)
 
-    (efs/leader-keys
-      :keymaps '(LaTeX-mode-map latex-mode-map)
-     "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
-     "b e" '(reftex-citation :wk "Enter reftex citation")
-     "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
-     "c t" 'orgtbl-mode))
+  (efs/leader-keys
+    :keymaps '(LaTeX-mode-map latex-mode-map)
+    "RET" '(TeX-command-run-all :wk "TeX-command-run-all")
+    "b e" '(reftex-citation :wk "Enter reftex citation")
+    "C-e" '(LaTeX-environment :wk "enter LaTeX environment")
+    "c t" 'orgtbl-mode))
 #+end_src
 ** Import *.sty
 
@@ -2253,7 +2118,7 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 (add-hook 'TeX-mode-hook 'my-latex-mode-setup)
 #+end_src
-** cdlatex
+** cdlaTex
 
 #+begin_src emacs-lisp
 (use-package cdlatex
