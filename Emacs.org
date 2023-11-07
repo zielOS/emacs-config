@@ -8,24 +8,13 @@
   ;; Garbage Collections
   (setq gc-cons-percentage 0.6)
 
-    ;; Compile warnings
-    ;;  (setq warning-minimum-level :emergency)
-  (setq native-comp-async-report-warnings-errors 'silent) ;; native-comp warning
-  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-
 
   ;; MISC OPTIMIZATIONS ----
     ;;; optimizations (froom Doom's core.el). See that file for descriptions.
   (setq idle-update-delay 1.0)
 
-  ;; Disabling bidi (bidirectional editing stuff)
-  (setq-default bidi-display-reordering 'left-to-right
-                bidi-paragraph-direction 'left-to-right)
-  (setq bidi-inhibit-bpa t)  ; emacs 27 only - disables bidirectional parenthesis
-
   (setq-default cursor-in-non-selected-windows nil)
   (setq highlight-nonselected-windows nil)
-  (setq fast-but-imprecise-scrolling t)
   (setq inhibit-compacting-font-caches t)
 
   (setq inhibit-startup-message t)
@@ -40,7 +29,6 @@
   (column-number-mode t)
   (setq inhibit-startup-screen t)
   (defalias 'yes-or-no-p 'y-or-n-p)
-
 #+end_src
 
 
@@ -121,7 +109,7 @@ CLOSED: [2023-10-15 Sun 01:23]
   :straight t
   :diminish gcmh-mode
   :config
-  (setq gcmh-idle-delay 5
+  (setq gcmh-idle-delay 1
         gcmh-high-cons-threshold (* 16 1024 1024))  ; 16mb
   (gcmh-mode 1))
 
@@ -164,12 +152,6 @@ CLOSED: [2023-10-15 Sun 01:23]
 CLOSED: [2023-10-15 Sun 01:34]
 
 #+begin_src emacs-lisp
-;; Revert Dired and other buffers
-(customize-set-variable 'global-auto-revert-non-file-buffers t)
-
-;; Revert buffers when the underlying file has changed
-(global-auto-revert-mode 1)
-
 ;; Make dired do something intelligent when two directories are shown
 ;; in separate dired buffers.  Makes copying or moving files between
 ;; directories easier.  The value `t' means to guess the default
@@ -331,10 +313,7 @@ CLOSED: [2023-10-15 Sun 02:14]
 
     ;; Use visual line motions even outside of visual-line-mode buffers
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
 
 
   (use-package evil-collection
@@ -370,6 +349,7 @@ CLOSED: [2023-10-15 Sun 02:14]
       :prefix "SPC" ;; set leader
       :global-prefix "M-SPC")) ;; access leader in insert mode)
 #+end_src
+
 
 
 * Basic Keybindings
@@ -413,18 +393,13 @@ CLOSED: [2023-10-15 Sun 02:14]
 (use-package helpful
   :straight t)
 
-;; Make `describe-*' screens more helpful
-(when (require 'helpful nil :noerror)
-  (keymap-set helpful-mode-map "<remap> <revert-buffer>" #'helpful-update)
-  (keymap-global-set "<remap> <describe-command>"        #'helpful-command)
-  (keymap-global-set "<remap> <describe-function>"       #'helpful-callable)
-  (keymap-global-set "<remap> <describe-key>"            #'helpful-key)
-  (keymap-global-set "<remap> <describe-symbol>"         #'helpful-symbol)
-  (keymap-global-set "<remap> <describe-variable>"       #'helpful-variable))
-
 (efs/leader-keys
- "?" '(describe-keymap :which-key "describe keymap")
- "h F" '(helpful-function :which-key "open file/unfold directory"))
+  "?" '(describe-keymap :which-key "describe keymap")
+  "h f" '(helpful-callable :which-key "helpful callable")
+  "h v" '(helpful-callable :which-key "helpful variable")
+  "h k" '(helpful-callable :which-key "helpful key")
+  "h x" '(helpful-callable :which-key "helpful command")
+  "h F" '(helpful-function :which-key "open file/unfold directory"))
 #+end_src
 
 ** Line Numbers
@@ -728,7 +703,8 @@ CLOSED: [2023-10-15 Sun 02:14]
     (customize-set-variable 'vertico-cycle t)
 
     ;; Start Vertico
-    (vertico-mode 1)
+    (vertico-mode 1
+                  )
 
     ;; Turn off the built-in fido-vertical-mode and icomplete-vertical-mode, if
     ;; they have been turned on by crafted-defaults-config, because they interfere
@@ -876,114 +852,6 @@ CLOSED: [2023-10-15 Sun 02:14]
     :if (display-graphic-p)
     :after (company)
     :hook (company-mode . company-box-mode))
-#+end_src
-
-* DONE Lisp Setup
-
-** Global Defaults
-
-#+begin_src emacs-lisp
-(use-package eldoc
-  :straight t)
-(require 'eldoc)
-#+end_src
-
-** Aggressive Indent
-
-#+begin_src emacs-lisp
-(use-package aggressive-indent
-  :straight t)
-
-(when (locate-library "aggressive-indent")
-  (add-hook 'lisp-mode-hook #'aggressive-indent-mode)
-  (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
-  (add-hook 'scheme-mode-hook #'aggressive-indent-mode))
-#+end_src
-
-** Common lisp
-
-#+begin_src emacs-lisp
-(use-package sly
-  :straight t)
-
-(use-package sly-asdf
-  :straight t)
-
-(use-package sly-quicklisp
-  :straight t)
-
-(use-package sly-repl-ansi-color
-  :straight t)
-
-(with-eval-after-load 'sly
-  ;; Uncomment and update if you need to set the path to an
-  ;; implementation of common lisp. This would be needed only if you
-  ;; have multiple instances of common lisp installed, for example,
-  ;; both CLISP and SBCL. In this case, we are assuming SBCL.
-  ;; (setq inferior-lisp-program "/usr/bin/sbcl")
-  (require 'sly-quicklisp "sly-quicklisp" :no-error)
-  (require 'sly-repl-ansi-color "sly-repl-ansi-color" :no-error)
-  (require 'sly-asdf "sly-asdf" :no-error))
-
-(when (locate-library "sly")
-  (add-hook 'lisp-mode-hook #'sly-editing-mode))
-
-#+end_src
-
-** Clojure
-
-#+begin_src emacs-lisp
-(use-package cider
-  :straight t)
-
-(use-package clj-refactor
-  :straight t)
-
-(use-package clojure-mode
-  :straight t)
-
-(use-package flycheck-clojure
-  :straight t)
-
-(with-eval-after-load "clojure-mode"
-  (require 'cider "cider" :no-error)
-  (require 'clj-refactor "clj-refactor" :no-error)
-
-  (defun crafted-lisp-load-clojure-refactor ()
-    "Load `clj-refactor' toooling and fix keybinding conflicts with cider."
-    (when (locate-library "clj-refactor")
-      (clj-refactor-mode 1)
-      ;; keybindings mentioned on clj-refactor github page
-      ;; conflict with cider, use this by default as it does
-      ;; not conflict and is a better mnemonic
-      (cljr-add-keybindings-with-prefix "C-c r")))
-  (add-hook 'clojure-mode-hook #'crafted-lisp-load-clojure-refactor)
-
-  (with-eval-after-load "flycheck"
-    (flycheck-clojure-setup)))
-
-#+end_src
-
-** Scheme & Racker
-
-#+begin_src emacs-lisp
-(use-package geiser
-  :straight t)
-
-(use-package geiser-guile
-  :straight t)
-
-(use-package geiser-racket
-  :straight t)
-
-;; the default is "scheme" which is used by cmuscheme, xscheme and
-;; chez (at least). we are configuring guile, so use the apporpriate
-;; command for that implementation.
-(customize-set-variable 'scheme-program-name "guile")
-
-
-(provide 'crafted-lisp-config)
-
 #+end_src
 
 
@@ -1138,50 +1006,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   '(org-load-modules-maybe t))
 #+end_src
 
-*** org-ql
-
-#+begin_src emacs-lisp
-(use-package org-ql
-  :straight t
-  :defer t
-  :general
-  (general-define-key :keymaps 'org-ql-view-map
-                      "q" 'kill-buffer-and-window)
-  )
-#+end_src
-
-*** org-fragtog
-
-#+begin_src emacs-lisp
-(use-package org-fragtog
-  :straight t
-  :hook (org-mode . org-fragtog-mode)
-  :config
-  (setq org-latex-create-formula-image-program 'dvisvgm) ;; sharper
-  (plist-put org-format-latex-options :scale 1.5) ;; bigger
-  (setq org-latex-preview-ltxpng-directory (concat (temporary-file-directory) "ltxpng/"))
-  )
-#+end_src
-
-*** org-tree-slide
-
-#+begin_src emacs-lisp
-(use-package org-tree-slide
-  :straight t
-  :defer t
-  :config
-  (setq org-tree-slide-slide-in-effect nil
-        org-tree-slide-skip-outline-level 3))
-#+end_src
-
-*** valign
-
-#+begin_src emacs-lisp
-  (use-package valign
-    :straight t
-    :defer t)
-#+end_src
-
 *** smartparens-mode
 
 #+begin_src emacs-lisp
@@ -1192,14 +1016,6 @@ CLOSED: [2023-10-17 Tue 02:13]
     ;; load default config
     (require 'smartparens-config))
 
-#+end_src
-
-*** hl-prog-extra
-
-#+begin_src emacs-lisp
-  (use-package hl-prog-extra
-    :straight t
-    :commands (hl-prog-extra-mode))
 #+end_src
 
 ** Keybindings
@@ -1289,17 +1105,15 @@ CLOSED: [2023-10-17 Tue 02:13]
 #+end_src
 
 #+begin_src emacs-lisp
-  (defun efs/org-highlight-setup ()
-    (highlight-regexp "\\<\\(TODO\\|NEXT\\) \\(Read\\)\\>" 'jib-read 2))
+(defun efs/org-highlight-setup ()
+  (highlight-regexp "\\<\\(TODO\\|NEXT\\) \\(Read\\)\\>" 'jib-read 2))
 #+end_src
 
 #+begin_src emacs-lisp
-  (defun efs/org-setup ()
-    (org-indent-mode) ;; Keeps org items like text under headings, lists, nicely indented
-    (visual-line-mode 1) ;; Nice line wrapping
-    (smartparens-mode 0) ;; Disable smartparents
-    (hl-prog-extra-mode) ;; Highlighting with regexps
-    (valign-mode))
+(defun efs/org-setup ()
+  (org-indent-mode) ;; Keeps org items like text under headings, lists, nicely indented
+  (visual-line-mode 1) ;; Nice line wrapping
+  (smartparens-mode 1))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1319,35 +1133,35 @@ CLOSED: [2023-10-17 Tue 02:13]
 #+end_src
 
 #+begin_src emacs-lisp
-  (defun efs/org-font-setup ()
-    ;; Replace list hyphen with dot
-    (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+(defun efs/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
-    ;; Set faces for heading levels
-    (dolist (face '((org-level-1 . 1.2)
-                    (org-level-2 . 1.1)
-                    (org-level-3 . 1.05)
-                    (org-level-4 . 1.0)
-                    (org-level-5 . 1.1)
-                    (org-level-6 . 1.1)
-                    (org-level-7 . 1.1)
-                    (org-level-8 . 1.1)))
-      (set-face-attribute (car face) nil :font "JetBrainsMono Nerd Font" :weight 'medium :height (cdr face)))
+  ;; Set faces for heading levels
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "JetBrainsMono Nerd Font" :weight 'medium :height (cdr face)))
 
-    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-    (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-    (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 #+end_src
 ** Configuration
@@ -1379,18 +1193,20 @@ CLOSED: [2023-10-17 Tue 02:13]
   (setq org-pretty-entities t)
 #+end_src
 
+*** Sourc Code Blocks
+
+#+begin_src emacs-lisp
+  (setq org-src-fontify-natively t
+        org-src-strip-leading-and-trailing-blank-lines t
+        org-src-preserve-indentation t ;; do not put two spaces on the left
+        org-src-tab-acts-natively t)
+#+end_src
+
 *** Interaction
 
 #+begin_src emacs-lisp
   (setq org-cycle-separator-lines 1)
-  (setq org-catch-invisible-edits 'show-and-error) ;; 'smart
-  (setq org-src-tab-acts-natively t)
 
-  ;; M-Ret can split lines on items and tables but not headlines and not on anything else (unconfigured)
-  (setq org-M-RET-may-split-line '((headline) (item . t) (table . t) (default)))
-  (setq org-loop-over-headlines-in-active-region nil)
-
-  ;; Opens links to other org file in same frame (rather than splitting)
   (setq org-link-frame-setup '((file . find-file)))
 
   (setq org-log-done t
@@ -1801,8 +1617,7 @@ CLOSED: [2023-10-17 Tue 02:13]
  '((emacs-lisp . t) ;; Other languages
    (shell . t)
    ;; Python & Jupyter
-   (python . t)
-   (jupyter . t)))
+   (python . t)))
 #+end_src
 
 *** Structure Templates
@@ -1833,7 +1648,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
 #+end_src
-
 
 * IDE Setup
 ** General setup
@@ -2009,26 +1823,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 ** Python
 
 *** jupyter
-
-#+begin_src emacs-lisp
-  (use-package jupyter
-    :straight t)
-#+end_src
-
-#+begin_src emacs-lisp
-  (org-babel-jupyter-override-src-block "python")
-#+end_src
-
-#+begin_src emacs-lisp
-  (setq ob-async-no-async-languages-alist '("python" "jupyter-python"))
-#+end_src
-
-#+begin_src emacs-lisp
-  (defun my/jupyter-refresh-kernelspecs ()
-    "Refresh Jupyter kernelspecs"
-    (interactive)
-    (jupyter-available-kernelspecs t))
-#+end_src
 
 *** pyright
 
@@ -2746,7 +2540,6 @@ CLOSED: [2023-10-17 Tue 02:13]
 Dial the GC threshold back down so that garbage collection happens more frequently but in less time.
 
 #+begin_src emacs-lisp
-
   ;; Make gc pauses faster by decreasing the threshold.
-  (setq gc-cons-threshold (* 5000 1000))
+  (setq gc-cons-threshold (* 2 5000 1000))
 #+end_src
