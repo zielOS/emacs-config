@@ -898,6 +898,10 @@ CLOSED: [2023-10-15 Sun 01:34]
 
 *** jupyter
 
+#+begin_src emacs-lisp
+(use-package jupyter
+  :straight t)
+#+end_src
 
 *** pyright
 
@@ -1043,51 +1047,6 @@ CLOSED: [2023-10-17 Tue 02:13]
   (setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
 #+end_src
 
-*** Org Modern
-
-#+begin_src emacs-lisp
-  (use-package org-modern
-    :straight t)
-
-   ;; Add frame borders and window dividers
-  (modify-all-frames-parameters
-   '((right-divider-width . 10)
-     (internal-border-width . 10)))
-  (dolist (face '(window-divider
-                  window-divider-first-pixel
-                  window-divider-last-pixel))
-    (face-spec-reset-face face)
-    (set-face-foreground face (face-attribute 'default :background)))
-  (set-face-background 'fringe (face-attribute 'default :background))
-
-  (setq
-   ;; Edit settings
-   org-auto-align-tags t
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
-
-   ;; Org styling, hide markup etc.
-   org-hide-emphasis-markers t
-   org-pretty-entities t
-   org-ellipsis "…"
-   org-modern-star '( "⌾" "✸" "◈" "◇")
-   org-modern-list '((42 . "◦") (43 . "•") (45 . "–"))
-
-   ;; Agenda styling
-   org-agenda-tags-column 0
-   org-agenda-block-separator ?─
-   org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "⭠ now ─────────────────────────────────────────────────")
-
-  (global-org-modern-mode)
-#+end_src
-
 *** Evil Org
 
 #+begin_src emacs-lisp
@@ -1163,7 +1122,6 @@ CLOSED: [2023-10-17 Tue 02:13]
     (require 'smartparens-config))
 
 #+end_src
-
 ** Keybindings
 
 #+begin_src emacs-lisp
@@ -1797,6 +1755,7 @@ CLOSED: [2023-10-17 Tue 02:13]
 
 
 #+end_src
+
 * Projectile
 
 #+begin_src emacs-lisp
