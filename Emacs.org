@@ -896,11 +896,30 @@ CLOSED: [2023-10-15 Sun 01:34]
 #+end_src
 ** Python
 
+*** conda
+
+#+begin_src emacs-lisp
+(use-package conda
+  :straight t
+  :defer t
+  :init
+  (setq conda-anaconda-home (expand-file-name "~/miniconda3")
+	conda-env-home-directory (expand-file-name "~/miniconda3"))
+  :config
+  (conda-env-initialize-interactive-shells)
+  (conda-env-initialize-eshell))
+
+#+end_src
+
 *** jupyter
 
 #+begin_src emacs-lisp
 (use-package jupyter
-  :straight t)
+  :straight t
+  :defer t
+  :init
+  (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+                                                       (:session . "py"))))
 #+end_src
 
 *** pyright
@@ -1720,6 +1739,7 @@ CLOSED: [2023-10-17 Tue 02:13]
  'org-babel-load-languages
  '((emacs-lisp . t) ;; Other languages
    (shell . t)
+   (jupyter . t)
    ;; Python & Jupyter
    (python . t)))
 #+end_src
