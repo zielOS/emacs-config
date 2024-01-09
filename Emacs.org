@@ -118,6 +118,12 @@ one, an error is signaled."
       (select-window other-win))))
 #+end_src
 
+** Disable nativecomp warnings
+
+#+begin_src emacs-lisp
+(setq native-comp-async-report-warnings-errors nil)
+#+end_src
+
 * ALL THE ICONS
 
 #+begin_src emacs-lisp
