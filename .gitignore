@@ -4,6 +4,11 @@ etc/
 .local/
 straight/
 var/
+transient/
+recentf
+sessions
+tramp
+projectile-bookmarks.eld
 Emacs.org~
 .last-package-update-day
 init.el
