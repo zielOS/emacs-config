@@ -824,6 +824,20 @@ Org-tempo is not a separate package but a module within org that can be enabled.
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+end_src
 
+
+** jupyter
+
+#+begin_src emacs-lisp
+(use-package jupyter 
+  :straight t)
+
+(use-package ob-async
+  :straight t)
+
+(setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
+
+#+end_src
+
 ** org-babel
 
 #+begin_src emacs-lisp
@@ -831,14 +845,10 @@ Org-tempo is not a separate package but a module within org that can be enabled.
   (org-babel-do-load-languages
       'org-babel-load-languages
       '((emacs-lisp . t)
-      (python . t)))
+      (python . t)
+      (jupyter .t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
-#+end_src
-
-** jupyter
-
-#+begin_src emacs-lisp
 #+end_src
 
 * PDFs
