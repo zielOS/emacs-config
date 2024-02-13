@@ -962,6 +962,16 @@ Org-tempo is not a separate package but a module within org that can be enabled.
 (setq org-src-tab-acts-natively t)
 #+end_src
 
+** org-capture
+
+#+begin_src emacs-lisp
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/todo.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree "~/org/journal.org")
+         "* %?\nEntered on %U\n  %i\n  %a")))
+#+end_src
+
 * PDFs
 [[https://github.com/vedang/pdf-tools][pdf-tools]] is a replacement of DocView for viewing PDF files inside Emacs.  It uses the =poppler= library, which also means that 'pdf-tools' can by used to modify PDFs.  I use to disable 'display-line-numbers-mode' in 'pdf-view-mode' because line numbers crash it.
 
