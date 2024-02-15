@@ -735,6 +735,46 @@ Adding highlights to TODO and related words.
 
 #+end_src
 
+* JUPYTER
+
+#+begin_src emacs-lisp
+(use-package jupyter 
+  :straight t)
+
+(use-package ob-async
+  :straight t)
+
+(setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
+
+#+end_src
+
+#+begin_src emacs-lisp
+(add-to-list 'org-babel-load-languages '(jupyter . t) t)
+
+(setq org-babel-default-header-args:jupyter-python
+      '((:results . "both")
+	;; This seems to lead to buffer specific sessions!
+	(:session . (lambda () (buffer-file-name)))
+	(:kernel . "python3")
+	(:pandoc . "t")
+	(:exports . "both")
+	(:cache .   "no")
+	(:noweb . "no")
+	(:hlines . "no")
+	(:tangle . "no")
+	(:eval . "never-export")))
+
+(org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+(org-babel-jupyter-override-src-block "python")
+
+#+end_src
+
+#+begin_src emacs-lisp
+(defalias 'org-babel-execute:ipython 'org-babel-execute:jupyter-python)
+(setq org-babel-default-header-args:ipython org-babel-default-header-args:jupyter-python)
+(add-to-list 'org-src-lang-modes '("ipython" . python))
+#+end_src
+
 * LINE NUMBERS
 
 #+begin_src emacs-lisp
@@ -826,100 +866,6 @@ Org-tempo is not a separate package but a module within org that can be enabled.
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+end_src
 
-
-** jupyter
-
-#+begin_src emacs-lisp
-(use-package jupyter 
-  :straight t)
-
-(use-package ob-async
-  :straight t)
-
-(setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
-
-#+end_src
-
-#+begin_src emacs-lisp
-(add-to-list 'org-babel-load-languages '(jupyter . t) t)
-
-(setq org-babel-default-header-args:jupyter-python
-      '((:results . "both")
-	;; This seems to lead to buffer specific sessions!
-	(:session . (lambda () (buffer-file-name)))
-	(:kernel . "python3")
-	(:pandoc . "t")
-	(:exports . "both")
-	(:cache .   "no")
-	(:noweb . "no")
-	(:hlines . "no")
-	(:tangle . "no")
-	(:eval . "never-export")))
-
-(org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
-(org-babel-jupyter-override-src-block "python")
-
-#+end_src
-
-#+begin_src emacs-lisp
-(defalias 'org-babel-execute:ipython 'org-babel-execute:jupyter-python)
-(setq org-babel-default-header-args:ipython org-babel-default-header-args:jupyter-python)
-(add-to-list 'org-src-lang-modes '("ipython" . python))
-#+end_src
-
-
-#+begin_src emacs-lisp
-;; * Kill the kernel when the buffer is closed
-;; This is also harder than needed I think. This should kill the kernel in the current file.
-(defun scimax-jupyter-get-session ()
-  "Get the session name in the current buffer."
-  (let ((lang (car (org-babel-get-src-block-info))))
-    (let ((session (org-babel-read
-		    (or
-		     (cdr
-		      (assoc :session
-			     (cadr (org-babel-params-from-properties lang))))
-		     (cdr (assoc :session
-				 org-babel-default-header-args:jupyter-python))))))
-      (cond
-       ((functionp session)
-	(funcall session))
-       (t
-	session)))))
-
-
-(defun scimax-jupyter-org-kill-kernel ()
-  "Kill the kernel."
-  (interactive)
-  (let ((session (scimax-jupyter-get-session)))
-    (catch 'done
-      (cl-loop for buffer in (buffer-list)
-	       do
-	       (when (string-match
-		      (format "*jupyter-repl\\[.*\\]-%s*" session)
-		      (buffer-name buffer))
-		 (kill-buffer buffer)
-		 (setq header-line-format nil)
-		 (throw 'done buffer))))))
-
-
-(defun scimax-jupyter-kill-kernel-hook (&rest args)
-  (setq header-line-format
-	(format "%s running. Click here to kill it."
-		(scimax-jupyter-get-session)))
-  (local-set-key [header-line down-mouse-1]
-		 `(lambda ()
-		    (interactive)
-		    (scimax-jupyter-org-kill-kernel)))
-  (add-hook 'kill-buffer-hook 'scimax-jupyter-org-kill-kernel nil t))
-
-
-(defun scimax-jupyter-check-restart (&rest args)
-  "If :restart is in the header, kill the kernel first."
-  (let ((src (org-element-context)))
-    (when (string-match ":restart" (or (org-element-property :parameters src) ""))
-      (scimax-jupyter-org-kill-kernel))))
-#+end_src
 
 ** org-babel
 
@@ -1120,84 +1066,6 @@ Eshell is an Emacs 'shell' that is written in Elisp.
 * TABS
 
 #+begin_src emacs-lisp
-(use-package centaur-tabs
-  :straight t
-  :init
-  (setq centaur-tabs-enable-key-bindings t)
-  :config
-  (setq centaur-tabs-style "bar"
-        centaur-tabs-height 32
-        centaur-tabs-set-icons t
-        centaur-tabs-show-new-tab-button t
-        centaur-tabs-set-modified-marker t
-        centaur-tabs-show-navigation-buttons t
-        centaur-tabs-set-bar 'under
-        centaur-tabs-show-count nil
-        ;; centaur-tabs-label-fixed-length 15
-        ;; centaur-tabs-gray-out-icons 'buffer
-        ;; centaur-tabs-plain-icons t
-        x-underline-at-descent-line t
-        centaur-tabs-left-edge-margin nil)
-  (centaur-tabs-change-fonts (face-attribute 'default :font) 110)
-  (centaur-tabs-headline-match)
-  ;; (centaur-tabs-enable-buffer-alphabetical-reordering)
-  ;; (setq centaur-tabs-adjust-buffer-order t)
-  (centaur-tabs-mode t)
-  (setq uniquify-separator "/")
-  (setq uniquify-buffer-name-style 'forward)
-  (defun centaur-tabs-buffer-groups ()
-    "`centaur-tabs-buffer-groups' control buffers' group rules.
-
-Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-All buffer name start with * will group to \"Emacs\".
-Other buffer group by `centaur-tabs-get-group-name' with project name."
-    (list
-     (cond
-      ;; ((not (eq (file-remote-p (buffer-file-name)) nil))
-      ;; "Remote")
-      ((or (string-equal "*" (substring (buffer-name) 0 1))
-           (memq major-mode '(magit-process-mode
-                              magit-status-mode
-                              magit-diff-mode
-                              magit-log-mode
-                              magit-file-mode
-                              magit-blob-mode
-                              magit-blame-mode
-                              )))
-       "Emacs")
-      ((derived-mode-p 'prog-mode)
-       "Editing")
-      ((derived-mode-p 'dired-mode)
-       "Dired")
-      ((memq major-mode '(helpful-mode
-                          help-mode))
-       "Help")
-      ((memq major-mode '(org-mode
-                          org-agenda-clockreport-mode
-                          org-src-mode
-                          org-agenda-mode
-                          org-beamer-mode
-                          org-indent-mode
-                          org-bullets-mode
-                          org-cdlatex-mode
-                          org-agenda-log-mode
-                          diary-mode))
-       "OrgMode")
-      (t
-       (centaur-tabs-get-group-name (current-buffer))))))
-  :hook
-  (dashboard-mode . centaur-tabs-local-mode)
-  (term-mode . centaur-tabs-local-mode)
-  (calendar-mode . centaur-tabs-local-mode)
-  (org-agenda-mode . centaur-tabs-local-mode)
-  :bind
-  ("C-<prior>" . centaur-tabs-backward)
-  ("C-<next>" . centaur-tabs-forward)
-  ("C-S-<prior>" . centaur-tabs-move-current-tab-to-left)
-  ("C-S-<next>" . centaur-tabs-move-current-tab-to-right)
-  (:map evil-normal-state-map
-        ("g t" . centaur-tabs-forward)
-        ("g T" . centaur-tabs-backward)))
 #+end_src
 
 * TERMINALS
