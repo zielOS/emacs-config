@@ -620,7 +620,7 @@ You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTR
 
 #+begin_src emacs-lisp
 (efs/leader-keys
- "SPC" '(counsel-M-x :wk "counsel M-x")
+ "SPC" '(execute-extended-command :wk "M-x")
  "f f" '(find-file :wk "find file")
   "=" '(perspective-map :wk "perspective") ;; lists all the perspective keybindings
  "/" '(comment-line :wk "comment lines")
@@ -1394,6 +1394,17 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
   (vertico-cycle t)
   :init
   (vertico-mode))
+#+end_src
+
+* WGREP
+
+#+begin_src emacs-lisp
+(use-package wgrep
+  :straight t
+  :config 
+  (setq wgrep-auto-save-buffer t
+	wgrep-enable-key "r"
+	wgrep-change-readonly-file t))
 #+end_src
 
 * WHICH-KEY
