@@ -4,6 +4,7 @@ etc/
 .local/
 straight/
 var/
+auto-save-list/
 transient/
 recentf
 sessions

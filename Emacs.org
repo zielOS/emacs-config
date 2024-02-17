@@ -479,6 +479,7 @@ CLOSED: [2024-01-05 Fri 20:29]
 #+begin_src emacs-lisp
 (efs/leader-keys
  "d" '(:ignore t :wk "Dired")
+ "d e" '(dired-sidebar-toggle-sidebar :wk "Toggle dired sidebar")
  "d d" '(dired :wk "Open dired")
  "d f" '(wdired-finish-edit :wk "Writable dired finish edit")
  "d j" '(dired-jump :wk "Dired jump to current")
@@ -893,8 +894,6 @@ Org-tempo is not a separate package but a module within org that can be enabled.
       (sqlite . t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
-(org-babel-jupyter-override-src-block "python")
-
 #+end_src
 
 *** misc
