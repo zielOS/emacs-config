@@ -1353,6 +1353,20 @@ Org-tempo is not a separate package but a module within org that can be enabled.
 
 #+RESULTS:
 
+** info
+
+#+begin_src emacs-lisp
+(require 'info-look)
+
+(info-lookup-add-help
+ :mode 'python-mode
+ :regexp "[[:alnum:]_]+"
+ :doc-spec
+ '(("(python)Index" nil "")))
+#+end_src
+
+#+RESULTS:
+
 * RAINBOW DELIMITERS
 Adding rainbow coloring to parentheses.
 
