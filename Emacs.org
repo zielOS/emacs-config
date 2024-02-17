@@ -894,6 +894,7 @@ Adding highlights to TODO and related words.
           ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
 
+* JUPYTER
 * LSP
 ** lsp-mode
 
