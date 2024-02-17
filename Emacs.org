@@ -411,6 +411,7 @@ Defining the various fonts that Emacs will use.
     (efs/set-font-faces))
 
 #+end_src
+
 ** Zooming In/Out
 
 You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
@@ -421,6 +422,7 @@ You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTR
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
+
 * GENERAL KEYBINDINGS
 ** General
 
@@ -852,7 +854,6 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 
 #+begin_src emacs-lisp
 (use-package org
-  :straight (:type built-in)
   :commands (org-capture org-agenda)
   :config
   (setq org-ellipsis " ▾")
@@ -1119,6 +1120,10 @@ Org-tempo is not a separate package but a module within org that can be enabled.
   :config
   (projectile-mode 1))
 #+end_src
+
+* PYTHON
+
+** python-mode
 
 * RAINBOW DELIMITERS
 Adding rainbow coloring to parentheses.
