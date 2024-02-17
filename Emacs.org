@@ -1123,7 +1123,14 @@ Org-tempo is not a separate package but a module within org that can be enabled.
 
 * PYTHON
 
-** python-mode
+#+begin_src emacs-lisp
+(use-package elpy
+  :straight t
+  :init
+  (elpy-enable))
+#+end_src
+
+#+RESULTS:
 
 * RAINBOW DELIMITERS
 Adding rainbow coloring to parentheses.
