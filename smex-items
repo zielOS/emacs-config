@@ -1,0 +1,16 @@
+
+;; ----- smex-history -----
+(
+ theme-choose-variant
+ cd
+ 5x5
+ arp
+ dbx
+ dig
+ erc
+)
+
+;; ----- smex-data -----
+(
+ (theme-choose-variant . 1)
+)
