@@ -1,3 +1,4 @@
+
 #+title: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+STARTUP: overview
@@ -975,6 +976,15 @@ Org-tempo is not a separate package but a module within org that can be enabled.
   :straight t
   :config
   (projectile-mode 1))
+#+end_src
+
+* PYTHON
+
+#+begin_src emacs-lisp
+(use-package elpy
+  :straight t
+  :init
+  (elpy-enable))
 #+end_src
 
 * RAINBOW DELIMITERS
