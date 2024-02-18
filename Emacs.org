@@ -6,19 +6,17 @@
 ** Startup Performance
 
 #+begin_src emacs-lisp
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
 
-  ;; The default is 800 kilobytes.  Measured in bytes.
-  (setq gc-cons-threshold (* 50 1000 1000))
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                     (time-subtract after-init-time before-init-time)))
+           gcs-done))
 
-  (defun efs/display-startup-time ()
-    (message "Emacs loaded in %s with %d garbage collections."
-             (format "%.2f seconds"
-                     (float-time
-                       (time-subtract after-init-time before-init-time)))
-             gcs-done))
-
-  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
-
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 
 ** straight setup
@@ -44,7 +42,6 @@
 (eval-when-compile (require 'use-package))
 
 (straight-use-package 'org)
-
 #+end_src
 
 ** Automatic Package Updates
@@ -180,6 +177,7 @@ completes or is canceled."
 (setq auto-save-visited-mode t)
 #+end_src
 
+* TODO CAPE
 * COMPANY
 
 #+begin_src emacs-lisp
@@ -208,128 +206,17 @@ completes or is canceled."
 * CONSULT
 
 #+begin_src emacs-lisp
-;; Example configuration for Consult
 (use-package consult
-  :straight t
-  ;; Replace bindings. Lazily loaded due by `use-package'.
-  :bind (;; C-c bindings in `mode-specific-map'
-         ("C-c M-x" . consult-mode-command)
-         ("C-c h" . consult-history)
-         ("C-c k" . consult-kmacro)
-         ("C-c m" . consult-man)
-         ("C-c i" . consult-info)
-         ([remap Info-search] . consult-info)
-         ;; C-x bindings in `ctl-x-map'
-         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
-         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; Custom M-# bindings for fast register access
-         ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ;; M-g bindings in `goto-map'
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings in `search-map'
-         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
-         ("M-s c" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
-         ("M-s e" . consult-isearch-history)
-         :map isearch-mode-map
-         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-         ;; Minibuffer history
-         :map minibuffer-local-map
-         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+  :straight t)
+(when (locate-library "consult")
+  ;; Set some consult bindings
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
 
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-
-  ;; The :init configuration is always executed (Not lazy)
-  :init
-
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
-  :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-
-  ;; Optionally make narrowing help available in the minibuffer.
-  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-  ;; By default `consult-project-function' uses `project-root' from project.el.
-  ;; Optionally configure a different project root function.
-  ;;;; 1. project.el (the default)
-  ;; (setq consult-project-function #'consult--default-project--function)
-  ;;;; 2. vc.el (vc-root-dir)
-  ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-  ;;;; 3. locate-dominating-file
-  ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-  ;;;; 4. projectile.el (projectile-project-root)
-  ;; (autoload 'projectile-project-root "projectile")
-  ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-  ;;;; 5. No project support
-  ;; (setq consult-project-function nil)
-)
+  (setq completion-in-region-function #'consult-completion-in-region))
 #+end_src
 
+* TODO CORFU
 * DAP
 
 #+begin_src emacs-lisp 
@@ -458,61 +345,22 @@ This package implements hiding or abbreviation of the modeline displays (lighter
 
 #+begin_src emacs-lisp
 (use-package embark
-  :straight t
-  :bind
-  (("C-." . embark-act)
-   ("M-." . embark-dwim)
-   ("C-h B" . embark-bindings))
-  :init
-  (setq prefix-help-command #'embark-prefix-help-command))
+  :straight t)
 
 (use-package embark-consult
   :straight t)
 
-(use-package ace-window
-  :straight t)
+(when (require 'embark nil :noerror)
 
-(global-set-key (kbd "M-o") 'ace-window)
-(setq aw-dispatch-always t)
+  (keymap-global-set "<remap> <describe-bindings>" #'embark-bindings)
+  (keymap-global-set "C-." 'embark-act)
 
-(use-package 0x0
-  :straight t)
+  ;; Use Embark to show bindings in a key prefix with `C-h`
+  (setq prefix-help-command #'embark-prefix-help-command)
 
-(define-key embark-region-map (kbd "U") '0x0-dwim)
-
-(defun my/test-func ()
-  (message "~/init.el"))
-
-(eval-when-compile
-  (defmacro my/embark-ace-action (fn)
-    `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
-       (interactive)
-       (with-demoted-errors "%s"
-         (require 'ace-window)
-         (aw-switch-to-window (aw-select nil))
-         (call-interactively (symbol-function ',fn)))))
-
-  (defmacro my/embark-split-action (fn split-type)
-    `(defun ,(intern (concat "my/embark-"
-                             (symbol-name fn)
-                             "-"
-                             (car (last  (split-string
-                                          (symbol-name split-type) "-"))))) ()
-       (interactive)
-       (funcall #',split-type)
-       (call-interactively #',fn))))
-
-(define-key embark-file-map     (kbd "o") (my/embark-ace-action find-file))
-(define-key embark-buffer-map   (kbd "o") (my/embark-ace-action switch-to-buffer))
-(define-key embark-bookmark-map (kbd "o") (my/embark-ace-action bookmark-jump))
-
-(define-key embark-file-map     (kbd "2") (my/embark-split-action find-file split-window-below))
-(define-key embark-buffer-map   (kbd "2") (my/embark-split-action switch-to-buffer split-window-below))
-(define-key embark-bookmark-map (kbd "2") (my/embark-split-action bookmark-jump split-window-below))
-
-(define-key embark-file-map     (kbd "3") (my/embark-split-action find-file split-window-right))
-(define-key embark-buffer-map   (kbd "3") (my/embark-split-action switch-to-buffer split-window-right))
-(define-key embark-bookmark-map (kbd "3") (my/embark-split-action bookmark-jump split-window-right))
+  (when (require 'embark-consult nil :noerror)
+    (with-eval-after-load 'embark-consult
+      (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))))
 #+end_src
 
 * EVIL
@@ -1000,12 +848,10 @@ Adding highlights to TODO and related words.
 (use-package marginalia
   :after vertico
   :straight t
-  :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
-  (marginalia-mode))
+  (marginalia-mode 1))
 #+end_src
 
 * MODELINE
@@ -1032,162 +878,14 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides
-   '((file (styles basic partial-completion)))))
+   '((file (styles partial-completion)))))
 #+end_src
 
 * ORG
-** fonts
+** diminish org indent mode
 
 #+begin_src emacs-lisp
-(defun efs/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
-#+end_src
-
-** setup
-
-#+begin_src emacs-lisp
-(use-package org
-  :commands (org-capture org-agenda)
-  :config
-  (setq org-ellipsis " ▾")
-  (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)
-  (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit)
-  (setq org-habit-graph-column 60)
-    (setq org-todo-keywords
-      '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-        (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
-
-    (setq org-refile-targets
-      '(("Archive.org" :maxlevel . 1)
-        ("Tasks.org" :maxlevel . 1)))
-
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
-    (setq org-tag-alist
-      '((:startgroup)
-         ; Put mutually exclusive tags here
-         (:endgroup)
-         ("@errand" . ?E)
-         ("@home" . ?H)
-         ("@work" . ?W)
-         ("agenda" . ?a)
-         ("planning" . ?p)
-         ("publish" . ?P)
-         ("batch" . ?b)
-         ("note" . ?n)
-         ("idea" . ?i)))
-
-    ;; Configure custom agenda views
-    (setq org-agenda-custom-commands
-     '(("d" "Dashboard"
-       ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "NEXT"
-          ((org-agenda-overriding-header "Next Tasks")))
-        (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-
-      ("n" "Next Tasks"
-       ((todo "NEXT"
-          ((org-agenda-overriding-header "Next Tasks")))))
-
-      ("W" "Work Tasks" tags-todo "+work-email")
-
-      ;; Low-effort next actions
-      ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-       ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))
-
-      ("w" "Workflow Status"
-       ((todo "WAIT"
-              ((org-agenda-overriding-header "Waiting on External")
-               (org-agenda-files org-agenda-files)))
-        (todo "REVIEW"
-              ((org-agenda-overriding-header "In Review")
-               (org-agenda-files org-agenda-files)))
-        (todo "PLAN"
-              ((org-agenda-overriding-header "In Planning")
-               (org-agenda-todo-list-sublevels nil)
-               (org-agenda-files org-agenda-files)))
-        (todo "BACKLOG"
-              ((org-agenda-overriding-header "Project Backlog")
-               (org-agenda-todo-list-sublevels nil)
-               (org-agenda-files org-agenda-files)))
-        (todo "READY"
-              ((org-agenda-overriding-header "Ready for Work")
-               (org-agenda-files org-agenda-files)))
-        (todo "ACTIVE"
-              ((org-agenda-overriding-header "Active Projects")
-               (org-agenda-files org-agenda-files)))
-        (todo "COMPLETED"
-              ((org-agenda-overriding-header "Completed Projects")
-               (org-agenda-files org-agenda-files)))
-        (todo "CANC"
-              ((org-agenda-overriding-header "Cancelled Projects")
-               (org-agenda-files org-agenda-files)))))))
-
-    (setq org-capture-templates
-      `(("t" "Tasks / Projects")
-        ("tt" "Task" entry (file+olp "~/org/Tasks.org" "Inbox")
-             "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-
-        ("j" "Journal Entries")
-        ("jj" "Journal" entry
-             (file+olp+datetree "~/org/Journal.org")
-             "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-             ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-             :clock-in :clock-resume
-             :empty-lines 1)
-        ("jm" "Meeting" entry
-             (file+olp+datetree "~/org/Journal.org")
-             "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-             :clock-in :clock-resume
-             :empty-lines 1)
-
-        ("w" "Workflows")
-        ("we" "Checking Email" entry (file+olp+datetree "~/org/Journal.org")
-             "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
-
-        ("m" "Metrics Capture")
-        ("mw" "Weight" table-line (file+headline "~/org/Metrics.org" "Weight")
-         "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
-
-    (define-key global-map (kbd "C-c j")
-      (lambda () (interactive) (org-capture nil "jj")))
-
-    (efs/org-font-setup)
-
-)
-
+(eval-after-load 'org-indent '(diminish 'org-indent-mode))
 #+end_src
 
 ** org-bullets
@@ -1198,6 +896,19 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+#+end_src
+
+** org level headers
+
+#+begin_src emacs-lisp
+(custom-set-faces
+ '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.17))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.13))))
+ '(org-level-4 ((t (:inherit outline-4 :height 1.1))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.07))))
+ '(org-level-6 ((t (:inherit outline-5 :height 1.03))))
+ '(org-level-7 ((t (:inherit outline-5 :height 1.0)))))
 #+end_src
 
 ** org-babel
@@ -1441,7 +1152,6 @@ Display the actual color as a background for any hex color value (ex. #ffffff). 
 #+end_src
 
 * SUDO EDIT
-[[https://github.com/nflath/sudo-edit][sudo-edit]] gives us the ability to open files with sudo privileges or switch over to editing with sudo privileges if we initially opened the file without such privileges.
 
 #+begin_src emacs-lisp
 (use-package sudo-edit
@@ -1580,8 +1290,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 Dial the GC threshold back down so that garbage collection happens more frequently but in less time.
 
 #+begin_src emacs-lisp
-
-  ;; Make gc pauses faster by decreasing the threshold.
-  (setq gc-cons-threshold (* 2 1000 1000))
-
+;; Make gc pauses faster by decreasing the threshold.
+(setq gc-cons-threshold (* 2 1000 1000))
 #+end_src
