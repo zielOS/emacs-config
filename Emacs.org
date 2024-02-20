@@ -192,25 +192,6 @@ completes or is canceled."
 #+end_src
 
 * TODO CORFU
-* DAP
-
-#+begin_src emacs-lisp 
-(use-package dap-mode
-  ;; Uncomment the config below if you want all UI panes to be hidden by default!
-  ;; :custom
-  ;; (lsp-enable-dap-auto-configure nil)
-  :straight t
-  :config
-  (dap-ui-mode 1)
-  :commands dap-debug
-  :config
-  ;; Bind `C-c l d` to `dap-hydra` for easy access
-  (general-define-key
-    :keymaps 'lsp-mode-map
-    :prefix lsp-keymap-prefix
-    "d" '(dap-hydra t :wk "debugger")))
-
-#+end_src
 
 * DASHBOARD
 Emacs Dashboard is an extensible startup screen showing you recent files, bookmarks, agenda items and an Emacs banner.
@@ -715,80 +696,6 @@ Adding highlights to TODO and related words.
           ("REVIEW"     font-lock-keyword-face bold)
           ("NOTE"       success bold)
           ("DEPRECATED" font-lock-doc-face bold))))
-#+end_src
-
-* JUPYTER
-
-#+begin_src emacs-lisp
-(use-package jupyter
-  :straight t)
-
-(use-package ob-async
-  :straight t)
-
-(setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
-
-(with-eval-after-load 'org
-  (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((jupyter . t)))
-
-  (push '("conf-unix" . conf-unix) org-src-lang-modes))
-
-(setq org-babel-default-header-args:jupyter-python
-      '((:results . "both")
-	;; This seems to lead to buffer specific sessions!
-	(:session . (lambda () (buffer-file-name)))
-	(:kernel . "python3")
-	(:pandoc . "t")
-	(:exports . "both")
-	(:cache .   "no")
-	(:noweb . "no")
-	(:hlines . "no")
-	(:tangle . "no")
-	(:eval . "never-export")))
-
-(org-babel-jupyter-override-src-block "python")
-
-(defalias 'org-babel-execute:ipython 'org-babel-execute:jupyter-python)
-(setq org-babel-default-header-args:ipython org-babel-default-header-args:jupyter-python)
-(add-to-list 'org-src-lang-modes '("ipython" . python))
-#+end_src
-
-* LSP
-** lsp-mode
-
-#+begin_src emacs-lisp 
-(defun efs/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-  :straight t
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . efs/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
-#+end_src
-
-** lsp-ui
-
-#+begin_src emacs-lisp
-(use-package lsp-ui
-  :straight t
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
-#+end_src
-
-** lsp-treemacs
-
-#+begin_src emacs-lisp
-(use-package lsp-treemacs
-  :straight t
-  :after lsp)
 #+end_src
 
 * LINE NUMBERS
