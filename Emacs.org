@@ -699,7 +699,12 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
   (marginalia-mode 1))
+
+(straight-use-package 'nerd-icons-completion)
 #+end_src
+
+#+RESULTS:
+: t
 
 * ORDERLESS
 
