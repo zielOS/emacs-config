@@ -41,7 +41,6 @@
 (straight-use-package 'use-package)
 (eval-when-compile (require 'use-package))
 
-(straight-use-package 'org)
 #+end_src
 
 ** Automatic Package Updates
@@ -67,12 +66,10 @@
 ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering
-  :straight t)
-
-;; no-littering doesn't set this by default so we must place
-;; auto save files in the same path as it uses for sessions
-(setq auto-save-file-name-transforms
-      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+  :straight t
+  :config
+  (setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
 
 #+end_src
 
@@ -194,8 +191,6 @@ completes or is canceled."
 * TODO CORFU
 
 * DASHBOARD
-Emacs Dashboard is an extensible startup screen showing you recent files, bookmarks, agenda items and an Emacs banner.
-
 #+begin_src emacs-lisp
 (use-package dashboard
   :straight t
