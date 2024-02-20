@@ -191,33 +191,16 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package consult
-  :straight t  
-  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :straight t 
   :init
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-  :config
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
   (setq completion-in-region-function #'consult-completion-in-region)
 
-  (setq consult-narrow-key "<") ;; "C-+"
+  (keymap-global-set "C-s" 'consult-line)
+  (keymap-set minibuffer-local-map "C-r" 'consult-history)
 )
 #+end_src
+
+#+RESULTS:
 
 * TODO CORFU
 
@@ -448,18 +431,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
  "b S" '(save-some-buffers :wk "Save multiple buffers")
  "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
 #+end_src
-
-** Consult
-
-#+begin_src emacs-lisp
-(efs/leader-keys
- "c" '(:ignore t :wk "consult")
- "c s" '(consult-line :wk "consult-line")
- :keymaps 'minibuffer-local-map
- "c r" '(consult-history :wk "consult-history"))
-#+end_src
-
-#+RESULTS:
 
 ** Dired
 
