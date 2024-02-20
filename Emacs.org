@@ -184,7 +184,28 @@ completes or is canceled."
 (setq auto-save-visited-mode t)
 #+end_src
 
-* TODO CAPE
+* CAPE
+
+#+begin_src emacs-lisp
+(use-package cape
+  :straight t
+  :init 
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+  
+  (defun crafted-completion-corfu-eshell ()
+    "Special settings for when using corfu with eshell."
+    (setq-local corfu-quit-at-boundary t
+                corfu-quit-no-match t
+                corfu-auto nil)
+    (corfu-mode))
+  (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
+#+end_src
+
+#+RESULTS:
+
 * CONSULT
 
 Consult provides search and navigation commands based on the Emacs completion function completing-read. Completion allows you to quickly select an item from a list of candidates. Consult offers asynchronous and interactive consult-grep and consult-ripgrep commands, and the line-based search command consult-line
@@ -200,7 +221,29 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+RESULTS:
 
-* TODO CORFU
+* CORFU
+
+#+begin_src emacs-lisp
+(use-package corfu
+  :straight t
+  :custom
+  (corfu-cycle t) 
+  (corfu-auto t)
+  (corfu-auto-prefix 2)
+  (corfu-preselect 'prompt) 
+  ;; Use TAB for cycling, default is `corfu-complete'.
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
+  :init
+  (global-corfu-mode))
+#+end_src
+
+#+RESULTS:
+: corfu-previous
 
 * DIRED
 
