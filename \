@@ -449,18 +449,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
  "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
 #+end_src
 
-** Consult
-
-#+begin_src emacs-lisp
-(efs/leader-keys
- "c" '(:ignore t :wk "consult")
- "c s" '(consult-line :wk "consult-line")
- :keymaps 'minibuffer-local-map
- "c r" '(consult-history :wk "consult-history"))
-#+end_src
-
-#+RESULTS:
-
 ** Dired
 
 #+begin_src emacs-lisp
