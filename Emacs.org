@@ -280,12 +280,15 @@ Consult provides search and navigation commands based on the Emacs completion fu
   (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
   (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
 
-  (setq dired-sidebar-subtree-line-prefix "__")
+  (setq dired-sidebar-subtree-line-prefix " ")
   (setq dired-sidebar-theme 'all-the-icons)
   (setq dired-sidebar-use-term-integration t)
   (setq dired-sidebar-use-custom-font t))
 
 #+end_src
+
+#+RESULTS:
+: t
 
 * DRAG-STUFF
 [[https://github.com/rejeep/drag-stuff.el][Drag Stuff]] is a minor mode for Emacs that makes it possible to drag stuff (words, region, lines) around in Emacs.  When 'drag-stuff-define-keys' is enabled, then the following keybindings are set: M-up, M-down, M-left, and M-right.
@@ -680,6 +683,18 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   :straight t)
 #+end_src
 
+* INDENT
+
+#+begin_src emacs-lisp
+(use-package aggressive-indent
+  :straight t
+  :hook ((nix-mode . aggressive-indent-mode)
+	 (python-mode . aggressive-indent-mode)))
+#+end_src
+
+#+RESULTS:
+| aggressive-indent-mode | evil-collection-python-set-evil-shift-width | doom-modeline-env-setup-python |
+
 * MARKDOWN
 
 #+begin_src emacs-lisp
@@ -705,6 +720,14 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+RESULTS:
 : t
+
+* NIX
+
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :straight t
+  :mode "\\.nix\\'")
+#+end_src
 
 * ORDERLESS
 
