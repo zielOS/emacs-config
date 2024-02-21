@@ -79,6 +79,18 @@
 (setq native-comp-async-report-warnings-errors nil)
 #+end_src
 
+* ALL THE ICONS
+
+#+begin_src emacs-lisp
+(use-package all-the-icons
+  :straight t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :straight t
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
+
 * APP LAUNCHER
 
 app-launcher define the app-launcher-run-app command which uses Emacs standard completion feature to select an application installed on your machine and launch it.
@@ -113,26 +125,6 @@ completes or is canceled."
     (unwind-protect
         (funcall ,FUNCTION)
       (delete-frame)))
-#+end_src
-
-* PDFs
-[[https://github.com/vedang/pdf-tools][pdf-tools]] is a replacement of DocView for viewing PDF files inside Emacs.  It uses the =poppler= library, which also means that 'pdf-tools' can by used to modify PDFs.  I use to disable 'display-line-numbers-mode' in 'pdf-view-mode' because line numbers crash it.
-
-#+begin_src emacs-lisp
-(use-package pdf-tools
-  :straight t
-  :defer t
-  :commands (pdf-loader-install)
-  :mode "\\.pdf\\'"
-  :bind (:map pdf-view-mode-map
-              ("j" . pdf-view-next-line-or-next-page)
-              ("k" . pdf-view-previous-line-or-previous-page)
-              ("C-=" . pdf-view-enlarge)
-              ("C--" . pdf-view-shrink))
-  :init (pdf-loader-install)
-  :config (add-to-list 'revert-without-query ".pdf"))
-
-(add-hook 'pdf-view-mode-hook #'(lambda () (interactive) (display-line-numbers-mode -1)))
 #+end_src
 
 * BACKUP
@@ -244,6 +236,42 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+RESULTS:
 : corfu-previous
+
+* DASHBOARD
+
+An extensible emacs startup screen showing you what’s most important.
+
+#+begin_src emacs-lisp
+(use-package dashboard
+  :straight t
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+  (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
+  (setq dashboard-center-content nil) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 5)
+                          (agenda . 5 )
+                          (bookmarks . 3)
+                          (projects . 3)
+                          (registers . 3)))
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+				      (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
+#+end_src
+
+* DIMINISH
+
+This package implements hiding or abbreviation of the modeline displays (lighters) of minor-modes.  With this package installed, you can add ':diminish' to any use-package block to hide that particular mode in the modeline.
+
+#+begin_src emacs-lisp
+(use-package diminish
+  :straight t)
+#+end_src
 
 * DIRED
 
@@ -408,6 +436,43 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 ;; Setting RETURN key in org-mode to follow links
   (setq org-return-follows-link  t)
 
+#+end_src
+
+* FONTS
+Defining the various fonts that Emacs will use.
+
+** Setting the Font Face
+
+#+begin_src emacs-lisp
+  (defun efs/set-font-faces ()
+    (message "Setting faces!")
+    (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 135)
+
+    ;; Set the fixed pitch face
+    (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 135)
+
+    ;; Set the variable pitch face
+    (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 135 :weight 'regular))
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  (setq doom-modeline-icon t)
+                  (with-selected-frame frame
+                    (efs/set-font-faces))))
+    (efs/set-font-faces))
+
+#+end_src
+
+** Zooming In/Out
+
+You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
 * FLYCHECK
@@ -681,6 +746,25 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 #+begin_src emacs-lisp
 (use-package magit
   :straight t)
+#+end_src
+
+* HIGHLIGHT
+Adding highlights to TODO and related words.
+
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :straight t
+  :hook ((org-mode . hl-todo-mode)
+         (prog-mode . hl-todo-mode))
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        `(("TODO"       warning bold)
+          ("FIXME"      error bold)
+          ("HACK"       font-lock-constant-face bold)
+          ("REVIEW"     font-lock-keyword-face bold)
+          ("NOTE"       success bold)
+          ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
 
 * INDENT
@@ -961,6 +1045,26 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (setq org-src-tab-acts-natively t)
 #+end_src
 
+* PDFs
+[[https://github.com/vedang/pdf-tools][pdf-tools]] is a replacement of DocView for viewing PDF files inside Emacs.  It uses the =poppler= library, which also means that 'pdf-tools' can by used to modify PDFs.  I use to disable 'display-line-numbers-mode' in 'pdf-view-mode' because line numbers crash it.
+
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :straight t
+  :defer t
+  :commands (pdf-loader-install)
+  :mode "\\.pdf\\'"
+  :bind (:map pdf-view-mode-map
+              ("j" . pdf-view-next-line-or-next-page)
+              ("k" . pdf-view-previous-line-or-previous-page)
+              ("C-=" . pdf-view-enlarge)
+              ("C--" . pdf-view-shrink))
+  :init (pdf-loader-install)
+  :config (add-to-list 'revert-without-query ".pdf"))
+
+(add-hook 'pdf-view-mode-hook #'(lambda () (interactive) (display-line-numbers-mode -1)))
+#+end_src
+
 * PERSPECTIVE
 [[https://github.com/nex3/perspective-el][Perspective]] provides multiple named workspaces (or "perspectives") in Emacs, similar to multiple desktops in window managers.  Each perspective has its own buffer list and its own window layout, along with some other isolated niceties, like the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Xref.html][xref]] ring.
 
@@ -1154,110 +1258,6 @@ Display the actual color as a background for any hex color value (ex. #ffffff). 
 #+begin_src emacs-lisp
 (use-package tldr
   :straight t)
-#+end_src
-
-* ALL THE ICONS
-
-#+begin_src emacs-lisp
-(use-package all-the-icons
-  :straight t
-  :if (display-graphic-p))
-
-(use-package all-the-icons-dired
-  :straight t
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-
-* DASHBOARD
-
-An extensible emacs startup screen showing you what’s most important.
-
-#+begin_src emacs-lisp
-(use-package dashboard
-  :straight t
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-  (setq dashboard-startup-banner "~/.config/emacs/art/ascii.txt")  ;; use custom image as banner
-  (setq dashboard-center-content nil) ;; set to 't' for centered content
-  (setq dashboard-items '((recents . 5)
-                          (agenda . 5 )
-                          (bookmarks . 3)
-                          (projects . 3)
-                          (registers . 3)))
-  :custom
-  (dashboard-modify-heading-icons '((recents . "file-text")
-				      (bookmarks . "book")))
-  :config
-  (dashboard-setup-startup-hook))
-#+end_src
-
-* DIMINISH
-
-This package implements hiding or abbreviation of the modeline displays (lighters) of minor-modes.  With this package installed, you can add ':diminish' to any use-package block to hide that particular mode in the modeline.
-
-#+begin_src emacs-lisp
-(use-package diminish
-  :straight t)
-#+end_src
-
-* FONTS
-Defining the various fonts that Emacs will use.
-
-** Setting the Font Face
-
-#+begin_src emacs-lisp
-  (defun efs/set-font-faces ()
-    (message "Setting faces!")
-    (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 135)
-
-    ;; Set the fixed pitch face
-    (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height 135)
-
-    ;; Set the variable pitch face
-    (set-face-attribute 'variable-pitch nil :font "JetBrainsMono Nerd Font" :height 135 :weight 'regular))
-
-  (if (daemonp)
-      (add-hook 'after-make-frame-functions
-                (lambda (frame)
-                  (setq doom-modeline-icon t)
-                  (with-selected-frame frame
-                    (efs/set-font-faces))))
-    (efs/set-font-faces))
-
-#+end_src
-
-** Zooming In/Out
-
-You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
-
-#+begin_src emacs-lisp
-(global-set-key (kbd "C-=") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-#+end_src
-
-* HIGHLIGHT
-Adding highlights to TODO and related words.
-
-#+begin_src emacs-lisp
-(use-package hl-todo
-  :straight t
-  :hook ((org-mode . hl-todo-mode)
-         (prog-mode . hl-todo-mode))
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces
-        `(("TODO"       warning bold)
-          ("FIXME"      error bold)
-          ("HACK"       font-lock-constant-face bold)
-          ("REVIEW"     font-lock-keyword-face bold)
-          ("NOTE"       success bold)
-          ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
 
 * MODELINE
