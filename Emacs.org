@@ -779,6 +779,39 @@ Adding highlights to TODO and related words.
 #+RESULTS:
 | aggressive-indent-mode | evil-collection-python-set-evil-shift-width | doom-modeline-env-setup-python |
 
+* JUPYTER
+
+#+begin_src emacs-lisp
+(use-package jupyter
+  :straight t)
+
+(use-package ob-async
+  :straight t)
+
+(with-eval-after-load 'jupyter
+  (setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
+(setq org-babel-default-header-args:jupyter-python
+      '((:results . "both")
+	;; This seems to lead to buffer specific sessions!
+	(:session . (lambda () (buffer-file-name)))
+	(:kernel . "python3")
+	(:pandoc . "t")
+	(:exports . "both")
+	(:cache .   "no")
+	(:noweb . "no")
+	(:hlines . "no")
+	(:tangle . "no")
+	(:eval . "never-export")))
+
+(defalias 'org-babel-execute:ipython 'org-babel-execute:jupyter-python)
+(setq org-babel-default-header-args:ipython org-babel-default-header-args:jupyter-python))
+
+
+#+end_src
+
+#+RESULTS:
+: ((:results . both) (:session lambda nil (buffer-file-name)) (:kernel . python3) (:pandoc . t) (:exports . both) (:cache . no) (:noweb . no) (:hlines . no) (:tangle . no) (:eval . never-export))
+
 * MARKDOWN
 
 #+begin_src emacs-lisp
@@ -1004,6 +1037,7 @@ Adding highlights to TODO and related words.
       (python . t)
       (shell . t)
       (org . t)
+      (jupyter . t)
       (latex . t)
       (sqlite . t)))
 
