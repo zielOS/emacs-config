@@ -840,6 +840,20 @@ Adding highlights to TODO and related words.
 #+RESULTS:
 : ((:results . both) (:session lambda nil (buffer-file-name)) (:kernel . python3) (:pandoc . t) (:exports . both) (:cache . no) (:noweb . no) (:hlines . no) (:tangle . no) (:eval . never-export))
 
+* LINE NUMBERS
+
+#+begin_src emacs-lisp
+(global-display-line-numbers-mode -1)
+
+(setq-default display-line-numbers-grow-only t
+              display-line-numbers-width 2)
+
+;; Enable line numbers for some modes
+(dolist (mode '(prog-mode-hook
+                conf-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode t))))
+#+end_src
+
 * MARKDOWN
 
 #+begin_src emacs-lisp
@@ -865,6 +879,21 @@ Adding highlights to TODO and related words.
 
 #+RESULTS:
 : t
+
+* MODELINE
+The modeline is the bottom status bar that appears in Emacs windows.  While you can create your own custom modeline, why go to the trouble when Doom Emacs already has a nice modeline package available.  For more information on what is available to configure in the Doom modeline, check out: [[https://github.com/seagle0128/doom-modeline][Doom Modeline]]
+
+#+begin_src emacs-lisp
+(use-package doom-modeline
+  :straight t
+  :init (doom-modeline-mode 1)
+  :config
+  (setq doom-modeline-height 35      ;; sets modeline height
+        doom-modeline-bar-width 5    ;; sets right bar width
+        doom-modeline-persp-name t   ;; adds perspective name to modeline
+        doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+
+#+end_src
 
 * NIX
 
@@ -1160,6 +1189,17 @@ Adding rainbow coloring to parentheses.
 
 #+end_src
 
+* RAINBOW
+
+Display the actual color as a background for any hex color value (ex. #ffffff).  The code block below enables rainbow-mode in all programming modes (prog-mode) as well as org-mode, which is why rainbow works in this document.
+
+#+begin_src emacs-lisp
+(use-package rainbow-mode
+  :straight t
+  :diminish
+  :hook org-mode prog-mode)
+#+end_src
+
 * SAVEHIST
 
 #+begin_src emacs-lisp
@@ -1209,6 +1249,17 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
                   (window-height . 0.4))))
 #+end_src
 
+* THEME
+
+#+begin_src emacs-lisp
+(use-package catppuccin-theme
+  :straight t)
+(load-theme 'catppuccin :no-confirm)
+(catppuccin-set-color 'base "#1E1E2E") ;; change base to #000000 for the currently active flavor
+(catppuccin-set-color 'crust "#11111B" 'mocha) ;; change crust to #222222 for frappe
+(catppuccin-reload)
+#+end_src
+
 * VERTICO
 
 #+begin_src emacs-lisp
@@ -1248,58 +1299,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
     which-key-max-description-length 25
     which-key-allow-imprecise-window-fit nil
     which-key-separator " → " ))
-#+end_src
-
-* MISCELLANEOUS
-** Rainbow Mode
-
-Display the actual color as a background for any hex color value (ex. #ffffff).  The code block below enables rainbow-mode in all programming modes (prog-mode) as well as org-mode, which is why rainbow works in this document.
-
-#+begin_src emacs-lisp
-(use-package rainbow-mode
-  :straight t
-  :diminish
-  :hook org-mode prog-mode)
-#+end_src
-
-* MODELINE
-The modeline is the bottom status bar that appears in Emacs windows.  While you can create your own custom modeline, why go to the trouble when Doom Emacs already has a nice modeline package available.  For more information on what is available to configure in the Doom modeline, check out: [[https://github.com/seagle0128/doom-modeline][Doom Modeline]]
-
-#+begin_src emacs-lisp
-(use-package doom-modeline
-  :straight t
-  :init (doom-modeline-mode 1)
-  :config
-  (setq doom-modeline-height 35      ;; sets modeline height
-        doom-modeline-bar-width 5    ;; sets right bar width
-        doom-modeline-persp-name t   ;; adds perspective name to modeline
-        doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
-
-#+end_src
-
-* LINE NUMBERS
-
-#+begin_src emacs-lisp
-(global-display-line-numbers-mode -1)
-
-(setq-default display-line-numbers-grow-only t
-              display-line-numbers-width 2)
-
-;; Enable line numbers for some modes
-(dolist (mode '(prog-mode-hook
-                conf-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode t))))
-#+end_src
-
-* THEME
-
-#+begin_src emacs-lisp
-(use-package catppuccin-theme
-  :straight t)
-(load-theme 'catppuccin :no-confirm)
-(catppuccin-set-color 'base "#1E1E2E") ;; change base to #000000 for the currently active flavor
-(catppuccin-set-color 'crust "#11111B" 'mocha) ;; change crust to #222222 for frappe
-(catppuccin-reload)
 #+end_src
 
 * Runtime Performance
