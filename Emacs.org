@@ -19,27 +19,26 @@
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 
-** straight setup
+** package management
 
-#+begin_src emacs-lisp 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+#+begin_src emacs-lisp
+;; Initialize package sources
+(require 'package)
 
-(straight-use-package 'use-package)
-(eval-when-compile (require 'use-package))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+  ;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 #+end_src
 
@@ -47,7 +46,7 @@
 
 #+begin_src emacs-lisp
 (use-package auto-package-update
-  :straight t
+  :ensure t
   :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
@@ -66,7 +65,7 @@
 ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering
-  :straight t
+  :ensure t
   :config
   (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
@@ -83,48 +82,12 @@
 
 #+begin_src emacs-lisp
 (use-package all-the-icons
-  :straight t
+  :ensure t
   :if (display-graphic-p))
 
 (use-package all-the-icons-dired
-  :straight t
+  :ensure t
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-
-* APP LAUNCHER
-
-app-launcher define the app-launcher-run-app command which uses Emacs standard completion feature to select an application installed on your machine and launch it.
-
-#+begin_src emacs-lisp
-(use-package app-launcher
-  :straight '(app-launcher :host github :repo "SebastienWae/app-launcher"))
-
-;; emacsclient -cF "((visibility . nil))" -e "(emacs-run-launcher)"
-
-(defmacro bookmark-selector-launcher (NAME WIDTH HEIGHT FUNCTION)
-  "Define a launcher command.
-
-Bookmark-selector is a package revolving around using emacs
-outside of emacs to browse your bookmarks. Most of the commands
-defined, consist of opening an emacs frame with only a
-minibuffer, with a specified NAME, WIDTH and HEIGHT and inside it
-calling FUNCTION and deleting the frame after the function
-completes or is canceled."
-  `(with-selected-frame (make-frame '((name . ,NAME)
-                                      (minibuffer . only)
-                                      (width . ,WIDTH)
-                                      (height . ,HEIGHT)))
-     (unwind-protect
-         (funcall ,FUNCTION)
-       (delete-frame))))
-
-(defun emacs-run-launcher ()
-  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
-  (interactive)
-  (bookmark-selector-launcher "emacs-run-launcher" 59 14 'app-launcher-run-app)
-    (unwind-protect
-        (funcall ,FUNCTION)
-      (delete-frame)))
 #+end_src
 
 * BACKUP
@@ -138,7 +101,7 @@ completes or is canceled."
 #+begin_src emacs-lisp
 (setq inhibit-startup-message t)
 
-(scroll-bar-mode t)        ; Disable visible scrollbar
+(scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
@@ -169,7 +132,6 @@ completes or is canceled."
 (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
 (global-visual-line-mode t)  ;; Enable truncated lines
 
-(setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
 (setq use-file-dialog nil)   ;; No file dialog
 (setq use-dialog-box nil)    ;; No dialog box
 (setq pop-up-windows nil)    ;; No popup windows
@@ -180,7 +142,7 @@ completes or is canceled."
 
 #+begin_src emacs-lisp
 (use-package cape
-  :straight t
+  :ensure t
   :init 
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
@@ -204,7 +166,7 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package consult
-  :straight t 
+  :ensure t 
   :init
   (setq completion-in-region-function #'consult-completion-in-region)
   (keymap-global-set "C-s" 'consult-line)
@@ -217,7 +179,7 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package corfu
-  :straight t
+  :ensure t
   :custom
   (corfu-cycle t) 
   (corfu-auto t)
@@ -243,7 +205,7 @@ An extensible emacs startup screen showing you what’s most important.
 
 #+begin_src emacs-lisp
 (use-package dashboard
-  :straight t
+  :ensure t
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -270,14 +232,14 @@ This package implements hiding or abbreviation of the modeline displays (lighter
 
 #+begin_src emacs-lisp
 (use-package diminish
-  :straight t)
+  :ensure t)
 #+end_src
 
 * DIRED
 
 #+begin_src emacs-lisp
 (use-package dired-open
-  :straight t
+  :ensure t
   :config
   (setq dired-open-extensions '(("gif" . "sxiv")
                                 ("jpg" . "sxiv")
@@ -286,7 +248,7 @@ This package implements hiding or abbreviation of the modeline displays (lighter
                                 ("mp4" . "mpv"))))
 
 (use-package peep-dired
-  :straight t
+  :ensure t
   :after dired
   :hook (evil-normalize-keymaps . peep-dired-hook)
   :config
@@ -297,7 +259,7 @@ This package implements hiding or abbreviation of the modeline displays (lighter
 )
 
  (use-package dired-sidebar
-  :straight t
+  :ensure t
   :commands (dired-sidebar-toggle-sidebar)
   :init
   (add-hook 'dired-sidebar-mode-hook
@@ -323,7 +285,7 @@ This package implements hiding or abbreviation of the modeline displays (lighter
 
 #+begin_src emacs-lisp
 (use-package drag-stuff
-  :straight t
+  :ensure t
   :init
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys))
@@ -348,7 +310,7 @@ This package implements hiding or abbreviation of the modeline displays (lighter
 
 #+begin_src emacs-lisp
 (use-package eglot
-  :straight t)
+  :ensure t)
 #+end_src
 
 #+RESULTS:
@@ -359,7 +321,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 #+begin_src emacs-lisp
 (use-package embark
-  :straight t
+  :ensure t
 
   :init
 
@@ -385,7 +347,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
-  :straight t ; only need to install it, embark loads it after consult if found
+  :ensure t ; only need to install it, embark loads it after consult if found
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
@@ -405,7 +367,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 ;; Expands to: (elpaca evil (use-package evil :demand t))
 (use-package evil
-    :straight t
+    :ensure t
     :init      ;; tweak evil's configuration before loading it
     (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
           evil-want-keybinding nil
@@ -417,7 +379,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (evil-mode 1))
 
 (use-package evil-collection
-  :straight t
+  :ensure t
   :after evil
   :config
   ;; Do not uncomment this unless you want to specify each and every mode
@@ -480,7 +442,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package flycheck
-  :straight t
+  :ensure t
   :defer t
   :diminish
   :init (global-flycheck-mode))
@@ -495,7 +457,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general
-  :straight t
+  :ensure t
   :config
   (general-evil-setup)
 
@@ -731,7 +693,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package git-timemachine
-  :straight t
+  :ensure t
   :after git-timemachine
   :hook (evil-normalize-keymaps . git-timemachine-hook)
   :config
@@ -745,7 +707,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package magit
-  :straight t)
+  :ensure t)
 #+end_src
 
 * HIGHLIGHT
@@ -753,7 +715,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package hl-todo
-  :straight t
+  :ensure t
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode))
   :config
@@ -771,7 +733,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package aggressive-indent
-  :straight t
+  :ensure t
   :hook ((nix-mode . aggressive-indent-mode)
 	 (python-mode . aggressive-indent-mode)))
 #+end_src
@@ -783,10 +745,10 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package jupyter
-  :straight t)
+  :ensure t)
 
 (use-package ob-async
-  :straight t)
+  :ensure t)
 
 (with-eval-after-load 'jupyter
   (setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
@@ -816,7 +778,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package markdown-mode
-  :straight t
+  :ensure t
   :mode ("README\\.md\\'" . gfm-mode)
   :init (setq markdown-command "multimarkdown"))
 #+end_src
@@ -826,13 +788,11 @@ Adding highlights to TODO and related words.
 #+begin_src emacs-lisp
 (use-package marginalia
   :after vertico
-  :straight t
+  :ensure t
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
   (marginalia-mode 1))
-
-(straight-use-package 'nerd-icons-completion)
 #+end_src
 
 #+RESULTS:
@@ -842,7 +802,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package nix-mode
-  :straight t
+  :ensure t
   :mode "\\.nix\\'")
 #+end_src
 
@@ -850,7 +810,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package orderless
-  :straight t
+  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
@@ -897,6 +857,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package org
+  :pin org
   :commands (org-capture org-agenda)
   :config
   (setq org-ellipsis " ▾")
@@ -1017,7 +978,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package org-bullets
-  :straight t
+  :ensure t
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
@@ -1084,7 +1045,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package pdf-tools
-  :straight t
+  :ensure t
   :defer t
   :commands (pdf-loader-install)
   :mode "\\.pdf\\'"
@@ -1104,7 +1065,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package perspective
-  :straight t
+  :ensure t
   :custom
   ;; NOTE! I have also set 'SCP =' to open the perspective menu.
   ;; I'm only setting the additional binding because setting it
@@ -1133,7 +1094,7 @@ Adding highlights to TODO and related words.
 
 #+begin_src emacs-lisp
 (use-package projectile
-  :straight t
+  :ensure t
   :config
   (projectile-mode 1))
 #+end_src
@@ -1172,7 +1133,7 @@ Adding rainbow coloring to parentheses.
 
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
-  :straight t
+  :ensure t
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
          (clojure-mode . rainbow-delimiters-mode)))
 
@@ -1182,7 +1143,7 @@ Adding rainbow coloring to parentheses.
 
 #+begin_src emacs-lisp
 (use-package savehist
-  :straight t
+  :ensure t
   :init
   (savehist-mode))
 #+end_src
@@ -1191,7 +1152,7 @@ Adding rainbow coloring to parentheses.
 
 #+begin_src emacs-lisp
 (use-package sudo-edit
-  :straight t)
+  :ensure t)
 #+end_src
 
 * TERMINALS
@@ -1200,7 +1161,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 #+begin_src emacs-lisp
 (use-package vterm
-  :straight t
+  :ensure t
   :config
   (setq shell-file-name "/usr/bin/zsh"
         vterm-max-scrollback 5000))
@@ -1211,7 +1172,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 #+begin_src emacs-lisp
 (use-package vterm-toggle
-  :straight t
+  :ensure t
   :after vterm
   :config
   ;; When running programs in Vterm and in 'normal' mode, make sure that ESC
@@ -1238,7 +1199,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 #+begin_src emacs-lisp
 (use-package vertico
-  :straight t
+  :ensure t
   :bind (:map vertico-map
          ("C-j" . vertico-next)
          ("C-k" . vertico-previous)
@@ -1255,7 +1216,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 #+begin_src emacs-lisp
 (use-package which-key
-  :straight t
+  :ensure t
   :init
   (which-key-mode 1)
   :diminish
@@ -1282,7 +1243,7 @@ Display the actual color as a background for any hex color value (ex. #ffffff). 
 
 #+begin_src emacs-lisp
 (use-package rainbow-mode
-  :straight t
+  :ensure t
   :diminish
   :hook org-mode prog-mode)
 #+end_src
@@ -1291,7 +1252,7 @@ Display the actual color as a background for any hex color value (ex. #ffffff). 
 
 #+begin_src emacs-lisp
 (use-package tldr
-  :straight t)
+  :ensure t)
 #+end_src
 
 * MODELINE
@@ -1299,7 +1260,7 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 
 #+begin_src emacs-lisp
 (use-package doom-modeline
-  :straight t
+  :ensure t
   :init (doom-modeline-mode 1)
   :config
   (setq doom-modeline-height 35      ;; sets modeline height
@@ -1327,7 +1288,7 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 
 #+begin_src emacs-lisp
 (use-package catppuccin-theme
-  :straight t)
+  :ensure t)
 (load-theme 'catppuccin :no-confirm)
 (catppuccin-set-color 'base "#1E1E2E") ;; change base to #000000 for the currently active flavor
 (catppuccin-set-color 'crust "#11111B" 'mocha) ;; change crust to #222222 for frappe
@@ -1342,3 +1303,4 @@ Dial the GC threshold back down so that garbage collection happens more frequent
 ;; Make gc pauses faster by decreasing the threshold.
 (setq gc-cons-threshold (* 2 1000 1000))
 #+end_src
+
