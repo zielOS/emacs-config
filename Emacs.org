@@ -466,15 +466,6 @@ You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTR
  "o F" '(select-frame-by-name :wk "Select frame by name"))
 #+end_src
 
-** Projectile
-
-#+begin_src emacs-lisp
-;; projectile-command-map already has a ton of bindings
-;; set for us, so no need to specify each individually.
-(efs/leader-keys
- "p" '(projectile-command-map :wk "Projectile"))
-#+end_src
-
 ** Search
 
 #+begin_src emacs-lisp
