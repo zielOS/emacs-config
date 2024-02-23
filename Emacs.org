@@ -157,7 +157,6 @@ completes or is canceled."
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (delete-selection-mode 1)
-(electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
 (electric-pair-mode 1)       ;; Turns on automatic parens pairing
 ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
 ;; Otherwise, org-tempo is broken when you try to <s TAB...
