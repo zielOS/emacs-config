@@ -1141,31 +1141,11 @@ Adding highlights to TODO and related words.
 * PYTHON
 
 #+begin_src emacs-lisp
-(add-hook 'python-mode 'eglot-ensure)
-(add-hook 'python-mode 'flyspell-prog-mode)
-(add-hook 'python-mode 'superword-mode)
-(add-hook 'python-mode 'hs-minor-mode)
-(add-hook 'python-mode (lambda () (set-fill-column 88)))
-(setq-default eglot-workspace-configuration
-              '((:pylsp . (:configurationSources ["flake8"]
-                           :plugins (
-                                     :pycodestyle (:enabled :json-false)
-                                     :mccabe (:enabled :json-false)
-                                     :pyflakes (:enabled :json-false)
-                                     :flake8 (:enabled :json-false
-                                              :maxLineLength 88)
-                                     :ruff (:enabled t
-                                            :lineLength 88)
-                                     :pydocstyle (:enabled t
-                                                  :convention "numpy")
-                                     :yapf (:enabled :json-false)
-                                     :autopep8 (:enabled :json-false)
-                                     :black (:enabled t
-                                             :line_length 88
-                                             :cache_config t))))))
-
-(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
+(use-package elpy
+  :straight t)
 #+end_src
+
+#+RESULTS:
 
 * RAINBOW DELIMITERS
 Adding rainbow coloring to parentheses.
@@ -1185,13 +1165,6 @@ Adding rainbow coloring to parentheses.
   :straight t
   :init
   (savehist-mode))
-#+end_src
-
-* SUDO EDIT
-
-#+begin_src emacs-lisp
-(use-package sudo-edit
-  :straight t)
 #+end_src
 
 * TERMINALS
@@ -1285,13 +1258,6 @@ Display the actual color as a background for any hex color value (ex. #ffffff). 
   :straight t
   :diminish
   :hook org-mode prog-mode)
-#+end_src
-
-** tldr
-
-#+begin_src emacs-lisp
-(use-package tldr
-  :straight t)
 #+end_src
 
 * MODELINE
