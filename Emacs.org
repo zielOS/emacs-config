@@ -120,7 +120,6 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (delete-selection-mode 1)
-(electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
 (electric-pair-mode 1)       ;; Turns on automatic parens pairing
 ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
 ;; Otherwise, org-tempo is broken when you try to <s TAB...
@@ -735,11 +734,12 @@ Adding highlights to TODO and related words.
 (use-package aggressive-indent
   :ensure t
   :hook ((nix-mode . aggressive-indent-mode)
+	 (org-src-mode . aggressive-indent-mode)
 	 (python-mode . aggressive-indent-mode)))
 #+end_src
 
 #+RESULTS:
-| aggressive-indent-mode | evil-collection-python-set-evil-shift-width | doom-modeline-env-setup-python |
+| doom-modeline-env-setup-python | evil-collection-python-set-evil-shift-width | aggressive-indent-mode |
 
 * JUPYTER
 
