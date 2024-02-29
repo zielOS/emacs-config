@@ -380,6 +380,19 @@ This package implements hiding or abbreviation of the modeline displays (lighter
   :straight t)
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package eglot-booster
+  :ensure t
+  :straight (:type git :host github :repo "jdtsmith/eglot-booster")
+  :after eglot
+  :config
+  (eglot-booster-mode))
+
+(with-eval-after-load 'eglot
+  (setq completion-category-defaults nil))
+
+#+end_src
+
 #+RESULTS:
 
 * EMBARK
@@ -840,32 +853,6 @@ Adding highlights to TODO and related words.
 #+RESULTS:
 : ((:results . both) (:session lambda nil (buffer-file-name)) (:kernel . python3) (:pandoc . t) (:exports . both) (:cache . no) (:noweb . no) (:hlines . no) (:tangle . no) (:eval . never-export))
 
-* LaTeX
-
-#+begin_src emacs-lisp
-(use-package tex
-  :straight auctex
-  :defer t
-  :config
-  (setq font-latex-fontify-script nil
-	font-latex-fontify-sectioning 'color)
-  (setq TeX-PDF-mode t)
-  (setq TeX-view-program-selection
-	'((output-dvi "DVI Viewer")
-          (output-pdf "PDF Viewer")
-          (output-html "HTML Viewer")))
-;; this example is good for OS X only
-  (setq TeX-view-program-list
-	'(("DVI Viewer" "open %o")
-          ("PDF Viewer" "open %o")
-          ("HTML Viewer" "open %o")))
-  (custom-set-faces
-   '(font-latex-slide-title-face ((t (:inherit font-lock-type-face)))))
-  (font-latex-update-sectioning-faces))
-#+end_src
-
-#+RESULTS:
-
 * LINE NUMBERS
 
 #+begin_src emacs-lisp
@@ -1285,6 +1272,20 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 (catppuccin-set-color 'crust "#11111B" 'mocha) ;; change crust to #222222 for frappe
 (catppuccin-reload)
 #+end_src
+
+* TYPESCRIPT
+
+#+begin_src emacs-lisp
+(use-package tide
+  :straight t
+  :after (company flycheck)
+  :hook ((typescript-ts-mode . tide-setup)
+         (tsx-ts-mode . tide-setup)
+         (typescript-ts-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+#+end_src
+
+#+RESULTS:
 
 * VERTICO
 
