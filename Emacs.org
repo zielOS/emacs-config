@@ -19,6 +19,28 @@
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 
+** repo setup
+#+begin_src emacs-lisp 
+;; Initialize package sources
+(require 'package)
+
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+  ;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+#+end_src
+
+
 ** straight setup
 
 #+begin_src emacs-lisp 
@@ -818,17 +840,14 @@ Adding highlights to TODO and related words.
 	 (python-mode . aggressive-indent-mode)))
 #+end_src
 
-#+RESULTS:
-| aggressive-indent-mode | evil-collection-python-set-evil-shift-width | doom-modeline-env-setup-python |
-
 * JUPYTER
 
 #+begin_src emacs-lisp
 (use-package jupyter
-  :straight t)
+  :ensure t)
 
 (use-package ob-async
-  :straight t)
+  :ensure t)
 
 (with-eval-after-load 'jupyter
   (setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
@@ -967,6 +986,7 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 
 #+begin_src emacs-lisp
 (use-package org
+  :pin org
   :commands (org-capture org-agenda)
   :config
   (setq org-ellipsis " ▾")
@@ -1157,7 +1177,7 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 
 #+begin_src emacs-lisp
 (use-package pdf-tools
-  :straight t
+  :ensure t
   :defer t
   :commands (pdf-loader-install)
   :mode "\\.pdf\\'"
@@ -1183,13 +1203,6 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
 #+end_src
 
 * PYTHON
-
-#+begin_src emacs-lisp
-(use-package elpy
-  :straight t)
-#+end_src
-
-#+RESULTS:
 
 * RAINBOW DELIMITERS
 Adding rainbow coloring to parentheses.
@@ -1237,7 +1250,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 ** Vterm-Toggle
 [[https://github.com/jixiuf/vterm-toggle][vterm-toggle]] toggles between the vterm buffer and whatever buffer you are editing.
 
-#+begin_src emacs-lisp
 (use-package vterm-toggle
   :straight t
   :after vterm
