@@ -198,12 +198,25 @@ completes or is canceled."
 #+begin_src emacs-lisp
 (use-package cape
   :ensure t
-  :init 
+  :init
+  (setq cape-dabbrev-min-length 2)
+  (setq cape-dabbrev-check-other-buffers 'some)
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
-  
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active)
+                (bound-and-true-p vertico--input)
+                (eq (current-local-map) read-passwd-map))
+      ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+      (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                  corfu-popupinfo-delay nil)
+      (corfu-mode 1)))
+
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+
   (defun crafted-completion-corfu-eshell ()
     "Special settings for when using corfu with eshell."
     (setq-local corfu-quit-at-boundary t
@@ -212,8 +225,6 @@ completes or is canceled."
     (corfu-mode))
   (add-hook 'eshell-mode-hook #'crafted-completion-corfu-eshell))
 #+end_src
-
-#+RESULTS:
 
 * CONSULT
 
@@ -236,10 +247,12 @@ Consult provides search and navigation commands based on the Emacs completion fu
 (use-package corfu
   :ensure t
   :custom
-  (corfu-cycle t) 
+  (corfu-cycle t)
   (corfu-auto t)
   (corfu-auto-prefix 2)
-  (corfu-preselect 'prompt) 
+  (corfu-on-exact-match 'insert)
+  (corfu-preselect 'prompt)
+  (corfu-quit-no-match t)
   ;; Use TAB for cycling, default is `corfu-complete'.
   :bind
   (:map corfu-map
@@ -253,6 +266,19 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+RESULTS:
 : corfu-previous
+
+
+* DABBREV
+
+#+begin_src emacs-lisp
+(use-package dabbrev
+  :custom
+  (dabbrev-upcase-means-case-search t)
+  (dabbrev-check-all-buffers nil)
+  (dabbrev-check-other-buffers t)
+  (dabbrev-friend-buffer-function 'dabbrev--same-major-mode-p)
+  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+#+end_src
 
 * DASHBOARD
 
@@ -946,7 +972,7 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides
-   '((file (styles partial-completion)))))
+   '((file (styles basic partial-completion)))))
 #+end_src
 
 * ORG
@@ -1327,7 +1353,31 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
   :custom
   (vertico-cycle t)
   :init
-  (vertico-mode))
+  (vertico-mode)
+  (setq vertico-cycle t))
+
+(use-package vertico-multiform
+  :ensure nil
+  :hook (after-init . vertico-multiform-mode)
+  :init
+  (setq vertico-multiform-commands
+        '((consult-line (:not posframe))
+          (gopar/consult-line (:not posframe))
+          (consult-ag (:not posframe))
+          (consult-grep (:not posframe))
+          (consult-imenu (:not posframe))
+          (xref-find-definitions (:not posframe))
+          (t posframe))))
+
+;; just for looks
+(use-package vertico-posframe
+  :ensure t
+  :custom
+  (vertico-posframe-parameters
+   '((left-fringe . 8)
+     (right-fringe . 8))))
+
+
 #+end_src
 
 * WHICH-KEY
