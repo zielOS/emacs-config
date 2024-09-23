@@ -22,63 +22,60 @@
 ** Package System Setup
 
 #+begin_src emacs-lisp
+;; Initialize package sources
+(require 'package)
 
-;; ;; Initialize package sources
-;; (require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
-;; (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-;;                          ("elpa" . "https://elpa.gnu.org/packages/")
-;;                          ("org" . "https://orgmode.org/elpa")))
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 
-;; (package-initialize)
-;; (unless package-archive-contents
-;;   (package-refresh-contents))
+  ;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
-;;   ;; Initialize use-package on non-Linux platforms
-;; (unless (package-installed-p 'use-package)
-;;   (package-install 'use-package))
-
-;; (require 'use-package)
-;; (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 #+end_src
 
 ** Setup vc-use-package
 
 #+begin_src emacs-lisp
-;; (unless (package-installed-p 'vc-use-package)
-;;   (package-vc-install "https://github.com/slotThe/vc-use-package"))
-;; (require 'vc-use-package)
+(unless (package-installed-p 'vc-use-package)
+  (package-vc-install "https://github.com/slotThe/vc-use-package"))
+(require 'vc-use-package)
 #+end_src
 
 ** Straight Package Management
 
 #+begin_src emacs-lisp
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+;; (defvar bootstrap-version)
+;; (let ((bootstrap-file
+;;        (expand-file-name
+;;         "straight/repos/straight.el/bootstrap.el"
+;;         (or (bound-and-true-p straight-base-dir)
+;;             user-emacs-directory)))
+;;       (bootstrap-version 7))
+;;   (unless (file-exists-p bootstrap-file)
+;;     (with-current-buffer
+;;         (url-retrieve-synchronously
+;;          "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+;;          'silent 'inhibit-cookies)
+;;       (goto-char (point-max))
+;;       (eval-print-last-sexp)))
+;;   (load bootstrap-file nil 'nomessage))
 
-(straight-use-package 'use-package)
-(eval-when-compile (require 'use-package))
+;; (straight-use-package 'use-package)
+;; (eval-when-compile (require 'use-package))
 #+end_src
 
 ** Automatic Package Updates
 
 #+begin_src emacs-lisp
 (use-package auto-package-update
-  :straight t 
-  :custom
+    :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
   (auto-package-update-hide-results t)
@@ -94,7 +91,7 @@
 ;; reliably, set `user-emacs-directory` before loading no-littering!
 ;(setq user-emacs-directory "~/.cache/emacs")
 
-(straight-use-package 'no-littering)
+(use-package no-littering)
 
 ;; no-littering doesn't set this by default so we must place
 ;; auto save files in the same path as it uses for sessions
@@ -112,11 +109,9 @@
 
 #+begin_src emacs-lisp
 (use-package all-the-icons
-  :straight t
   :if (display-graphic-p))
 
-(use-package all-the-icons-dired
-  :straight t)
+(use-package all-the-icons-dired)
 #+end_src
 
 * AUTO-TANGLE ORG
@@ -169,7 +164,6 @@
 
 #+begin_src emacs-lisp
 (use-package breadcrumb
-  :straight t
   :init
   (breadcrumb-mode))
 #+end_src
@@ -180,7 +174,6 @@
 
 #+begin_src emacs-lisp
 (use-package cape
-  :straight t
   :init
   (setq cape-dabbrev-min-length 2)
   (setq cape-dabbrev-check-other-buffers 'some)
@@ -205,7 +198,6 @@
 
 #+begin_src emacs-lisp
 (use-package citar
-  :straight t
   :init
   (setq citar-templates
     '((main . "${author editor:30%sn}     ${date year issued:4}     ${title:48}")
@@ -224,7 +216,6 @@
 
 #+begin_src emacs-lisp
 (use-package citar-denote
-  :straight t
   :demand t ;; Ensure minor mode loads
   :after (:any citar denote)
   :custom
@@ -251,7 +242,6 @@
 #+begin_src emacs-lisp
 (use-package citar-embark
   :after (citar embark)
-  :straight t
   :config (citar-embark-mode))
 #+end_src
 
@@ -261,7 +251,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package consult
-  :straight t
   :init
   (setq completion-in-region-function #'consult-completion-in-region)
   (keymap-global-set "C-s" 'consult-line)
@@ -273,18 +262,16 @@ Consult provides search and navigation commands based on the Emacs completion fu
 #+begin_src emacs-lisp
 (use-package consult-denote
   :after (denote consult)
-  :straight t
   :config
   (consult-denote-mode 1))
 #+end_src
 
-* CONSULT-NOTES
+* CONSULT-NOTES 
 
 #+begin_src emacs-lisp
 (use-package consult-notes
-  :straight (consult-note :type git
-			  :host github
-			  :repo "mclear-tools/consult-notes")
+  :vc (:fetcher github
+		:repo mclear-tools/consult-notes)
   :commands (consult-notes
              consult-notes-search-in-all-notes)
   :config
@@ -309,7 +296,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package corfu
-  :straight t
   :custom
   (corfu-cycle t)
   (corfu-auto t)
@@ -332,9 +318,10 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package evil-nerd-commenter
-  :straight t
-  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+  :after evil)
 #+end_src
+
+#+RESULTS:
 
 * DABBREV
 
@@ -351,7 +338,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * TODO DASHBOARD
 #+begin_src emacs-lisp
 (use-package dashboard
-  :straight t
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -376,7 +362,7 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * DENOTE
 
 #+begin_src emacs-lisp
-(straight-use-package 'denote)
+(use-package denote)
 
 ;; Remember to check the doc strings of those variables.
 (setq denote-directory (expand-file-name "~/Documents/notes/"))
@@ -484,7 +470,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 #+begin_src emacs-lisp
 (use-package denote-explore
   :after denote
-  :straight t
   :custom
   ;; Location of graph files
   (denote-explore-network-directory "~/documents/notes/graphs/")
@@ -566,14 +551,13 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * DENOTE MENU
 
 #+begin_src emacs-lisp
-(straight-use-package 'denote-menu)
+(use-package denote-menu)
 #+end_src
 
 * DIRED
 
 #+begin_src emacs-lisp
 (use-package dired-open
-  :straight t
   :config
   (setq dired-open-extensions '(("gif" . "sxiv")
                                 ("jpg" . "sxiv")
@@ -583,7 +567,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 (use-package peep-dired
   :after dired
-  :straight t
   :hook (evil-normalize-keymaps . peep-dired-hook)
   :config
     (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
@@ -623,7 +606,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package drag-stuff
-  :straight t
   :init
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys))
@@ -635,7 +617,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 #+begin_src emacs-lisp
 (use-package embark
-  :straight t
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -655,7 +636,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
                  nil
                  (window-parameters (mode-line-format . none))))
   (use-package embark-consult
-    :straight t
     :hook
     (embark-collect-mode . consult-preview-at-point-mode)))
 #+end_src
@@ -667,7 +647,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 #+begin_src emacs-lisp
 (use-package evil
-    :straight t
     :init      ;; tweak evil's configuration before loading it
     (setq evil-want-integration t  ;; This is optional since it's already set to t by default.
           evil-want-keybinding nil
@@ -678,7 +657,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 (use-package evil-collection
   :after evil
-  :straight t
   :config
   ;; Do not uncomment this unless you want to specify each and every mode
   ;; that evil-collection should works with.  The following line is here 
@@ -687,7 +665,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (add-to-list 'evil-collection-mode-list 'help) ;; evilify help mode
   (evil-collection-init))
 
-(straight-use-package 'evil-tutor)
+(use-package evil-tutor)
 
 ;; Using RETURN to follow links in Org/Evil 
 ;; Unmap keys in 'evil-maps if not done, (setq org-return-follows-link t) will not work
@@ -703,7 +681,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 #+begin_src emacs-lisp
 (use-package eshell-toggle
-  :straight t
   :custom
   (eshell-toggle-size-fraction 3)
   (eshell-toggle-use-projectile-root t)
@@ -712,7 +689,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
   (use-package eshell-syntax-highlighting
     :after esh-mode
-    :straight t
     :config
     (eshell-syntax-highlighting-global-mode +1))
 
@@ -736,19 +712,19 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 (defun efs/set-font-faces ()
   (message "Setting faces!")
   (set-face-attribute 'default nil
-		      :font "JetBrainsMono Nerd Font"
+		      :font "JetBrains Mono"
 		      :height 135
 		      :weight 'medium)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-		      :font "JetBrainsMono Nerd Font"
+		      :font "JetBrains Mono"
 		      :height 135
 		      :weight 'medium)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-		      :font "Ubuntu Nerd Font"
+		      :font "Ubuntu"
 		      :height 135
 		      :weight 'medium))
 
@@ -776,7 +752,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package flycheck
-  :straight t
   :defer t
   :diminish
   :init (global-flycheck-mode))
@@ -787,7 +762,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package general
-  :straight t
   :config
   (general-evil-setup)
     ;; set up 'SPC' as the global leader key
@@ -853,7 +827,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package git-timemachine
-  :straight t
   :hook (evil-normalize-keymaps . git-timemachine-hook)
   :config
     (evil-define-key 'normal git-timemachine-mode-map (kbd "C-<down>") 'git-timemachine-show-previous-revision)
@@ -863,7 +836,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 * HELPFUL
 
 #+begin_src emacs-lisp
-(straight-use-package 'helpful)
+(use-package helpful)
 ;; Note that the built-in `describe-function' includes both functions
 ;; and macros. `helpful-function' is functions only, so we provide
 ;; `helpful-callable' as a drop-in replacement.
@@ -888,7 +861,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package hl-todo
-  :straight t 
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode))
   :config
@@ -915,14 +887,14 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 * IDE
 
 #+begin_src emacs-lisp
-(straight-use-package 'eglot)
-(straight-use-package 'tree-sitter)
-(straight-use-package 'tree-sitter-indent)
-(straight-use-package 'tree-sitter-ispell)
-(straight-use-package 'tree-sitter-langs)
-(straight-use-package 'treesit-auto)
-(straight-use-package 'editorconfig)
-(straight-use-package 'ibuffer-project)
+(use-package eglot)
+(use-package tree-sitter)
+(use-package tree-sitter-indent)
+(use-package tree-sitter-ispell)
+(use-package tree-sitter-langs)
+(use-package treesit-auto)
+(use-package editorconfig)
+(use-package ibuffer-project)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1047,12 +1019,9 @@ installed."
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package eglot-booster
+(use-package eglot-booster 
   :after eglot
-  :straight (eglot-booster :type git
-			   :host github
-			   :repo "jdtsmith/eglot-booster")
-  
+  :vc (:fetcher github :repo jdtsmith/eglot-booster)
   :config
   (eglot-booster-mode))
 
@@ -1064,7 +1033,6 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package aggressive-indent
-  :straight t
   :init
   (global-aggressive-indent-mode 1))
 #+end_src
@@ -1088,7 +1056,7 @@ installed."
 [[https://magit.vc/manual/][Magit]] is a full-featured git client for Emacs.
 
 #+begin_src emacs-lisp
-(straight-use-package 'magit)
+(use-package magit)
 #+end_src
 
 * MARGINALIA
@@ -1096,7 +1064,6 @@ installed."
 #+begin_src emacs-lisp
 (use-package marginalia
   :after vertico
-  :straight t
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
@@ -1108,31 +1075,29 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package doom-modeline
-  :straight t
   :init (doom-modeline-mode 1))
 #+end_src
 
 * MODUS THEME
 
 #+begin_src emacs-lisp
-(straight-use-package 'modus-themes)
+  ;; (use-package modus-themes)
 
-;; All customizations here
-(setq modus-themes-bold-constructs t
-      modus-themes-italic-constructs t)
+  ;; ;; All customizations here
+  ;; (setq modus-themes-bold-constructs t
+  ;;       modus-themes-italic-constructs t)
 
-;; Load the theme of choice (built-in themes are always "safe" so they
-;; do not need the `no-require' argument of `load-theme').
-(load-theme 'modus-vivendi-tinted)
+  ;; ;; Load the theme of choice (built-in themes are always "safe" so they
+  ;; ;; do not need the `no-require' argument of `load-theme').
+  ;; (load-theme 'modus-vivendi-tinted)
 
-(define-key global-map (kbd "<f5>") #'modus-themes-toggle)
+  ;; (define-key global-map (kbd "<f5>") #'modus-themes-toggle)
 #+end_src
 
 * NEOTREE
 
 #+begin_src emacs-lisp
 (use-package neotree
-  :straight t
   :config
   (setq neo-smart-open t
         neo-show-hidden-files t
@@ -1156,11 +1121,10 @@ installed."
 * NERD ICONS
 
 #+begin_src emacs-lisp
-(straight-use-package 'nerd-icons)
+(use-package nerd-icons)
 
 (use-package nerd-icons-completion
   :after marginalia
-  :straight t
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
@@ -1170,14 +1134,12 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package nix-mode 
-  :straight t
   :mode "\\.nix\\'")
 #+end_src
 
 * ORDERLESS
 #+begin_src emacs-lisp
 (use-package orderless
-  :straight t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
@@ -1190,15 +1152,12 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package org
-  :straight (:type built-in)
-  :defer t
   :config
   (setq org-agenda-files '("~/org")
         org-ellipsis " ▾"
         org-src-preserve-indentation t
         org-src-fontify-natively t
         org-src-tab-acts-natively t))
-
 #+end_src
 
 #+RESULTS:
@@ -1264,7 +1223,6 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package org-fancy-priorities
-  :straight t
   :init
   :hook
   (org-mode . org-fancy-priorities-mode)
@@ -1285,7 +1243,7 @@ installed."
 * ORG SUPERSTAR
 
 #+begin_src emacs-lisp
-(straight-use-package 'org-superstar)
+(use-package org-superstar)
 (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
 #+end_src
 
@@ -1346,23 +1304,22 @@ installed."
 
 
 #+begin_src emacs-lisp
-;; (use-package doom-themes
-;;   :straight t
-;;   :config
-;;   ;; Global settings (defaults)
-;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;;         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;;   (load-theme 'doom-dracula t)
-  
-;;   ;; Enable flashing mode-line on errors
-;;   (doom-themes-visual-bell-config)
-;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
-;;   (doom-themes-neotree-config)
-;;   ;; or for treemacs users
-;;   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-;;   (doom-themes-treemacs-config)
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config))
+(use-package doom-themes
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+  doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-dracula t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 #+end_src
 
 * TODO Indent Lines
@@ -1371,7 +1328,6 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package vertico
-  :straight t
   :bind (:map vertico-map
          ("C-j" . vertico-next)
          ("C-k" . vertico-previous)
@@ -1388,7 +1344,6 @@ installed."
 
 ;; just for looks
 (use-package vertico-posframe
-  :straight t
   :custom
   (vertico-posframe-parameters
    '((left-fringe . 8)
@@ -1401,7 +1356,6 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package vterm
-  :straight t
   :config
   (setq shell-file-name "/usr/bin/zsh"
       vterm-max-scrollback 5000))
@@ -1412,7 +1366,6 @@ installed."
 #+begin_src emacs-lisp
 (use-package vterm-toggle
   :after vterm
-  :straight t
   :config
   ;; When running programs in Vterm and in 'normal' mode, make sure that ESC
   ;; kills the program as it would in most standard terminal programs.
@@ -1438,7 +1391,6 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package which-key
-  :straight t
   :init
   (which-key-mode 1)
   :diminish
