@@ -1,0 +1,17 @@
+eln-cache/
+elpa/
+etc/
+.local/
+straight/
+var/
+auto-save-list/
+transient/
+recentf
+sessions
+tramp
+projectile-bookmarks.eld
+Emacs.org~
+.last-package-update-day
+init.el
+init.el~
+.Emacs.org.~undo-tree~
