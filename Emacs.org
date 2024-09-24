@@ -19,6 +19,9 @@
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 
+#+RESULTS:
+| dashboard-initialize | efs/display-startup-time |
+
 ** Package System Setup
 
 #+begin_src emacs-lisp
@@ -75,7 +78,7 @@
 
 #+begin_src emacs-lisp
 (use-package auto-package-update
-    :custom
+  :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
   (auto-package-update-hide-results t)
@@ -89,7 +92,7 @@
 #+begin_src emacs-lisp
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
+(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering)
 
@@ -132,43 +135,29 @@
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-message t)
+(setq fast-but-imprecise-scrolling 1)
+(setq use-file-dialog nil)   ;; No file dialog
+(setq use-dialog-box nil)    ;; No dialog box
+(setq pop-up-windows nil)    ;; No popup window
+(setq visible-bell nil)
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
-
 (menu-bar-mode -1)            ; Disable the menu bar
 
-(setq fast-but-imprecise-scrolling 1)
-
+(global-visual-line-mode t)
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-(add-hook 'org-mode-hook (lambda ()
-           (setq-local electric-pair-inhibit-predicate
-                   `(lambda (c)
-                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
-
 (delete-selection-mode 1)
-(setq use-file-dialog nil)   ;; No file dialog
-(setq use-dialog-box nil)    ;; No dialog box
-(setq pop-up-windows nil)    ;; No popup windows
 #+end_src
 
 #+RESULTS:
-
-* BREADCRUMB
-
-#+begin_src emacs-lisp
-(use-package breadcrumb
-  :init
-  (breadcrumb-mode))
-#+end_src
-
-#+RESULTS:
+: t
 
 * CAPE
 
@@ -1101,8 +1090,10 @@ installed."
   :config
   (setq neo-smart-open t
         neo-show-hidden-files t
-        neo-window-width 55
+        neo-window-width 30
         neo-window-fixed-size nil
+	neo-theme (if (display-graphic-p) 'icons 'arrow)
+
         inhibit-compacting-font-caches t
         projectile-switch-project-action 'neotree-projectile-action) 
         ;; truncate long file names in neotree
@@ -1152,6 +1143,7 @@ installed."
 
 #+begin_src emacs-lisp
 (use-package org
+  :defer t
   :config
   (setq org-agenda-files '("~/org")
         org-ellipsis " ▾"
@@ -1304,23 +1296,31 @@ installed."
 
 
 #+begin_src emacs-lisp
-(use-package doom-themes
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-  doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-dracula t)
+;; (use-package doom-themes
+;;   :config
+;;   ;; Global settings (defaults)
+;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;;   doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;;   (load-theme 'doom-dracula t)
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
+;;   (doom-themes-neotree-config)
+;;   ;; or for treemacs users
+;;   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+;;   (doom-themes-treemacs-config)
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config))
 #+end_src
+
+#+begin_src emacs-lisp
+(use-package catppuccin-theme)
+(load-theme 'catppuccin :no-confirm)
+(setq catppuccin-flavor 'mocha)
+(catppuccin-reload)
+#+end_src
+
+#+RESULTS:
+: t
 
 * TODO Indent Lines
 * TODO Format-on-save
@@ -1410,6 +1410,15 @@ installed."
 	which-key-separator " → " ))
 #+end_src
 
+* WRITING
+
+#+begin_src emacs-lisp
+;; (use-package markdown-mode)
+;; (use-package pandoc-mode)
+;; (use-package auctex)
+;; (use-package auctex-latexmk)
+#+end_src
+
 * ZOOMING
 
 #+begin_src emacs-lisp
@@ -1423,8 +1432,12 @@ installed."
 
 #+begin_src emacs-lisp
 ;; Make gc pauses faster by decreasing the threshold.
-(setq gc-cons-threshold (* 2 1000 1000))
+(setq gc-cons-threshold 63000000
+      gc-cons-percentage 0.6)
 #+end_src
+
+#+RESULTS:
+: 0.6
 
 
 
