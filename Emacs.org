@@ -108,6 +108,13 @@
 (setq native-comp-async-report-warnings-errors nil)
 #+end_src
 
+** Add to path 
+
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.config/emacs/lisp/")
+#+end_src
+
+
 * ALL THE ICONS
 
 #+begin_src emacs-lisp
@@ -287,23 +294,20 @@ Consult provides search and navigation commands based on the Emacs completion fu
 
 #+begin_src emacs-lisp
 (use-package corfu
-  :custom
-  (corfu-cycle t)
-  (corfu-auto t)
-  (corfu-auto-prefix 2)
-  (corfu-on-exact-match 'insert)
-  (corfu-preselect 'prompt)
-  (corfu-quit-no-match t)
-  ;; Use TAB for cycling, default is `corfu-complete'.
-  :bind
-  (:map corfu-map
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous))
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :config
+  (setq corfu-cycle t)
+  (setq corfu-auto t)
+  (setq corfu-auto-prefix 2)
+  (setq corfu-on-exact-match 'insert)
+  (setq corfu-preselect 'prompt)
+  (setq corfu-quit-no-match t)
+  (setq corfu-popupinfo-mode t))
 #+end_src
+
+#+RESULTS:
+: t
 
 * COMMENTING
 
@@ -1085,6 +1089,18 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
+
+* ORG BLOCK CAPF
+
+#+begin_src emacs-lisp
+(require 'org-block-capf)
+(with-eval-after-load 'org
+  (add-hook 'org-mode-hook #'org-block-capf-add-to-completion-at-point-functions))
+
+#+end_src
+
+#+RESULTS:
+| org-block-capf-add-to-completion-at-point-functions | org-tempo-setup | my-auto-lightweight-mode | (lambda nil (org-superstar-mode 1)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | org-fancy-priorities-mode | crafted-org-enhance-electric-pair-inhibit-predicate | hl-todo-mode | citar-capf-setup | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) |
 
 * ORG ELECTRIC PAIR MODE
 
