@@ -114,7 +114,6 @@
 (add-to-list 'load-path "~/.config/emacs/lisp/")
 #+end_src
 
-
 * ALL THE ICONS
 
 #+begin_src emacs-lisp
@@ -172,25 +171,30 @@
 
 #+begin_src emacs-lisp
 (use-package cape
+  ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
+  ;; Press C-c p ? to for help.
+  :bind ("C-c p" . cape-prefix-map) ;; Alternative keys: M-p, M-+, ...
+  ;; Alternatively bind Cape commands individually.
+  ;; :bind (("C-c p d" . cape-dabbrev)
+  ;;        ("C-c p h" . cape-history)
+  ;;        ("C-c p f" . cape-file)
+  ;;        ...)
   :init
-  (setq cape-dabbrev-min-length 2)
-  (setq cape-dabbrev-check-other-buffers 'some)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
-  (defun corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active)
-                (bound-and-true-p vertico--input)
-                (eq (current-local-map) read-passwd-map))
-      ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-      (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                  corfu-popupinfo-delay nil)
-      (corfu-mode 1)))
-
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
+  ;; Add to the global default value of `completion-at-point-functions' which is
+  ;; used by `completion-at-point'.  The order of the functions matters, the
+  ;; first function returning a result wins.  Note that the list of buffer-local
+  ;; completion functions takes precedence over the global list.
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  ;; (add-hook 'completion-at-point-functions #'cape-history)
+  ;; Merge the dabbrev, dict and keyword capfs, display candidates together.
+  (setq-local completion-at-point-functions
+              (list (cape-capf-super #'cape-dabbrev #'cape-dict #'cape-keyword))))
 #+end_src
+
+#+RESULTS:
+: cape-prefix-map
 
 * CITAR
 
@@ -293,21 +297,35 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * CORFU
 
 #+begin_src emacs-lisp
+;; (use-package corfu
+;;   :init
+;;   (global-corfu-mode)
+;;   :config
+;;   (setq corfu-cycle t)
+;;   (setq corfu-auto t)
+;;   (setq corfu-auto-prefix 2)
+;;   (setq corfu-on-exact-match 'insert)
+;;   (setq corfu-preselect 'prompt)
+;;   (setq corfu-quit-no-match t)
+;;   (setq corfu-popupinfo-mode t))
+
 (use-package corfu
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-preview-current nil)    ;; Disable current candidate preview
+  (corfu-echo-documentation t) ;; Disable documentation in the echo area
+  (corfu-scroll-margin 5)   ;; Use scroll margin
   :init
-  (global-corfu-mode)
-  :config
-  (setq corfu-cycle t)
-  (setq corfu-auto t)
-  (setq corfu-auto-prefix 2)
-  (setq corfu-on-exact-match 'insert)
-  (setq corfu-preselect 'prompt)
-  (setq corfu-quit-no-match t)
-  (setq corfu-popupinfo-mode t))
+  (global-corfu-mode))
+
+(add-hook 'corfu-mode-hook #'corfu-popupinfo-mode)
 #+end_src
 
 #+RESULTS:
-: t
+| corfu-popupinfo-mode | corfu-mode-set-explicitly |
+
 
 * COMMENTING
 
@@ -699,6 +717,21 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (setq org-return-follows-link  t)
 #+end_src
 
+* EVIL GOGGLES
+
+#+begin_src emacs-lisp
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+
+  ;; optionally use diff-mode's faces; as a result, deleted text
+  ;; will be highlighed with `diff-removed` face which is typically
+  ;; some red color (as defined by the color theme)
+  ;; other faces such as `diff-added` will be used for other actions
+  (evil-goggles-use-diff-faces))
+#+end_src
+
 * ESHELL
 
 #+begin_src emacs-lisp
@@ -927,6 +960,27 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (global-aggressive-indent-mode 1))
 #+end_src
 
+* KIND ICON
+
+#+begin_src emacs-lisp
+(use-package kind-icon
+  :ensure t
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+;; cape-file
+;; cape-keyword
+;; cape-dabbrev
+;; cape-symbol
+;; cape-line
+
+ ;;(setq-local completion-at-point-functions
+   ;;          (list (cape-super-capf #'cape-dabbrev ;;;#'cape-file #'cape-keyword #'cape-symbol)))
+ #+end_src
+
 * LINE NUMBERS
 
 #+begin_src emacs-lisp
@@ -971,18 +1025,39 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 * MODUS THEME
 
 #+begin_src emacs-lisp
-  ;; (use-package modus-themes)
+  (use-package modus-themes)
 
-  ;; ;; All customizations here
-  ;; (setq modus-themes-bold-constructs t
-  ;;       modus-themes-italic-constructs t)
+  ;;Configure the Modus Themes' appearance
+  (setq modus-themes-mode-line '(accented borderless)
+	modus-themes-bold-constructs t
+	modus-themes-italic-constructs t
+	modus-themes-fringes 'subtle
+	modus-themes-tabs-accented t
+	modus-themes-paren-match '(bold intense)
+	modus-themes-prompts '(bold intense)
+	modus-themes-org-blocks 'tinted-background
+	modus-themes-scale-headings t
+	modus-themes-region '(bg-only)
+	modus-themes-headings
+	'((1 . (rainbow overline background 1.4))
+	  (2 . (rainbow background 1.3))
+	  (3 . (rainbow bold 1.2))
+	  (t . (semilight 1.1))))
 
-  ;; ;; Load the theme of choice (built-in themes are always "safe" so they
-  ;; ;; do not need the `no-require' argument of `load-theme').
-  ;; (load-theme 'modus-vivendi-tinted)
 
-  ;; (define-key global-map (kbd "<f5>") #'modus-themes-toggle)
+  (setq modus-themes-completions
+	'((matches . (extrabold underline))
+	  (selection . (semibold italic))))
+
+  ;; Load the dark theme by default
+  (load-theme 'modus-vivendi-tinted t)
 #+end_src
+
+#+RESULTS:
+| 1 | rainbow   | overline   | background | 1.4 |
+| 2 | rainbow   | background |        1.3 |     |
+| 3 | rainbow   | bold       |        1.2 |     |
+| t | semilight | 1.1        |            |     |
 
 * NEOTREE
 
@@ -1205,6 +1280,39 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+end_src
 
+* TEMPEL
+
+#+begin_src emacs-lisp
+(use-package tempel
+  :ensure t
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+
+  :init
+
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'. `tempel-expand'
+    ;; only triggers on exact matches. Alternatively use `tempel-complete' if
+    ;; you want to see all matches, but then Tempel will probably trigger too
+    ;; often when you don't expect it.
+    ;; NOTE: We add `tempel-expand' *before* the main programming mode Capf,
+    ;; such that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+                      completion-at-point-functions)))
+
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (tempel-global-abbrev-mode)
+)
+
+#+end_src
+
 * THEME
 
 
@@ -1226,10 +1334,10 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package catppuccin-theme)
-(load-theme 'catppuccin :no-confirm)
-(setq catppuccin-flavor 'mocha)
-(catppuccin-reload)
+;; (use-package catppuccin-theme)
+;; (load-theme 'catppuccin :no-confirm)
+;; (setq catppuccin-flavor 'mocha)
+;; (catppuccin-reload)
 #+end_src
 
 #+RESULTS:
