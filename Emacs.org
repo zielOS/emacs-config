@@ -830,46 +830,169 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 ** Basics
 
 #+begin_src emacs-lisp
-  (ar/leader-keys
-    "SPC" '(execute-extended-command :wk "M-x")
-    "f f" '(find-file :wk "Find file")
-    "/" '(comment-line :wk "Comment lines")
-    "u" '(universal-argument :wk "Universal argument"))
+(ar/leader-keys
+  "SPC" '(execute-extended-command :wk "M-x")
+  "f f" '(find-file :wk "Find file")
+  "/" '(comment-line :wk "Comment lines")
+  "u" '(universal-argument :wk "Universal argument"))
 #+end_src
 
 ** Bookmarks/Buffers
 #+begin_src emacs-lisp
-  (ar/leader-keys
-    "b" '(:ignore t :wk "Bookmarks/Buffers")
-    "b b" '(switch-to-buffer :wk "Switch to buffer")
-    "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
-    "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
-    "b d" '(bookmark-delete :wk "Delete bookmark")
-    "b i" '(ibuffer :wk "Ibuffer")
-    "b k" '(kill-current-buffer :wk "Kill current buffer")
-    "b K" '(kill-some-buffers :wk "Kill multiple buffers")
-    "b l" '(list-bookmarks :wk "List bookmarks")
-    "b m" '(bookmark-set :wk "Set bookmark")
-    "b n" '(next-buffer :wk "Next buffer")
-    "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer")
-    "b R" '(rename-buffer :wk "Rename buffer")
-    "b s" '(basic-save-buffer :wk "Save buffer")
-    "b S" '(save-some-buffers :wk "Save multiple buffers")
-    "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
+(ar/leader-keys
+  "b" '(:ignore t :wk "Bookmarks/Buffers")
+  "b b" '(switch-to-buffer :wk "Switch to buffer")
+  "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
+  "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
+  "b d" '(bookmark-delete :wk "Delete bookmark")
+  "b i" '(ibuffer :wk "Ibuffer")
+  "b k" '(kill-current-buffer :wk "Kill current buffer")
+  "b K" '(kill-some-buffers :wk "Kill multiple buffers")
+  "b l" '(list-bookmarks :wk "List bookmarks")
+  "b m" '(bookmark-set :wk "Set bookmark")
+  "b n" '(next-buffer :wk "Next buffer")
+  "b p" '(previous-buffer :wk "Previous buffer")
+  "b r" '(revert-buffer :wk "Reload buffer")
+  "b R" '(rename-buffer :wk "Rename buffer")
+  "b s" '(basic-save-buffer :wk "Save buffer")
+  "b S" '(save-some-buffers :wk "Save multiple buffers")
+  "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
 #+end_src
 
 ** Dired
 
 #+begin_src emacs-lisp
-  (ar/leader-keys
-    "d" '(:ignore t :wk "Dired")
-    "d d" '(dired :wk "Open dired")
-    "d f" '(wdired-finish-edit :wk "Writable dired finish edit")
-    "d j" '(dired-jump :wk "Dired jump to current")
-    "d n" '(neotree-dir :wk "Open directory in neotree")
-    "d p" '(peep-dired :wk "Peep-dired")
-    "d w" '(wdired-change-to-wdired-mode :wk "Writable dired"))
+(ar/leader-keys
+  "d" '(:ignore t :wk "Dired")
+  "d d" '(dired :wk "Open dired")
+  "d f" '(wdired-finish-edit :wk "Writable dired finish edit")
+  "d j" '(dired-jump :wk "Dired jump to current")
+  "d n" '(neotree-dir :wk "Open directory in neotree")
+  "d p" '(peep-dired :wk "Peep-dired")
+  "d w" '(wdired-change-to-wdired-mode :wk "Writable dired"))
+#+end_src
+
+** Ediff/Eshell/Ediff
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "e" '(:ignore t :wk "Ediff/Eshell/Eval/EWW")    
+  "e b" '(eval-buffer :wk "Evaluate elisp in buffer")
+  "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+  "e e" '(eval-expression :wk "Evaluate and elisp expression")
+  "e f" '(ediff-files :wk "Run ediff on a pair of files")
+  "e F" '(ediff-files3 :wk "Run ediff on three files")
+  "e l" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+  "e r" '(eval-region :wk "Evaluate elisp in region")
+  "e s" '(eshell :which-key "Eshell"))
+#+end_src
+
+** Files
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "f" '(:ignore t :wk "Files")    
+  "f p" '((lambda () (interactive)
+            (find-file "~/.config/emacs/config.org")) 
+          :wk "Open emacs config.org")
+  "f e" '((lambda () (interactive)
+            (dired "~/.config/emacs/")) 
+          :wk "Open user-emacs-directory in dired")
+  "f d" '(find-grep-dired :wk "Search for string in files in DIR")
+  "f i" '((lambda () (interactive)
+            (find-file "~/.config/emacs/init.el")) 
+          :wk "Open emacs init.el"))
+#+end_src
+
+** Magit
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "g" '(:ignore t :wk "Git")    
+  "g /" '(magit-displatch :wk "Magit dispatch")
+  "g ." '(magit-file-displatch :wk "Magit file dispatch")
+  "g b" '(magit-branch-checkout :wk "Switch branch")
+  "g c" '(:ignore t :wk "Create") 
+  "g c b" '(magit-branch-and-checkout :wk "Create branch and checkout")
+  "g c c" '(magit-commit-create :wk "Create commit")
+  "g c f" '(magit-commit-fixup :wk "Create fixup commit")
+  "g C" '(magit-clone :wk "Clone repo")
+  "g f" '(:ignore t :wk "Find") 
+  "g f c" '(magit-show-commit :wk "Show commit")
+  "g f f" '(magit-find-file :wk "Magit find file")
+  "g f g" '(magit-find-git-config-file :wk "Find gitconfig file")
+  "g F" '(magit-fetch :wk "Git fetch")
+  "g g" '(magit-status :wk "Magit status")
+  "g i" '(magit-init :wk "Initialize git repo")
+  "g l" '(magit-log-buffer-file :wk "Magit buffer log")
+  "g r" '(vc-revert :wk "Git revert file")
+  "g s" '(magit-stage-file :wk "Git stage file")
+  "g t" '(git-timemachine :wk "Git time machine")
+  "g u" '(magit-stage-file :wk "Git unstage file"))
+#+end_src
+
+** Org
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "m" '(:ignore t :wk "Org")
+  "m a" '(org-agenda :wk "Org agenda")
+  "m e" '(org-export-dispatch :wk "Org export dispatch")
+  "m i" '(org-toggle-item :wk "Org toggle item")
+  "m t" '(org-todo :wk "Org todo")
+  "m B" '(org-babel-tangle :wk "Org babel tangle")
+  "m T" '(org-todo-list :wk "Org todo list"))
+
+(ar/leader-keys
+  "m b" '(:ignore t :wk "Tables")
+  "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+(ar/leader-keys
+  "m d" '(:ignore t :wk "Date/deadline")
+  "m d t" '(org-time-stamp :wk "Org time stamp"))
+
+#+end_src
+
+** Toggle
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "t" '(:ignore t :wk "Toggle")
+  "t e" '(eshell-toggle :wk "Toggle eshell")
+  "t f" '(flycheck-mode :wk "Toggle flycheck")
+  "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+  "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+  "t o" '(org-mode :wk "Toggle org mode")
+  "t r" '(rainbow-mode :wk "Toggle rainbow mode")
+  "t t" '(visual-line-mode :wk "Toggle truncated lines")
+  "t v" '(vterm-toggle :wk "Toggle vterm"))
+#+end_src
+
+** Windows/Words
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  "w" '(:ignore t :wk "Windows/Words")
+  ;; Window splits
+  "w c" '(evil-window-delete :wk "Close window")
+  "w n" '(evil-window-new :wk "New window")
+  "w s" '(evil-window-split :wk "Horizontal split window")
+  "w v" '(evil-window-vsplit :wk "Vertical split window")
+  ;; Window motions
+  "w h" '(evil-window-left :wk "Window left")
+  "w j" '(evil-window-down :wk "Window down")
+  "w k" '(evil-window-up :wk "Window up")
+  "w l" '(evil-window-right :wk "Window right")
+  "w w" '(evil-window-next :wk "Goto next window")
+  ;; Move Windows
+  "w H" '(buf-move-left :wk "Buffer move left")
+  "w J" '(buf-move-down :wk "Buffer move down")
+  "w K" '(buf-move-up :wk "Buffer move up")
+  "w L" '(buf-move-right :wk "Buffer move right")
+  ;; Words
+  "w d" '(downcase-word :wk "Downcase word")
+  "w u" '(upcase-word :wk "Upcase word")
+  "w =" '(count-words :wk "Count words/lines for buffer"))
 #+end_src
 
 ** End of Keybindings
