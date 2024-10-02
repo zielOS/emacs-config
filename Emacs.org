@@ -695,6 +695,10 @@ Consult provides search and navigation commands based on the Emacs completion fu
   (setq completion-category-defaults nil))
 #+end_src
 
+
+#+RESULTS:
+| org-modern-mode | org-tempo-setup | my-auto-lightweight-mode | (lambda nil (org-superstar-mode 1)) | org-fancy-priorities-mode | crafted-org-enhance-electric-pair-inhibit-predicate | org-block-capf-add-to-completion-at-point-functions | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | hl-todo-mode | citar-capf-setup | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) |
+
 * EMBARK
 
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers. Bind the command embark-act to a key and it acts like prefix-key for a keymap of actions (commands) relevant to the target around point.
@@ -1154,11 +1158,12 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (use-package auctex
   :defer t
   :hook  ((LaTeX-mode . turn-on-prettify-symbols-mode)
-          (LaTeX-mode . turn-on-flyspell)))
+          (LaTeX-mode . turn-on-flyspell)
+	  (LaTeX-mode . turn-on-auto-fill)))
 #+end_src
 
 #+RESULTS:
-| turn-on-flyspell | turn-on-prettify-symbols-mode | citar-capf-setup |
+| turn-on-auto-fill | turn-on-flyspell | turn-on-prettify-symbols-mode | citar-capf-setup |
 
 * LINE NUMBERS
 
@@ -1399,79 +1404,28 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (add-hook 'org-mode-hook #'crafted-org-enhance-electric-pair-inhibit-predicate)
 #+end_src
 
-* ORG FANCY PRIORITIES
+* ORG MODERN
 
 #+begin_src emacs-lisp
-(use-package org-fancy-priorities
-  :init
-  :hook
-  (org-mode . org-fancy-priorities-mode)
-  :config
-  (setq org-fancy-priorities-list '((?A . "❗")
-                                  (?B . "⬆")
-                                  (?C . "⬇")
-                                  (?D . "☕")
-                                  (?1 . "⚡")
-                                  (?2 . "⮬")
-                                  (?3 . "⮮")
-                                  (?4 . "☕")
-                                  (?I . "Important"))))
+(use-package org-modern
+  :vc (:fetcher github :repo "minad/org-modern"))
+
+(with-eval-after-load 'org (global-org-modern-mode))
+#+end_src
+
+* ORG MODERN INDENT
+
+#+begin_src emacs-lisp
+(use-package org-modern-indent
+  :vc (:fetcher github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 60))
 #+end_src
 
 #+RESULTS:
-
-* ORG SUPERSTAR
-
-#+begin_src emacs-lisp
-(use-package org-superstar)
-(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-#+end_src
-
-#+begin_src emacs-lisp
-;; This is usually the default, but keep in mind it must be nil
-(setq org-hide-leading-stars nil)
-;; This line is necessary.
-(setq org-superstar-leading-bullet ?\s)
-;; If you use Org Indent you also need to add this, otherwise the
-;; above has no effect while Indent is enabled.
-(setq org-indent-mode-turns-on-hiding-stars nil)
-#+end_src
-
-#+begin_src emacs-lisp
-(defun my-auto-lightweight-mode ()
-  "Start Org Superstar differently depending on the number of lists items."
-  (let ((list-items
-         (count-matches "^[ \t]*?\\([+-]\\|[ \t]\\*\\)"
-                        (point-min) (point-max))))
-    (unless (< list-items 100)
-      (org-superstar-toggle-lightweight-lists)))
-  (org-superstar-mode))
-
-(add-hook 'org-mode-hook #'my-auto-lightweight-mode)
-#+end_src
-
-#+begin_src emacs-lisp
-(setq inhibit-compacting-font-caches t)
-#+end_src
-
-#+begin_src emacs-lisp
-(require 'org-inlinetask)
-(setq org-inlinetask-show-first-star t)
-;; Less gray please.
-(set-face-attribute 'org-inlinetask nil
-                    :foreground nil
-		      :inherit 'bold)
-(with-eval-after-load 'org-superstar
-  (set-face-attribute 'org-superstar-first nil
-                     :foreground "#9000e1"))
-;; Stop cycling bullets to emphasize hierarchy of headlines.
-(setq org-superstar-cycle-headline-bullets nil)
-;; A simple period works fine, too.
-(setq org-superstar-leading-fallback ?.)
-#+end_src
+: t
 
 * ORG TEMPO
-
 #+begin_src emacs-lisp
 (with-eval-after-load 'org
   (require 'org-tempo)
