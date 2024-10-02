@@ -633,8 +633,54 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * EGLOT
 
 #+begin_src emacs-lisp
-(use-package eglot)
+(use-package eglot
+  :defer t
+  :custom
+  (read-process-output-max (* 1024 1024))
+  (eldoc-echo-area-use-multiline-p)
+  (eglot-autoshutdown t)
+  :hook ((bash-ts-mode . eglot-ensure)
+         (c-ts-mode-hook . eglot-ensure)
+         (c++-ts-mode-hook . eglot-ensure)
+         (clojure-mode . eglot-ensure)
+         (css-ts-mode-hook . eglot-ensure)
+         (dockerfile-ts-mode . eglot-ensure)
+         (html-mode-hook . eglot-ensure)
+         (java-ts-mode . eglot-ensure)
+         (js-ts-mode-hook . eglot-ensure)
+         (tsx-ts-mode-hook . eglot-ensure)
+         (json-ts-mode . eglot-ensure)
+         (latex-mode-hook . eglot-ensure)
+         (markdown-mode . eglot-ensure)
+         (cperl-mode . eglot-ensure)
+         (python-ts-mode . eglot-ensure)
+         (rust-ts-mode-hook . eglot-ensure)
+         (yaml-ts-mode . eglot-ensure))
+  :config
+  (setq eglot-workspace-configuration
+        '((:pylsp .
+                  (:configurationSources
+                   ["flake8"]
+                   :plugins (:pycodestyle (:enabled :json-false)
+                                          :mccabe (:enabled :json-false)
+                                          :pyflakes (:enabled :json-false)
+                                          :flake8
+                                          (:enabled :json-false
+                                                    :maxLineLength 80)
+                                          :ruff
+                                          (:enabled t :lineLength 80)
+                                          :pydocstyle
+                                          (:enabled t :convention "numpy")
+                                          :yapf (:enabled :json-false)
+                                          :autopep8 (:enabled :json-false)
+                                          :black
+                                          (:enabled t
+                                                    :line_length 80
+                                                    :cache_config t)))))))
 #+end_src
+
+#+RESULTS:
+| eglot-ensure |
 
 * EGLOT BOOSTER
 
@@ -1102,6 +1148,18 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
    ;;          (list (cape-super-capf #'cape-dabbrev ;;;#'cape-file #'cape-keyword #'cape-symbol)))
  #+end_src
 
+* LATEX
+
+#+begin_src emacs-lisp
+(use-package auctex
+  :defer t
+  :hook  ((LaTeX-mode . turn-on-prettify-symbols-mode)
+          (LaTeX-mode . turn-on-flyspell)))
+#+end_src
+
+#+RESULTS:
+| turn-on-flyspell | turn-on-prettify-symbols-mode | citar-capf-setup |
+
 * LINE NUMBERS
 
 #+begin_src emacs-lisp
@@ -1212,11 +1270,29 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (use-package nerd-icons)
 
 (use-package nerd-icons-completion
+  :ensure t
   :after marginalia
+  :commands (nerd-icons-completion-mode)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
   :config
-  (nerd-icons-completion-mode)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+  (nerd-icons-completion-mode))
+
+(use-package nerd-icons-corfu
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
+
+
 #+end_src
+
+#+RESULTS:
+| nerd-icons-dired-mode | pdf-occur-dired-minor-mode | dired-extra-startup | denote-dired-mode-in-directories |
 
 * NIX
 
@@ -1224,6 +1300,9 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (use-package nix-mode 
   :mode "\\.nix\\'")
 #+end_src
+
+#+RESULTS:
+: pdf-view-previous-line-or-previous-page
 
 * ORDERLESS
 #+begin_src emacs-lisp
@@ -1401,6 +1480,32 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 #+end_src
 
+* PDF-TOOLS
+
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :defer t
+  :commands (pdf-loader-install)
+  :mode "\\.pdf\\'"
+  :bind (:map pdf-view-mode-map
+              ("j" . pdf-view-next-line-or-next-page)
+              ("k" . pdf-view-previous-line-or-previous-page))
+  :init (pdf-loader-install)
+  :config (add-to-list 'revert-without-query ".pdf"))
+#+end_src
+
+* PRESCIENT
+
+#+begin_src emacs-lisp
+(use-package prescient
+  :commands (prescient-persist-mode)
+  :config
+  (setq-default history-length 1000)
+  (setq-default prescient-history-length 1000) ;; More prescient history
+  (prescient-persist-mode +1))
+#+end_src
+
 * TEMPEL
 
 #+begin_src emacs-lisp
@@ -1444,7 +1549,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 #+end_src
 
 #+RESULTS:
-
 
 * THEME
 
@@ -1504,6 +1608,18 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
      (right-fringe . 8))))
 
 
+#+end_src
+
+* VERTICO-PRESCIENT
+
+#+begin_src emacs-lisp
+(use-package vertico-prescient
+  :ensure t
+  :after vertico
+  :commands vertico-prescient-mode
+  :config
+  ;; don't prescient sort these commands
+  (vertico-prescient-mode +1))
 #+end_src
 
 * VTERM
