@@ -322,8 +322,11 @@ Consult provides search and navigation commands based on the Emacs completion fu
 (add-hook 'corfu-mode-hook #'corfu-popupinfo-mode)
 #+end_src
 
-#+RESULTS:
-| corfu-popupinfo-mode | corfu-mode-set-explicitly |
+
+#+begin_src emacs-lisp
+(use-package  nerd-icons-corfu)
+(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+#+end_src
 
 * COMMENTING
 
@@ -941,7 +944,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (ar/leader-keys
   "f" '(:ignore t :wk "Files")    
   "f p" '((lambda () (interactive)
-            (find-file "~/.config/emacs/config.org")) 
+            (find-file "~/.config/emacs/Emacs.org")) 
           :wk "Open emacs config.org")
   "f e" '((lambda () (interactive)
             (dired "~/.config/emacs/")) 
@@ -1152,7 +1155,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
    ;;          (list (cape-super-capf #'cape-dabbrev ;;;#'cape-file #'cape-keyword #'cape-symbol)))
  #+end_src
 
-* LATEX
+* LaTeX
 
 #+begin_src emacs-lisp
 (use-package auctex
@@ -1162,8 +1165,16 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 	  (LaTeX-mode . turn-on-auto-fill)))
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package auctex-latexmk
+  :after auctex
+  :init
+  (auctex-latexmk-setup)
+  :config
+  (setq auctex-latexmk-inherit-TeX-PDF-mode t))
+#+end_src
+
 #+RESULTS:
-| turn-on-auto-fill | turn-on-flyspell | turn-on-prettify-symbols-mode | citar-capf-setup |
 
 * LINE NUMBERS
 
