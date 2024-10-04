@@ -150,7 +150,7 @@
 )        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
+(set-fringe-mode 20)        ; Give some breathing room
 (menu-bar-mode -1)            ; Disable the menu bar
 (recentf-mode 1) ; use spc f r to invoke recentf-open-files
 
@@ -816,19 +816,19 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (message "Setting faces!")
   (set-face-attribute 'default nil
 		      :font "JetBrains Mono"
-		      :height 135
+		      :height 115
 		      :weight 'medium)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
 		      :font "JetBrains Mono"
-		      :height 135
+		      :height 115
 		      :weight 'medium)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
 		      :font "Ubuntu"
-		      :height 135
+		      :height 115
 		      :weight 'medium))
 
 (if (daemonp)
@@ -1252,7 +1252,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
         neo-show-hidden-files t
         neo-window-width 30
         neo-window-fixed-size nil
-	neo-theme (if (display-graphic-p) 'icons 'arrow)
+	neo-theme (if (display-graphic-p) 'icons)
 
         inhibit-compacting-font-caches t
         projectile-switch-project-action 'neotree-projectile-action) 
@@ -1264,10 +1264,11 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
                  (setq word-wrap nil)
                  (make-local-variable 'auto-hscroll-mode)
                  (setq auto-hscroll-mode nil)))))
+
+(use-package all-the-icons-nerd-fonts)
 #+end_src
 
 #+RESULTS:
-: t
 
 * NERD ICONS
 
@@ -1379,9 +1380,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+end_src
 
-#+RESULTS:
-| org-block-capf-add-to-completion-at-point-functions | org-tempo-setup | my-auto-lightweight-mode | (lambda nil (org-superstar-mode 1)) | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | org-fancy-priorities-mode | crafted-org-enhance-electric-pair-inhibit-predicate | hl-todo-mode | citar-capf-setup | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) |
-
 * ORG ELECTRIC PAIR MODE
 
 #+begin_src emacs-lisp
@@ -1404,26 +1402,74 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (add-hook 'org-mode-hook #'crafted-org-enhance-electric-pair-inhibit-predicate)
 #+end_src
 
-* ORG MODERN
+* ORG FANCY PRIORITIES
 
 #+begin_src emacs-lisp
-(use-package org-modern
-  :vc (:fetcher github :repo "minad/org-modern"))
-
-(with-eval-after-load 'org (global-org-modern-mode))
+(use-package org-fancy-priorities
+  :init
+  :hook
+  (org-mode . org-fancy-priorities-mode)
+  :config
+  (setq org-fancy-priorities-list '((?A . "❗")
+                                  (?B . "⬆")
+                                  (?C . "⬇")
+                                  (?D . "☕")
+                                  (?1 . "⚡")
+                                  (?2 . "⮬")
+                                  (?3 . "⮮")
+                                  (?4 . "☕")
+                                  (?I . "Important"))))
 #+end_src
 
-* ORG MODERN INDENT
+* ORG SUPERSTAR
 
 #+begin_src emacs-lisp
-(use-package org-modern-indent
-  :vc (:fetcher github :repo "jdtsmith/org-modern-indent")
-  :config ; add late to hook
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 60))
+(use-package org-superstar)
+(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
 #+end_src
 
-#+RESULTS:
-: t
+#+begin_src emacs-lisp
+;; This is usually the default, but keep in mind it must be nil
+(setq org-hide-leading-stars nil)
+;; This line is necessary.
+(setq org-superstar-leading-bullet ?\s)
+;; If you use Org Indent you also need to add this, otherwise the
+;; above has no effect while Indent is enabled.
+(setq org-indent-mode-turns-on-hiding-stars nil)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun my-auto-lightweight-mode ()
+  "Start Org Superstar differently depending on the number of lists items."
+  (let ((list-items
+         (count-matches "^[ \t]*?\\([+-]\\|[ \t]\\*\\)"
+                        (point-min) (point-max))))
+    (unless (< list-items 100)
+      (org-superstar-toggle-lightweight-lists)))
+  (org-superstar-mode))
+
+(add-hook 'org-mode-hook #'my-auto-lightweight-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(setq inhibit-compacting-font-caches t)
+#+end_src
+
+#+begin_src emacs-lisp
+(require 'org-inlinetask)
+(setq org-inlinetask-show-first-star t)
+;; Less gray please.
+(set-face-attribute 'org-inlinetask nil
+                    :foreground nil
+		      :inherit 'bold)
+(with-eval-after-load 'org-superstar
+  (set-face-attribute 'org-superstar-first nil
+                     :foreground "#9000e1"))
+;; Stop cycling bullets to emphasize hierarchy of headlines.
+(setq org-superstar-cycle-headline-bullets nil)
+;; A simple period works fine, too.
+(setq org-superstar-leading-fallback ?.)
+#+end_src
 
 * ORG TEMPO
 #+begin_src emacs-lisp
@@ -1552,16 +1598,12 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (vertico-mode)
   (setq vertico-cycle t))
 
-
-
 ;; just for looks
 (use-package vertico-posframe
   :custom
   (vertico-posframe-parameters
    '((left-fringe . 8)
      (right-fringe . 8))))
-
-
 #+end_src
 
 * VERTICO-PRESCIENT
