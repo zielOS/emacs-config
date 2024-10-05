@@ -160,7 +160,7 @@
 (global-display-line-numbers-mode t)
 (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
 (defalias 'yes-or-no-p 'y-or-n-p)
-
+(auto-save-visited-mode t)
 (delete-selection-mode 1)
 #+end_src
 
@@ -205,7 +205,7 @@
      (note . "Notes on ${author editor:%etal}, ${title}"))) 
 
   :custom
-  (citar-bibliography '("~/bib/references.bib"))
+  (citar-bibliography '("~/Dropbox/Documents/Project1/references.bib"))
   :hook
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
