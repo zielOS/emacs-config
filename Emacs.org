@@ -1,6 +1,7 @@
 #+title: Emacs
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+STARTUP: overview
+
 * STUFF TO LOAD FIRST
 ** Startup Performance
 
@@ -146,6 +147,7 @@
 (setq pop-up-windows nil)    ;; No popup window
 (setq visible-bell 0)
 (setq use-dialog-box nil)    ;; No dialog box
+(setq pixel-scroll-precision-mode t)
 (scroll-bar-mode 1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
@@ -814,19 +816,19 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 (defun efs/set-font-faces ()
   (message "Setting faces!")
   (set-face-attribute 'default nil
-		      :font "JetBrainsMono Nerd Font"
+		      :font "JetBrains Mono"
 		      :height 115
 		      :weight 'medium)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-		      :font "JetBrainsMono Nerd Font"
+		      :font "JetBrains Mono"
 		      :height 115
 		      :weight 'medium)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-		      :font "Ubuntu Nerd Font"
+		      :font "Ubuntu"
 		      :height 115
 		      :weight 'medium))
 
@@ -938,7 +940,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   "n f f" '(denote-find-link :wk "denote-find-link");; ask reddit about making f not appear as prefix in which-ke
   "n f b" '(denote-find-backlink :wk "denote-find-backlink"))
 #+end_src
-
 
 ** Dired
 
@@ -1183,19 +1184,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   :init
   (global-aggressive-indent-mode 1))
 #+end_src
-
-* KIND ICON
-
-#+begin_src emacs-lisp
-;; cape-file
-;; cape-keyword
-;; cape-dabbrev
-;; cape-symbol
-;; cape-line
-
- ;;(setq-local completion-at-point-functions
-   ;;          (list (cape-super-capf #'cape-dabbrev ;;;#'cape-file #'cape-keyword #'cape-symbol)))
- #+end_src
 
 * LaTeX
 
@@ -1689,6 +1677,44 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (setq-default history-length 1000)
   (setq-default prescient-history-length 1000) ;; More prescient history
   (prescient-persist-mode +1))
+#+end_src
+
+* PRETTIFY-SYMBOLS
+
+#+begin_src emacs-lisp
+;(global-prettify-symbols-mode t)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun my/org-mode/load-prettify-symbols ()
+  (interactive)
+  (setq prettify-symbols-alist
+    '(("#+begin_src" . ?)
+      ("#+BEGIN_SRC" . ?)
+      ("#+end_src" . ?)
+      ("#+END_SRC" . ?)
+      ("#+begin_example" . ?)
+      ("#+BEGIN_EXAMPLE" . ?)
+      ("#+end_example" . ?)
+      ("#+END_EXAMPLE" . ?)
+      ("#+header:" . ?)
+      ("#+HEADER:" . ?)
+      ("#+name:" . ?﮸)
+      ("#+NAME:" . ?﮸)
+      ("#+results:" . ?)
+      ("#+RESULTS:" . ?)
+      ("#+call:" . ?)
+      ("#+CALL:" . ?)
+      (":PROPERTY:" . ?)
+      (":property:" . ?)
+      (":LOGBOOK:" . ?)
+      (":logbook:" . ?)))
+  (prettify-symbols-mode 1))
+#+end_src
+
+
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook 'my/org-mode/load-prettify-symbols)
 #+end_src
 
 * RAINBOW DELIMITERS
