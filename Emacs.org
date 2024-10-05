@@ -119,7 +119,7 @@
 (use-package all-the-icons
   :if (display-graphic-p))
 
-(use-package all-the-icons-dired)
+;; (use-package all-the-icons-dired)
 #+end_src
 
 * AUTO-TANGLE ORG
@@ -144,16 +144,14 @@
 (setq use-file-dialog nil)   ;; No file dialog
 (setq use-dialog-box nil)    ;; No dialog box
 (setq pop-up-windows nil)    ;; No popup window
-(setq visible-bell nil)
-
-(scroll-bar-mode 1
-)        ; Disable visible scrollbar
+(setq visible-bell 0)
+(setq use-dialog-box nil)    ;; No dialog box
+(scroll-bar-mode 1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 20)        ; Give some breathing room
 (menu-bar-mode -1)            ; Disable the menu bar
 (recentf-mode 1) ; use spc f r to invoke recentf-open-files
-
 (global-visual-line-mode t)
 (column-number-mode)
 (global-display-line-numbers-mode t)
@@ -311,17 +309,40 @@ Consult provides search and navigation commands based on the Emacs completion fu
 (use-package corfu
   ;; Optional customizations
   :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-preview-current nil)    ;; Disable current candidate preview
-  (corfu-echo-documentation t) ;; Disable documentation in the echo area
-  (corfu-scroll-margin 5)   ;; Use scroll margin
+  (corfu-cycle t)               
+  (corfu-auto t)                
+  (corfu-preview-current nil)   
+  (corfu-echo-documentation t)
+  (corfu-preselect 'prompt)
+  (corfu-scroll-margin 5)
   :init
   (global-corfu-mode))
 
 (add-hook 'corfu-mode-hook #'corfu-popupinfo-mode)
+
+
+
+;; A few more useful configurations...
+(use-package emacs
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
+
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
+
+  ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
+  ;; try `cape-dict'.
+  (text-mode-ispell-word-completion nil)
+
+  ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  ;; commands are hidden, since they are not used via M-x. This setting is
+  ;; useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
 #+end_src
 
+#+RESULTS:
 
 * COMMENTING
 
@@ -329,8 +350,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 (use-package evil-nerd-commenter
   :after evil)
 #+end_src
-
-#+RESULTS:
 
 * DABBREV
 
@@ -371,10 +390,11 @@ Consult provides search and navigation commands based on the Emacs completion fu
 * DENOTE
 
 #+begin_src emacs-lisp
-(use-package denote)
+(use-package denote
+  :after org)
 
 ;; Remember to check the doc strings of those variables.
-(setq denote-directory (expand-file-name "~/Documents/notes/"))
+(setq denote-directory (expand-file-name "~/Dropbox/Documents/notes/"))
 (setq denote-save-buffers nil)
 (setq denote-known-keywords '("emacs" "philosophy" "politics" "economics"))
 (setq denote-infer-keywords t)
@@ -422,37 +442,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 ;; Automatically rename Denote buffers using the `denote-rename-buffer-format'.
 (denote-rename-buffer-mode 1)
 
-;; Denote DOES NOT define any key bindings.  This is for the user to
-;; decide.  For example:
-(let ((map global-map))
-  (define-key map (kbd "C-c n n") #'denote)
-  (define-key map (kbd "C-c n c") #'denote-region) ; "contents" mnemonic
-  (define-key map (kbd "C-c n N") #'denote-type)
-  (define-key map (kbd "C-c n d") #'denote-date)
-  (define-key map (kbd "C-c n z") #'denote-signature) ; "zettelkasten" mnemonic
-  (define-key map (kbd "C-c n s") #'denote-subdirectory)
-  (define-key map (kbd "C-c n t") #'denote-template)
-  ;; If you intend to use Denote with a variety of file types, it is
-  ;; easier to bind the link-related commands to the `global-map', as
-  ;; shown here.  Otherwise follow the same pattern for `org-mode-map',
-  ;; `markdown-mode-map', and/or `text-mode-map'.
-  (define-key map (kbd "C-c n i") #'denote-link) ; "insert" mnemonic
-  (define-key map (kbd "C-c n I") #'denote-add-links)
-  (define-key map (kbd "C-c n b") #'denote-backlinks)
-  (define-key map (kbd "C-c n f f") #'denote-find-link)
-  (define-key map (kbd "C-c n f b") #'denote-find-backlink)
-  ;; Note that `denote-rename-file' can work from any context, not just
-  ;; Dired bufffers.  That is why we bind it here to the `global-map'.
-  (define-key map (kbd "C-c n r") #'denote-rename-file)
-  (define-key map (kbd "C-c n R") #'denote-rename-file-using-front-matter))
-
-;; Key bindings specifically for Dired.
-(let ((map dired-mode-map))
-  (define-key map (kbd "C-c C-d C-i") #'denote-link-dired-marked-notes)
-  (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-files)
-  (define-key map (kbd "C-c C-d C-k") #'denote-dired-rename-marked-files-with-keywords)
-  (define-key map (kbd "C-c C-d C-R") #'denote-dired-rename-marked-files-using-front-matter))
-
 (with-eval-after-load 'org-capture
   (setq denote-org-capture-specifiers "%l\n%i\n%?")
   (add-to-list 'org-capture-templates
@@ -473,6 +462,9 @@ Consult provides search and navigation commands based on the Emacs completion fu
 ;; `context-menu-mode'.
 (add-hook 'context-menu-functions #'denote-context-menu)
 #+end_src
+
+#+RESULTS:
+| denote-context-menu | context-menu-undo | context-menu-region | context-menu-middle-separator | context-menu-local | context-menu-minor |
 
 * DENOTE-EXPLORE
 
@@ -628,6 +620,7 @@ Consult provides search and navigation commands based on the Emacs completion fu
   :config
   (editorconfig-mode 1))
 #+end_src
+
 * EGLOT
 
 #+begin_src emacs-lisp
@@ -697,6 +690,13 @@ Consult provides search and navigation commands based on the Emacs completion fu
 #+RESULTS:
 | org-modern-mode | org-tempo-setup | my-auto-lightweight-mode | (lambda nil (org-superstar-mode 1)) | org-fancy-priorities-mode | crafted-org-enhance-electric-pair-inhibit-predicate | org-block-capf-add-to-completion-at-point-functions | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-fold-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | hl-todo-mode | citar-capf-setup | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) |
 
+* EMOJIFY
+
+#+begin_src emacs-lisp
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
+#+end_src
+
 * EMBARK
 
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers. Bind the command embark-act to a key and it acts like prefix-key for a keymap of actions (commands) relevant to the target around point.
@@ -760,7 +760,8 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map (kbd "TAB") nil))
 ;; Setting RETURN key in org-mode to follow links
-  (setq org-return-follows-link  t)
+(setq org-return-follows-link  t)
+(setq evil-kill-on-visual-paste nil)
 #+end_src
 
 * EVIL GOGGLES
@@ -813,19 +814,19 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 (defun efs/set-font-faces ()
   (message "Setting faces!")
   (set-face-attribute 'default nil
-		      :font "JetBrains Mono"
+		      :font "JetBrainsMono Nerd Font"
 		      :height 115
 		      :weight 'medium)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-		      :font "JetBrains Mono"
+		      :font "JetBrainsMono Nerd Font"
 		      :height 115
 		      :weight 'medium)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-		      :font "Ubuntu"
+		      :font "Ubuntu Nerd Font"
 		      :height 115
 		      :weight 'medium))
 
@@ -845,6 +846,18 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.12)
+#+end_src
+
+* FORMAT-ON-SAVE
+
+#+begin_src emacs-lisp
+(use-package format-all
+  :commands format-all-mode
+  :hook (prog-mode . format-all-mode)
+  :config
+  (setq-default format-all-formatters
+                '(("C"     (astyle "--mode=c"))
+                  ("Shell" (shfmt "-i" "4" "-ci")))))
 #+end_src
 
 * FLYCHECK
@@ -879,7 +892,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (ar/leader-keys
   "SPC" '(execute-extended-command :wk "M-x")
   "f f" '(find-file :wk "Find file")
-  "/" '(comment-line :wk "Comment lines")
+  "/" '(evilnc-comment-or-uncomment-lines :wk "Comment lines")
   "u" '(universal-argument :wk "Universal argument"))
 #+end_src
 
@@ -908,21 +921,43 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 ** Denote
 
 #+begin_src emacs-lisp
-
+(ar/leader-keys
+  :keymaps 'global-map
+  "n" '(:ignore t :wk "Denote")
+  "n c" '(denote-region :wk "denote-region")
+  "n N" '(denote-type :wk "denote-type")
+  "n d" '(denote-date :wk "denote-date")
+  "n z" '(denote-signature :wk "denote-signature")
+  "n s" '(denote-subdirectory :wk "denote-subdirectory")
+  "n t" '(denote-template :wk "denote-template")
+  "n i" '(denote-link :wk "denote-link")
+  "n I" '(denote-add-links :wk "denote-add-links")
+  "n b" '(denote-backlinks :wk "denote-backlinks")
+  "n r" '(denote-rename-file :wk "denote-rename-file")
+  "n R" '(denote-rename-file-using-front-matter :wk "denote-rename-file-using-front-matter")
+  "n f f" '(denote-find-link :wk "denote-find-link");; ask reddit about making f not appear as prefix in which-ke
+  "n f b" '(denote-find-backlink :wk "denote-find-backlink"))
 #+end_src
+
 
 ** Dired
 
 #+begin_src emacs-lisp
 (ar/leader-keys
-  "d" '(:ignore t :wk "Dired")
+  "d" '(:ignore t :wk "Dired/Denote")
   "d d" '(dired :wk "Open dired")
   "d f" '(wdired-finish-edit :wk "Writable dired finish edit")
+  "d i" '(denote-link-dired-marked-notes :wk "denote-link-dired-marked-notes")
   "d j" '(dired-jump :wk "Dired jump to current")
+  "d k" '(denote-dired-rename-marked-files-with-keywords :wk "denote-dired-rename-marked-files-with-keywords")
   "d n" '(neotree-dir :wk "Open directory in neotree")
   "d p" '(peep-dired :wk "Peep-dired")
+  "d r" '(denote-dired-rename-files :wk "denote-dired-rename-files")
+  "d R" '(denote-dired-rename-marked-files-using-front-matter :wk "denote-dired-rename-marked-files-using-front-matter")
   "d w" '(wdired-change-to-wdired-mode :wk "Writable dired"))
 #+end_src
+
+#+RESULTS:
 
 ** Ediff/Eshell/Ediff
 
@@ -954,6 +989,20 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   "f i" '((lambda () (interactive)
             (find-file "~/.config/emacs/init.el")) 
           :wk "Open emacs init.el"))
+#+end_src
+
+** Helpful
+
+#+begin_src emacs-lisp
+(ar/leader-keys
+  :keymaps 'global-map
+  "h" '(:ignore t :wk "Helpful")
+  "h d" '(helpful-at-point :wk "helpful-at-point")
+  "h f" '(helpful-callable :wk "helpful-callable")
+  "h F" '(helpful-function :wk "helpful-function")
+  "h v" '(helpful-variable :wk "helpful-variable"  )
+  "h k" '(helpful-key :wk "helpful-key")
+  "h x" '(helpful-command :wk "helpful-command"))
 #+end_src
 
 ** Magit
@@ -1067,27 +1116,9 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package helpful)
-;; Note that the built-in `describe-function' includes both functions
-;; and macros. `helpful-function' is functions only, so we provide
-;; `helpful-callable' as a drop-in replacement.
-;; TODO replace C-h with SPACE
-(global-set-key (kbd "C-h f") #'helpful-callable)
-(global-set-key (kbd "C-h v") #'helpful-variable)
-(global-set-key (kbd "C-h k") #'helpful-key)
-(global-set-key (kbd "C-h x") #'helpful-command)
-
-;; Lookup the current symbol at point. C-c C-d is a common keybinding
-;; for this in lisp modes.
-(global-set-key (kbd "C-c C-d") #'helpful-at-point)
-
-;; Look up *F*unctions (excludes macros).
-;;
-;; By default, C-h F is bound to `Info-goto-emacs-command-node'. Helpful
-;; already links to the manual, if a function is referenced there.
-(global-set-key (kbd "C-h F") #'helpful-function)
 #+end_src
 
-* HIGHLIGHT TODO
+* HL-TODO
 
 #+begin_src emacs-lisp
 (use-package hl-todo
@@ -1112,6 +1143,24 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 ;; (keymap-set hl-todo-mode-map "C-c o" #'hl-todo-occur)
 ;; (keymap-set hl-todo-mode-map "C-c i" #'hl-todo-insert)
 
+#+end_src
+
+* HIGHLIGHT INDENT GUIDES
+
+#+begin_src emacs-lisp
+(use-package highlight-indent-guides
+  :hook ((prog-mode . highlight-indent-guides-mode)
+	 (LaTeX-mode . highlight-indent-guides-mode))
+  :config
+  (setq highlight-indent-guides-method 'bitmap)
+  (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line))
+#+end_src
+
+* HIGHLIGHT COLORS
+
+#+begin_src emacs-lisp
+(use-package rainbow-mode
+  :commands (rainbow-mode))
 #+end_src
 
 * IBUFFER PROJECT
@@ -1153,10 +1202,60 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 #+begin_src emacs-lisp
 (use-package auctex
   :defer t
-  :hook  ((LaTeX-mode . turn-on-prettify-symbols-mode)
-          (LaTeX-mode . turn-on-flyspell)
-	  (LaTeX-mode . turn-on-auto-fill)))
+  :config
+  (setq-default TeX-auto-save t)
+  (setq-default TeX-parse-self t)
+  (TeX-PDF-mode)
+  ;; Use XeLaTeX & stuff
+  (setq-default TeX-engine 'xetex)
+  (setq-default TeX-command-extra-options "-shell-escape")
+  (setq-default TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-mode)
+  (setq-default TeX-source-correlate-start-server t)
+  (setq-default LaTeX-math-menu-unicode t)
+
+  (setq-default font-latex-fontify-sectioning 1.3)
+
+  ;; Scale preview for my DPI
+  (setq-default preview-scale-function 1.4)
+  (when (boundp 'tex--prettify-symbols-alist)
+    (assoc-delete-all "--" tex--prettify-symbols-alist)
+    (assoc-delete-all "---" tex--prettify-symbols-alist))
+
+  (add-hook 'LaTeX-mode-hook
+	    (lambda ()
+	      (TeX-fold-mode 1)
+	      (outline-minor-mode)))
+
+  (add-to-list 'TeX-view-program-selection
+	       '(output-pdf "Zathura"))
+
+  ;; Do not run lsp within templated TeX files
+  (add-hook 'LaTeX-mode-hook
+	    (lambda ()
+	      (unless (string-match "\.hogan\.tex$" (buffer-name))
+		(lsp))
+	      (setq-local lsp-diagnostic-package :none)
+	      (setq-local flycheck-checker 'tex-chktex)))
+
+  (add-hook 'LaTeX-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'LaTeX-mode-hook #'smartparens-mode)
+  (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
+
+  (my/set-smartparens-indent 'LaTeX-mode)
+  (require 'smartparens-latex)
+
+  (general-nmap
+    :keymaps '(LaTeX-mode-map latex-mode-map)
+    "RET" 'TeX-command-run-all
+    "C-c t" 'orgtbl-mode)
+
+  <<init-greek-latex-snippets>>
+  <<init-english-latex-snippets>>
+  <<init-math-latex-snippets>>
+  <<init-section-latex-snippets>>)
 #+end_src
+
 
 #+begin_src emacs-lisp
 (use-package auctex-latexmk
@@ -1167,7 +1266,90 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (setq auctex-latexmk-inherit-TeX-PDF-mode t))
 #+end_src
 
-#+RESULTS:
+#+begin_src emacs-lisp
+(defun my/list-sty ()
+  (reverse
+   (sort
+    (seq-filter
+     (lambda (file) (if (string-match ".*\.sty$" file) 1 nil))
+     (directory-files
+      (seq-some
+       (lambda (dir)
+	 (if (and
+	      (f-directory-p dir)
+	      (seq-some
+	       (lambda (file) (string-match ".*\.sty$" file))
+	       (directory-files dir))
+	      ) dir nil))
+       (list "./styles" "../styles/" "." "..")) :full))
+    (lambda (f1 f2)
+      (let ((f1b (file-name-base f1))
+	    (f1b (file-name-base f2)))
+	(cond
+	 ((string-match-p ".*BibTex" f1) t)
+	 ((and (string-match-p ".*Locale" f1) (not (string-match-p ".*BibTex" f2))) t)
+	 ((string-match-p ".*Preamble" f2) t)
+	 (t (string-lessp f1 f2))))))))
+
+(defun my/import-sty ()
+  (interactive)
+  (insert
+   (apply #'concat
+	  (cl-mapcar
+	   (lambda (file) (concat "\\usepackage{" (file-name-sans-extension (file-relative-name file default-directory)) "}\n"))
+	   (my/list-sty)))))
+
+(defun my/import-sty-org ()
+  (interactive)
+  (insert
+   (apply #'concat
+	  (cl-mapcar
+	   (lambda (file) (concat "#+LATEX_HEADER: \\usepackage{" (file-name-sans-extension (file-relative-name file default-directory)) "}\n"))
+	   (my/list-sty)))))
+#+end_src
+
+* LIGATURES
+
+#+begin_src emacs-lisp
+(use-package ligature
+  :vc (:fetcher github :repo mickeynp/ligature.el)
+  :if (display-graphic-p)
+  :config
+  (ligature-set-ligatures
+   '(
+     typescript-mode
+     typescript-ts-mode
+     js2-mode
+     javascript-ts-mode
+     vue-mode
+     svelte-mode
+     scss-mode
+     php-mode
+     python-mode
+     python-ts-mode
+     js-mode
+     markdown-mode
+     clojure-mode
+     go-mode
+     sh-mode
+     haskell-mode
+     web-mode)
+   '("--" "---" "==" "===" "!=" "!==" "=!=" "=:=" "=/=" "<="
+     ">=" "&&" "&&&" "&=" "++" "+++" "***" ";;" "!!" "??"
+     "?:" "?." "?=" "<:" ":<" ":>" ">:" "<>" "<<<" ">>>"
+     "<<" ">>" "||" "-|" "_|_" "|-" "||-" "|=" "||=" "##"
+     "###" "####" "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:"
+     "#!" "#=" "^=" "<$>" "<$" "$>" "<+>" "<+" "+>" "<*>"
+     "<*" "*>" "</" "</>" "/>" "<!--" "<#--" "-->" "->" "->>"
+     "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>" "==>" "=>"
+     "=>>" ">=>" ">>=" ">>-" ">-" ">--" "-<" "-<<" ">->" "<-<"
+     "<-|" "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>"
+     "~>" "~-" "-~" "~@" "[||]" "|]" "[|" "|}" "{|" "[<"
+     ">]" "|>" "<|" "||>" "<||" "|||>" "<|||" "<|>" "..." ".."
+     ".=" ".-" "..<" ".?" "::" ":::" ":=" "::=" ":?" ":?>"
+     "//" "///" "/*" "*/" "/=" "//=" "/==" "@_" "__"))
+  (global-ligature-mode t))
+#+end_src
 
 * LINE NUMBERS
 
@@ -1203,12 +1385,27 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+end_src
 
+* MINIBUFFER ESCAPE
+
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+
 * MODELINE
 
 #+begin_src emacs-lisp
 (use-package doom-modeline
-  :init (doom-modeline-mode 1))
+  :init (doom-modeline-mode 1)
+  (setq doom-modeline-height 35
+	doom-modeline-icon t
+	doom-modeline-major-mode-icon t
+	doom-modeline-lsp-icon t
+	doom-modeline-time-icon t
+	doom-modeline-enable-word-count t
+	doom-modeline-vcs-icon t))
 #+end_src
+
+#+RESULTS:
 
 * MODUS THEME
 
@@ -1256,7 +1453,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
         neo-show-hidden-files t
         neo-window-width 30
         neo-window-fixed-size nil
-	neo-theme (if (display-graphic-p) 'icons)
+	neo-theme (if (display-graphic-p) 'nerd 'icons)
 
         inhibit-compacting-font-caches t
         projectile-switch-project-action 'neotree-projectile-action) 
@@ -1269,10 +1466,11 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
                  (make-local-variable 'auto-hscroll-mode)
                  (setq auto-hscroll-mode nil)))))
 
-(use-package all-the-icons-nerd-fonts)
+;;(use-package all-the-icons-nerd-fonts)
 #+end_src
 
 #+RESULTS:
+: t
 
 * NERD ICONS
 
@@ -1381,6 +1579,19 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+end_src
 
+* ORG LEVEL HEADERS
+
+#+begin_src emacs-lisp
+(custom-set-faces
+ '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.27))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.23))))
+ '(org-level-4 ((t (:inherit outline-4 :height 1.2))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.17))))
+ '(org-level-6 ((t (:inherit outline-5 :height 1.13))))
+ '(org-level-7 ((t (:inherit outline-5 :height 1.1)))))
+#+end_src
+
 * ORG ELECTRIC PAIR MODE
 
 #+begin_src emacs-lisp
@@ -1407,6 +1618,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 #+begin_src emacs-lisp
 (use-package org-fancy-priorities
+  :after org
   :init
   :hook
   (org-mode . org-fancy-priorities-mode)
@@ -1425,21 +1637,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 * ORG SUPERSTAR
 
 #+begin_src emacs-lisp
-(use-package org-superstar)
-(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-#+end_src
-
-#+begin_src emacs-lisp
-;; This is usually the default, but keep in mind it must be nil
-(setq org-hide-leading-stars nil)
-;; This line is necessary.
-(setq org-superstar-leading-bullet ?\s)
-;; If you use Org Indent you also need to add this, otherwise the
-;; above has no effect while Indent is enabled.
-(setq org-indent-mode-turns-on-hiding-stars nil)
-#+end_src
-
-#+begin_src emacs-lisp
 (defun my-auto-lightweight-mode ()
   "Start Org Superstar differently depending on the number of lists items."
   (let ((list-items
@@ -1449,11 +1646,17 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
       (org-superstar-toggle-lightweight-lists)))
   (org-superstar-mode))
 
-(add-hook 'org-mode-hook #'my-auto-lightweight-mode)
-#+end_src
-
-#+begin_src emacs-lisp
+(use-package org-superstar)
+(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+;; This is usually the default, but keep in mind it must be nil
+(setq org-hide-leading-stars nil)
+;; This line is necessary.
+(setq org-superstar-leading-bullet ?\s)
+;; If you use Org Indent you also need to add this, otherwise the
+;; above has no effect while Indent is enabled.
+(setq org-indent-mode-turns-on-hiding-stars nil)
 (setq inhibit-compacting-font-caches t)
+(add-hook 'org-mode-hook #'my-auto-lightweight-mode)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1466,10 +1669,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 (with-eval-after-load 'org-superstar
   (set-face-attribute 'org-superstar-first nil
                      :foreground "#9000e1"))
-;; Stop cycling bullets to emphasize hierarchy of headlines.
-(setq org-superstar-cycle-headline-bullets nil)
-;; A simple period works fine, too.
-(setq org-superstar-leading-fallback ?.)
 #+end_src
 
 * ORG TEMPO
@@ -1492,7 +1691,16 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (prescient-persist-mode +1))
 #+end_src
 
+* RAINBOW DELIMITERS
+
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters
+  :hook ((prog-mode . rainbow-delimiters-mode)
+	 (org-mode . rainbow-delimiters-mode)))
+#+end_src
+
 * TEMPEL
+
 
 #+begin_src emacs-lisp
 ;; Configure Tempel
@@ -1540,34 +1748,35 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 
 #+begin_src emacs-lisp
-;; (use-package doom-themes
-;;   :config
-;;   ;; Global settings (defaults)
-;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;;   doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;;   (load-theme 'doom-dracula t)
+(use-package doom-themes
+  :ensure t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-tokyo-night t)
 
-;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
-;;   (doom-themes-neotree-config)
-;;   ;; or for treemacs users
-;;   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-;;   (doom-themes-treemacs-config)
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config))
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package catppuccin-theme)
-(load-theme 'catppuccin :no-confirm)
-(setq catppuccin-flavor 'mocha)
-(catppuccin-reload)
+;; (use-package catppuccin-theme)
+;; (load-theme 'catppuccin :no-confirm)
+;; (setq catppuccin-flavor 'mocha)
+;; (catppuccin-reload)
 #+end_src
 
 #+RESULTS:
 : t
 
-* TODO Indent Lines
-* TODO Format-on-save
 * VERTICO
 
 #+begin_src emacs-lisp
@@ -1656,7 +1865,7 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
         which-key-min-display-lines 6
 	which-key-side-window-slot -10
 	which-key-side-window-max-height 0.25
-	which-key-idle-delay 0.8
+	which-key-idle-delay 0.1
 	which-key-max-description-length 25
 	which-key-allow-imprecise-window-fit nil
 	which-key-separator " → " ))
