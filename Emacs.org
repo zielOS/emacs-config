@@ -323,22 +323,6 @@ Consult provides search and navigation commands based on the Emacs completion fu
 #+end_src
 
 
-#+begin_src emacs-lisp
-
-(use-package  nerd-icons-corfu)
-(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
-
-;; Optionally:
-(setq nerd-icons-corfu-mapping
-      '((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
-        (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
-        ;; ...
-        (t :style "cod" :icon "code" :face font-lock-warning-face)))
-        ;; Remember to add an entry for `t', the library uses that as default.
-
-;; The Custom interface is also supported for tuning the variable above.
-#+end_src
-
 * COMMENTING
 
 #+begin_src emacs-lisp
@@ -1154,14 +1138,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 * KIND ICON
 
 #+begin_src emacs-lisp
-(use-package kind-icon
-  :ensure t
-  :after corfu
-  :custom
-  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
 ;; cape-file
 ;; cape-keyword
 ;; cape-dabbrev
@@ -1313,7 +1289,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
 
 (use-package nerd-icons-corfu
   :ensure t
-  :after corfu
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
@@ -1321,8 +1296,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   :ensure t
   :hook
   (dired-mode . nerd-icons-dired-mode))
-
-
 #+end_src
 
 #+RESULTS:
@@ -1506,21 +1479,6 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
-#+end_src
-
-* PDF-TOOLS
-
-#+begin_src emacs-lisp
-(use-package pdf-tools
-  :ensure t
-  :defer t
-  :commands (pdf-loader-install)
-  :mode "\\.pdf\\'"
-  :bind (:map pdf-view-mode-map
-              ("j" . pdf-view-next-line-or-next-page)
-              ("k" . pdf-view-previous-line-or-previous-page))
-  :init (pdf-loader-install)
-  :config (add-to-list 'revert-without-query ".pdf"))
 #+end_src
 
 * PRESCIENT
@@ -1730,10 +1688,9 @@ Install =luacheck= from your Linux distro's repositories for flycheck to work co
       gc-cons-percentage 0.6)
 #+end_src
 
-#+RESULTS:
-: 0.6
 
-
+#+begin_src emacs-lisp
+#+end_src
 
 
 
